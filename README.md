@@ -38,6 +38,8 @@ Start with an empty .NET solution and build a working chat UI in one hour. You'l
 - **Outcome:** Real-time client-server messaging layer ready for AI
 - 🇺🇸 [Register (English)](https://developer.microsoft.com/en-us/reactor/events/26919/) · 🇪🇸 [Registrarse (Español)](https://developer.microsoft.com/en-us/reactor/events/26923/)
 
+> 📦 **Materials:** 📹 Recording · 📊 Slides · 💻 Source Code · 🎯 Demo Prompts — *Coming soon after the session*
+
 ---
 
 ### **Session 2: Teach Your AI to Act, Not Just Talk**
@@ -49,6 +51,8 @@ Connect an AI model and teach it to use tools. Build the Agent Orchestrator, int
 - **Hands-on:** Prompt the AI to execute real tasks
 - **Outcome:** Agentic behavior with constrained tool access
 - 🇺🇸 [Register (English)](https://developer.microsoft.com/en-us/reactor/events/26920/) · 🇪🇸 [Registrarse (Español)](https://developer.microsoft.com/en-us/reactor/events/26924/)
+
+> 📦 **Materials:** 📹 Recording · 📊 Slides · 💻 Source Code · 🎯 Demo Prompts — *Coming soon after the session*
 
 ---
 
@@ -62,6 +66,8 @@ Build skills (reusable AI behaviors) and add persistent memory. Store conversati
 - **Outcome:** Stateful, context-aware agent behavior
 - 🇺🇸 [Register (English)](https://developer.microsoft.com/en-us/reactor/events/26921/) · 🇪🇸 [Registrarse (Español)](https://developer.microsoft.com/en-us/reactor/events/26925/)
 
+> 📦 **Materials:** 📹 Recording · 📊 Slides · 💻 Source Code · 🎯 Demo Prompts — *Coming soon after the session*
+
 ---
 
 ### **Session 4: From Local Dev to Production Ready**
@@ -74,37 +80,34 @@ Deploy to Azure and scale with Microsoft Foundry. Set up GitHub Actions pipeline
 - **Outcome:** Cloud-ready, monitored agent platform
 - 🇺🇸 [Register (English)](https://developer.microsoft.com/en-us/reactor/events/26922/) · 🇪🇸 [Registrarse (Español)](https://developer.microsoft.com/en-us/reactor/events/26926/)
 
+> 📦 **Materials:** 📹 Recording · 📊 Slides · 💻 Source Code · 🎯 Demo Prompts — *Coming soon after the session*
+
 ---
 
 ## 📋 Prerequisites
 
-Before you start, install:
+### For All Sessions (Local Development)
 
 - **.NET 10 SDK** — [Download](https://dotnet.microsoft.com/en-us/download/dotnet/10.0)
 - **VS Code + GitHub Copilot** — [Setup](https://github.com/features/copilot)
-- **Docker & Ollama** (for local models) — [Ollama](https://ollama.ai/) and [Docker Desktop](https://www.docker.com/products/docker-desktop)
+- **Foundry Local** (run AI models locally) — [GitHub](https://github.com/microsoft/Foundry-Local) · [Website](https://www.foundrylocal.ai/)
+- **Docker** — [Docker Desktop](https://www.docker.com/products/docker-desktop)
 - **Git** — [Download](https://git-scm.com/)
 
-*Optional for Session 4:*
-- Azure account with Copilot credits or pay-as-you-go
-- Familiarity with `az` CLI
+### For Session 4 (Cloud Deployment)
+
+- **Azure subscription** — [Create a free account](https://azure.microsoft.com/free/) (free tier works!)
+- **Azure CLI (`az`)** — [Install](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
 ---
 
-## 🚀 Quick Start
+## 🎒 Before Your First Session
 
-```bash
-# Clone this repository
-git clone https://github.com/elbruno/openclawnet.git
-cd openclawnet
-
-# Run Session 1 (local chat UI)
-dotnet run
-
-# Visit http://localhost:5000 and start chatting
-```
-
-More detailed setup instructions are in the [docs](./docs/) folder.
+1. ✅ **Install prerequisites** above (especially .NET 10, VS Code + Copilot, and Foundry Local)
+2. ✅ **Register** for the sessions — [🇺🇸 English](https://developer.microsoft.com/en-us/reactor/series/s-1652/) or [🇪🇸 Español](https://developer.microsoft.com/en-us/reactor/series/S-1653/)
+3. ✅ **Clone this repo** — `git clone https://github.com/elbruno/openclawnet.git`
+4. ✅ **Test Foundry Local** — Run `foundry model run phi-4-mini` to verify local AI models work on your machine
+5. ✅ **Join the community** — [Azure AI Discord](https://aka.ms/ai-discord/dotnet) for live Q&A during sessions
 
 ---
 
@@ -177,11 +180,24 @@ Full documentation is in the [`docs/`](./docs/) folder:
 
 ---
 
-## 🤝 Community & Support
+## 💬 Questions & Community
 
-- **Live Sessions:** Register — [🇺🇸 English Series](https://developer.microsoft.com/en-us/reactor/series/s-1652/) · [🇪🇸 Serie en Español](https://developer.microsoft.com/en-us/reactor/series/S-1653/)
-- **Issues & Questions:** Open an issue in this repository
-- **Feedback:** We'd love to hear how this series helped you
+[![Azure AI Community Discord](https://img.shields.io/discord/1113626258182504448?label=Azure%20AI%20Community%20Discord)](https://aka.ms/ai-discord/dotnet)
+[![Microsoft Foundry Discussions](https://img.shields.io/badge/Discussions-Microsoft%20Foundry-blueviolet?logo=github&style=flat-square)](https://aka.ms/ai-discussions/dotnet)
+
+- **💬 Ask questions during sessions:** Join the [Azure AI Community Discord](https://aka.ms/ai-discord/dotnet) — find us in the .NET channel
+- **🗣️ Foundry discussions:** [Microsoft Foundry GitHub Discussions](https://aka.ms/ai-discussions/dotnet)
+- **📺 Live Sessions:** [🇺🇸 English Series](https://developer.microsoft.com/en-us/reactor/series/s-1652/) · [🇪🇸 Serie en Español](https://developer.microsoft.com/en-us/reactor/series/S-1653/)
+- **🐛 Found an issue?** [Open an issue](https://github.com/elbruno/openclawnet/issues) in this repository
+- **📝 Feedback:** We'd love to hear how this series helped you
+
+---
+
+## 📚 Additional Resources
+
+- **[Generative AI for Beginners .NET](https://aka.ms/genainet)** — Hands-on .NET AI course from Microsoft (great companion to this series)
+- **[Foundry Local](https://www.foundrylocal.ai/)** — Run AI models locally on your hardware
+- **[.NET Aspire](https://learn.microsoft.com/dotnet/aspire/)** — Cloud-native orchestration for .NET
 
 ---
 
