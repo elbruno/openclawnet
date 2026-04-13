@@ -1,4 +1,4 @@
-# 🐾 OpenClawNet
+# 🦀 OpenClawNet
 
 **Build an AI Agent Platform in .NET 10 with GitHub Copilot**
 
@@ -136,4 +136,4 @@ The code grows incrementally:
 
 MIT License — see [LICENSE](./LICENSE) for details.
 
-**Built with ❤️ for the .NET and AI developer community.** 🐾
+**Built with ❤️ for the .NET and AI developer community.** 🦀

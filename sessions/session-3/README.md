@@ -1,4 +1,4 @@
-# 🐾 Session 3: Skills + Memory
+# 🦀 Session 3: Skills + Memory
 
 > 📅 **Coming soon** — Materials will be published after the live session.
 

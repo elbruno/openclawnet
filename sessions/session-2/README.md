@@ -1,4 +1,4 @@
-# 🐾 Session 2: Tools + Agent Workflows
+# 🦀 Session 2: Tools + Agent Workflows
 
 > 📅 **Coming soon** — Materials will be published after the live session.
 

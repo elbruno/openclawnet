@@ -1,4 +1,4 @@
-# 🐾 Session 4: Automation + Cloud (Series Finale)
+# 🦀 Session 4: Automation + Cloud (Series Finale)
 
 > 📅 **Coming soon** — Materials will be published after the live session.
 
