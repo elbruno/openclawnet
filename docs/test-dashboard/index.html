@@ -75,8 +75,16 @@ body{
 .demo-header{
   padding:20px 24px 16px;
   border-bottom:1px solid rgba(124,92,252,0.08);
-  display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+  cursor:pointer;user-select:none;transition:background 0.15s;
 }
+.demo-header:hover{background:rgba(124,92,252,0.06)}
+.demo-card.collapsed .demo-header{border-bottom-color:transparent}
+.demo-toggle{
+  font-size:0.9rem;color:var(--muted);transition:transform 0.3s ease;
+  margin-left:8px;
+}
+.demo-card.collapsed .demo-toggle{transform:rotate(-90deg)}
 .demo-number{
   font-family:"JetBrains Mono","Cascadia Code",monospace;
   font-size:0.75rem;font-weight:500;
@@ -90,7 +98,8 @@ body{
   margin-left:auto;font-size:0.8rem;color:var(--muted);
   font-family:"JetBrains Mono","Cascadia Code",monospace;white-space:nowrap;
 }
-.test-list{padding:4px 0}
+.test-list{padding:4px 0;overflow:hidden;transition:max-height 0.35s ease,opacity 0.25s ease;max-height:2000px;opacity:1}
+.demo-card.collapsed .test-list{max-height:0;opacity:0;padding:0}
 .test-item{
   display:grid;grid-template-columns:28px 1fr auto;
   align-items:start;gap:8px;
@@ -338,5 +347,22 @@ body{
 <footer class="footer">
   &#x1F980; OpenClawNet &mdash; Built with .NET 10, Aspire, Blazor, SignalR, Ollama &amp; &#x2764;&#xFE0F; by <a href="https://github.com/elbruno" style="color:var(--teal);text-decoration:none">Bruno Capuano</a>
 </footer>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.demo-card').forEach(card => {
+    const header = card.querySelector('.demo-header');
+    if (!header) return;
+    // Add chevron toggle
+    const toggle = document.createElement('span');
+    toggle.className = 'demo-toggle';
+    toggle.textContent = '▼';
+    header.appendChild(toggle);
+    // Start collapsed
+    card.classList.add('collapsed');
+    // Click to toggle
+    header.addEventListener('click', () => card.classList.toggle('collapsed'));
+  });
+});
+</script>
 </body>
 </html>
