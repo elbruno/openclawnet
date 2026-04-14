@@ -3,7 +3,7 @@ name: Deploy Test Dashboard
 on:
   push:
     branches: [main]
-    paths: ['docs/**']
+    paths: ['docs/test-dashboard/**']
   workflow_dispatch:
 
 permissions:
