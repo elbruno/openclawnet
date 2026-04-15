@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TestRun id="6ab0ea17-30f4-4c9c-963c-c6da69600abd" name="brunocapuano@CPC-bruno-U7R9O 2026-04-15 13:21:17" runUser="NORTHAMERICA\brunocapuano" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-04-15T13:21:17.9618757-04:00" queuing="2026-04-15T13:21:17.9618760-04:00" start="2026-04-15T13:21:11.1153192-04:00" finish="2026-04-15T13:21:51.0249642-04:00" />
+  <TestSettings name="default" id="38bec8b3-5ce9-4337-9766-b7f43481ae0d">
+    <Deployment runDeploymentRoot="brunocapuano_CPC-bruno-U7R9O_2026-04-15_13_21_17" />
+  </TestSettings>
+  <Results>
+    <UnitTestResult executionId="2463d807-5611-4415-9fb8-eb5fc7840aa5" testId="76dc2353-aa44-2f5c-744b-e481416bc2ab" testName="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.IsAvailableAsync_ReturnsTrueWhenConfigured" computerName="CPC-bruno-U7R9O" duration="00:00:04.0932629" startTime="2026-04-15T13:21:29.4066247-04:00" endTime="2026-04-15T13:21:33.4998381-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2463d807-5611-4415-9fb8-eb5fc7840aa5" />
+    <UnitTestResult executionId="03adce05-4d1d-42a5-b0a5-02d3860dc8a3" testId="7dcfb46b-649a-3275-190d-a4d21774729e" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_Pipeline_SendMessage_ReturnsStreamedContent" computerName="CPC-bruno-U7R9O" duration="00:00:02.2870534" startTime="2026-04-15T13:21:44.7747051-04:00" endTime="2026-04-15T13:21:47.0615232-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="03adce05-4d1d-42a5-b0a5-02d3860dc8a3" />
+    <UnitTestResult executionId="02e4f786-0d74-4508-b57a-0bd706b88f4d" testId="3d9f655e-9373-0b97-470d-4d4603fd0069" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_StreamAsync_YieldsTokens" computerName="CPC-bruno-U7R9O" duration="00:00:03.8831542" startTime="2026-04-15T13:21:37.9480020-04:00" endTime="2026-04-15T13:21:41.8298231-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="02e4f786-0d74-4508-b57a-0bd706b88f4d" />
+    <UnitTestResult executionId="12c8cc6f-882e-410c-8cb2-9575188cec8f" testId="179d2c08-2086-a946-9964-c5d985daf0a8" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_CompleteAsync_ReturnsResponse" computerName="CPC-bruno-U7R9O" duration="00:00:03.8818005" startTime="2026-04-15T13:21:47.0625875-04:00" endTime="2026-04-15T13:21:50.9438881-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="12c8cc6f-882e-410c-8cb2-9575188cec8f" />
+    <UnitTestResult executionId="c5952d09-1c7d-46e5-89b9-b033a37a9234" testId="7e2c74b4-0192-3692-cca9-e91ebd6595d5" testName="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.StreamAsync_WithTools_YieldsToolCallChunk" computerName="CPC-bruno-U7R9O" duration="00:00:06.0101780" startTime="2026-04-15T13:21:11.9059377-04:00" endTime="2026-04-15T13:21:17.9250905-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c5952d09-1c7d-46e5-89b9-b033a37a9234" />
+    <UnitTestResult executionId="676203a0-77f8-4584-a077-7f68642af804" testId="2eb77de5-46b3-11b6-343b-8ab1df70edd2" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_Pipeline_SendMessage_ReturnsStreamedContent" computerName="CPC-bruno-U7R9O" duration="00:00:08.2079738" startTime="2026-04-15T13:21:29.7373704-04:00" endTime="2026-04-15T13:21:37.9459062-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="676203a0-77f8-4584-a077-7f68642af804" />
+    <UnitTestResult executionId="154e028a-48c5-4a82-bf5e-bfa5bff21f4f" testId="455c434b-954c-cf2c-db2a-703d0a72e4e3" testName="OpenClawNet.UnitTests.Models.OllamaStreamingToolCallLiveTests.StreamAsync_WithTools_YieldsToolCallChunk" computerName="CPC-bruno-U7R9O" duration="00:00:21.7425971" startTime="2026-04-15T13:21:11.9043417-04:00" endTime="2026-04-15T13:21:33.6538157-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="154e028a-48c5-4a82-bf5e-bfa5bff21f4f" />
+    <UnitTestResult executionId="40f115ea-efa1-4ac9-adcb-ddab26691d05" testId="87846d23-405a-3372-0807-babee989a98a" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_StreamAsync_YieldsTokens" computerName="CPC-bruno-U7R9O" duration="00:00:02.9430111" startTime="2026-04-15T13:21:41.8304875-04:00" endTime="2026-04-15T13:21:44.7738330-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="40f115ea-efa1-4ac9-adcb-ddab26691d05" />
+    <UnitTestResult executionId="67a5a55f-ea72-4175-ab15-c25c81979fba" testId="1552e680-2a54-f2da-8bde-a7cb3084b1da" testName="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.CompleteAsync_ReturnsNonEmptyResponse" computerName="CPC-bruno-U7R9O" duration="00:00:07.2087178" startTime="2026-04-15T13:21:22.1979916-04:00" endTime="2026-04-15T13:21:29.4056189-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="67a5a55f-ea72-4175-ab15-c25c81979fba" />
+    <UnitTestResult executionId="641cc75e-a58a-416e-ba2e-6a59d223f514" testId="f1c17355-0402-9cd0-cfce-ee3a0ab3f558" testName="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_CompleteAsync_ReturnsResponse" computerName="CPC-bruno-U7R9O" duration="00:00:17.8282178" startTime="2026-04-15T13:21:11.9060242-04:00" endTime="2026-04-15T13:21:29.7371226-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="641cc75e-a58a-416e-ba2e-6a59d223f514" />
+    <UnitTestResult executionId="0114a789-2770-40b5-8f25-3e779cd755ac" testId="1f26c548-c25c-b1ae-a87b-5ddc53b757e9" testName="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.StreamAsync_YieldsChunksAndCompletesSuccessfully" computerName="CPC-bruno-U7R9O" duration="00:00:04.2674756" startTime="2026-04-15T13:21:17.9455394-04:00" endTime="2026-04-15T13:21:22.1958897-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0114a789-2770-40b5-8f25-3e779cd755ac" />
+  </Results>
+  <TestDefinitions>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_StreamAsync_YieldsTokens" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="87846d23-405a-3372-0807-babee989a98a">
+      <Execution id="40f115ea-efa1-4ac9-adcb-ddab26691d05" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="Ollama_StreamAsync_YieldsTokens" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_Pipeline_SendMessage_ReturnsStreamedContent" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="7dcfb46b-649a-3275-190d-a4d21774729e">
+      <Execution id="03adce05-4d1d-42a5-b0a5-02d3860dc8a3" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="AzureOpenAI_Pipeline_SendMessage_ReturnsStreamedContent" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_CompleteAsync_ReturnsResponse" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="179d2c08-2086-a946-9964-c5d985daf0a8">
+      <Execution id="12c8cc6f-882e-410c-8cb2-9575188cec8f" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="AzureOpenAI_CompleteAsync_ReturnsResponse" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Models.OllamaStreamingToolCallLiveTests.StreamAsync_WithTools_YieldsToolCallChunk" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="455c434b-954c-cf2c-db2a-703d0a72e4e3">
+      <Execution id="154e028a-48c5-4a82-bf5e-bfa5bff21f4f" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Models.OllamaStreamingToolCallLiveTests" name="StreamAsync_WithTools_YieldsToolCallChunk" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.StreamAsync_YieldsChunksAndCompletesSuccessfully" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="1f26c548-c25c-b1ae-a87b-5ddc53b757e9">
+      <Execution id="0114a789-2770-40b5-8f25-3e779cd755ac" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests" name="StreamAsync_YieldsChunksAndCompletesSuccessfully" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_CompleteAsync_ReturnsResponse" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="f1c17355-0402-9cd0-cfce-ee3a0ab3f558">
+      <Execution id="641cc75e-a58a-416e-ba2e-6a59d223f514" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="Ollama_CompleteAsync_ReturnsResponse" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.IsAvailableAsync_ReturnsTrueWhenConfigured" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="76dc2353-aa44-2f5c-744b-e481416bc2ab">
+      <Execution id="2463d807-5611-4415-9fb8-eb5fc7840aa5" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests" name="IsAvailableAsync_ReturnsTrueWhenConfigured" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.Ollama_Pipeline_SendMessage_ReturnsStreamedContent" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="2eb77de5-46b3-11b6-343b-8ab1df70edd2">
+      <Execution id="676203a0-77f8-4584-a077-7f68642af804" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="Ollama_Pipeline_SendMessage_ReturnsStreamedContent" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.CompleteAsync_ReturnsNonEmptyResponse" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="1552e680-2a54-f2da-8bde-a7cb3084b1da">
+      <Execution id="67a5a55f-ea72-4175-ab15-c25c81979fba" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests" name="CompleteAsync_ReturnsNonEmptyResponse" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Integration.LiveLlmTests.AzureOpenAI_StreamAsync_YieldsTokens" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="3d9f655e-9373-0b97-470d-4d4603fd0069">
+      <Execution id="02e4f786-0d74-4508-b57a-0bd706b88f4d" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Integration.LiveLlmTests" name="AzureOpenAI_StreamAsync_YieldsTokens" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests.StreamAsync_WithTools_YieldsToolCallChunk" storage="c:\src\openclawnet-plan\tests\openclawnet.unittests\bin\debug\net10.0\openclawnet.unittests.dll" id="7e2c74b4-0192-3692-cca9-e91ebd6595d5">
+      <Execution id="c5952d09-1c7d-46e5-89b9-b033a37a9234" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.UnitTests\bin\Debug\net10.0\OpenClawNet.UnitTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.UnitTests.Models.AzureOpenAILiveTests" name="StreamAsync_WithTools_YieldsToolCallChunk" />
+    </UnitTest>
+  </TestDefinitions>
+  <TestEntries>
+    <TestEntry testId="76dc2353-aa44-2f5c-744b-e481416bc2ab" executionId="2463d807-5611-4415-9fb8-eb5fc7840aa5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7dcfb46b-649a-3275-190d-a4d21774729e" executionId="03adce05-4d1d-42a5-b0a5-02d3860dc8a3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d9f655e-9373-0b97-470d-4d4603fd0069" executionId="02e4f786-0d74-4508-b57a-0bd706b88f4d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="179d2c08-2086-a946-9964-c5d985daf0a8" executionId="12c8cc6f-882e-410c-8cb2-9575188cec8f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7e2c74b4-0192-3692-cca9-e91ebd6595d5" executionId="c5952d09-1c7d-46e5-89b9-b033a37a9234" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2eb77de5-46b3-11b6-343b-8ab1df70edd2" executionId="676203a0-77f8-4584-a077-7f68642af804" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="455c434b-954c-cf2c-db2a-703d0a72e4e3" executionId="154e028a-48c5-4a82-bf5e-bfa5bff21f4f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="87846d23-405a-3372-0807-babee989a98a" executionId="40f115ea-efa1-4ac9-adcb-ddab26691d05" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1552e680-2a54-f2da-8bde-a7cb3084b1da" executionId="67a5a55f-ea72-4175-ab15-c25c81979fba" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f1c17355-0402-9cd0-cfce-ee3a0ab3f558" executionId="641cc75e-a58a-416e-ba2e-6a59d223f514" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1f26c548-c25c-b1ae-a87b-5ddc53b757e9" executionId="0114a789-2770-40b5-8f25-3e779cd755ac" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+  </TestEntries>
+  <TestLists>
+    <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
+  </TestLists>
+  <ResultSummary outcome="Completed">
+    <Counters total="11" executed="11" passed="11" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Output>
+      <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.6)&#xD;
+[xUnit.net 00:00:00.11]   Discovering: OpenClawNet.UnitTests&#xD;
+[xUnit.net 00:00:00.21]   Discovered:  OpenClawNet.UnitTests&#xD;
+[xUnit.net 00:00:00.24]   Starting:    OpenClawNet.UnitTests&#xD;
+     Warning:&#xD;
+     The component "Fluent Assertions" is governed by the rules defined in the Xceed License Agreement and&#xD;
+     the Xceed Fluent Assertions Community License. You may use Fluent Assertions free of charge for&#xD;
+     non-commercial use only. An active subscription is required to use Fluent Assertions for commercial use.&#xD;
+     Please contact Xceed Sales mailto:sales@xceed.com to acquire a subscription at a very low cost.&#xD;
+     A paid commercial license supports the development and continued increasing support of&#xD;
+     Fluent Assertions users under both commercial and community licenses. Help us&#xD;
+     keep Fluent Assertions at the forefront of unit testing.&#xD;
+     For more information, visit https://xceed.com/products/unit-testing/fluent-assertions/&#xD;
+[xUnit.net 00:00:39.31]   Finished:    OpenClawNet.UnitTests&#xD;
+</StdOut>
+    </Output>
+  </ResultSummary>
+</TestRun>

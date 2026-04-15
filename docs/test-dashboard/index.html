@@ -176,21 +176,22 @@ body{
       <div class="hero-subtitle">Test Dashboard &mdash; Unit Tests + E2E (Playwright + Aspire)</div>
     </div>
     <div class="hero-badge">
-      <span class="big"><!-- TOTAL_PASSED -->344<!-- /TOTAL_PASSED --> / <!-- TOTAL_TESTS -->344<!-- /TOTAL_TESTS --></span>
+      <span class="big"><!-- TOTAL_PASSED -->396<!-- /TOTAL_PASSED --> / <!-- TOTAL_TESTS -->396<!-- /TOTAL_TESTS --></span>
       All Tests Passing
     </div>
   </div>
   <div class="nav-links">
     <a href="#e2e-tests">&#x1F3AD; E2E Tests (52)</a>
-    <a href="#unit-tests">&#x1F9EA; Unit Tests (111)</a>
+    <a href="#unit-tests">&#x1F9EA; Unit Tests (306)</a>
+    <a href="#live-tests">&#x1F525; Live Tests (11)</a>
   </div>
 </header>
 <section class="container">
   <div class="summary-bar">
-    <div class="stat-card stat-total"><div class="stat-value"><!-- TOTAL_TESTS -->344<!-- /TOTAL_TESTS --></div><div class="stat-label">Total Tests</div><div class="stat-breakdown">52 E2E &bull; 306 Unit &bull; 27 Integration</div></div>
-    <div class="stat-card stat-passed"><div class="stat-value"><!-- TOTAL_PASSED -->344<!-- /TOTAL_PASSED --></div><div class="stat-label">Passed</div><div class="stat-breakdown">52 E2E &bull; 306 Unit &bull; 27 Integration</div></div>
-    <div class="stat-card stat-failed"><div class="stat-value"><!-- TOTAL_FAILED -->0<!-- /TOTAL_FAILED --></div><div class="stat-label">Failed</div><div class="stat-breakdown">0 E2E &bull; 0 Unit &bull; 0 Integration</div></div>
-    <div class="stat-card stat-duration"><div class="stat-value"><!-- TOTAL_DURATION -->3m 49s<!-- /TOTAL_DURATION --></div><div class="stat-label">Duration</div><div class="stat-breakdown">E2E: 3m 49s &bull; Unit: 4s &bull; Integration: 22s</div></div>
+    <div class="stat-card stat-total"><div class="stat-value"><!-- TOTAL_TESTS -->396<!-- /TOTAL_TESTS --></div><div class="stat-label">Total Tests</div><div class="stat-breakdown">52 E2E &bull; 306 Unit &bull; 27 Integration &bull; 11 Live</div></div>
+    <div class="stat-card stat-passed"><div class="stat-value"><!-- TOTAL_PASSED -->396<!-- /TOTAL_PASSED --></div><div class="stat-label">Passed</div><div class="stat-breakdown">52 E2E &bull; 306 Unit &bull; 27 Integration &bull; 11 Live</div></div>
+    <div class="stat-card stat-failed"><div class="stat-value"><!-- TOTAL_FAILED -->0<!-- /TOTAL_FAILED --></div><div class="stat-label">Failed</div><div class="stat-breakdown">0 E2E &bull; 0 Unit &bull; 0 Integration &bull; 0 Live</div></div>
+    <div class="stat-card stat-duration"><div class="stat-value"><!-- TOTAL_DURATION -->4m 54s<!-- /TOTAL_DURATION --></div><div class="stat-label">Duration</div><div class="stat-breakdown">E2E: 3m 49s &bull; Unit: 4s &bull; Integration: 22s &bull; Live: 39s</div></div>
   </div>
 <!-- SECTION: E2E TESTS -->
 <div id="e2e-tests" style="margin: 24px 0; padding: 12px 0;">
@@ -831,6 +832,51 @@ body{
     </div>
   </div>
 <!-- END_UNIT_MODEL_PROVIDERS -->
+
+
+<!-- SECTION: LIVE TESTS -->
+<div id="live-tests" style="margin: 40px 0 24px; padding: 20px 0; border-top: 2px solid rgba(232,89,12,0.3);">
+  <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--coral); display: flex; align-items: center; gap: 10px;">
+    <span>&#x1F525;</span> Live Provider Tests
+    <span style="font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-left: auto;">11 tests &bull; ~39s total</span>
+  </h2>
+  <p style="font-size: 0.85rem; color: var(--muted); margin-top: 6px;">Real LLM calls against local Ollama and Azure OpenAI. Run with <code style="font-family:'JetBrains Mono',monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; color: var(--coral);">dotnet test --filter "Category=Live"</code></p>
+</div>
+
+<!-- BEGIN_LIVE_TESTS -->
+  <div class="demo-card">
+    <div class="demo-header">
+      <span class="demo-number">OLLAMA</span>
+      <span class="demo-title">Ollama Live Tests</span>
+      <span class="demo-count">5 tests</span>
+      <span class="demo-desc">Real calls to local Ollama (gemma4:e2b) &mdash; streaming, completion, tool calls</span>
+    </div>
+    <div class="test-list">
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">Ollama &mdash; CompleteAsync ReturnsResponse</div></div><span class="test-duration">3.2s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">Ollama &mdash; StreamAsync YieldsTokens</div></div><span class="test-duration">3.0s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">Ollama &mdash; Pipeline SendMessage ReturnsStreamedContent</div></div><span class="test-duration">9.5s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">Ollama &mdash; StreamAsync WithTools YieldsToolCallChunk</div></div><span class="test-duration">22s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">Ollama &mdash; IsAvailableAsync ReturnsTrue</div></div><span class="test-duration">&lt; 1s</span></div>
+    </div>
+  </div>
+
+  <div class="demo-card">
+    <div class="demo-header">
+      <span class="demo-number">AZURE OPENAI</span>
+      <span class="demo-title">Azure OpenAI Live Tests</span>
+      <span class="demo-count">6 tests</span>
+      <span class="demo-desc">Real calls to Azure OpenAI (gpt-4o-mini) &mdash; streaming, completion, pipeline</span>
+    </div>
+    <div class="test-list">
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; CompleteAsync ReturnsResponse</div></div><span class="test-duration">7s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; StreamAsync YieldsTokens</div></div><span class="test-duration">4.2s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; Pipeline SendMessage ReturnsStreamedContent</div></div><span class="test-duration">5s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; IsAvailableAsync ReturnsTrueWhenConfigured</div></div><span class="test-duration">3s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; CreateChatClient ReturnsNonNull</div></div><span class="test-duration">&lt; 1s</span></div>
+      <div class="test-item"><span class="test-icon pass">&#x2713;</span><div><div class="test-name">AzureOpenAI &mdash; ProviderName IsAzureOpenAI</div></div><span class="test-duration">&lt; 1s</span></div>
+    </div>
+  </div>
+<!-- END_LIVE_TESTS -->
 
 
   <details class="info-panel">
