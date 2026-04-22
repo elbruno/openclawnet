@@ -1,188 +1,356 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<TestRun id="d3a32d88-853b-4656-8ddb-d83427b708d0" name="brunocapuano@CPC-bruno-U7R9O 2026-04-16 07:31:18" runUser="NORTHAMERICA\brunocapuano" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
-  <Times creation="2026-04-16T07:31:18.8975529-04:00" queuing="2026-04-16T07:31:18.8975532-04:00" start="2026-04-16T07:31:16.8681125-04:00" finish="2026-04-16T07:31:39.8453114-04:00" />
-  <TestSettings name="default" id="8bdbbd0a-7fe9-4611-adfa-ca911cf71414">
-    <Deployment runDeploymentRoot="brunocapuano_CPC-bruno-U7R9O_2026-04-16_07_31_18" />
+<TestRun id="04a14033-bed0-4360-89de-cbae68592d82" name="brunocapuano@CPC-bruno-U7R9O 2026-04-21 21:15:49" runUser="NORTHAMERICA\brunocapuano" xmlns="http://microsoft.com/schemas/VisualStudio/TeamTest/2010">
+  <Times creation="2026-04-21T21:15:49.7894694-04:00" queuing="2026-04-21T21:15:49.7894698-04:00" start="2026-04-21T21:15:47.3923352-04:00" finish="2026-04-21T21:16:16.1692960-04:00" />
+  <TestSettings name="default" id="5a5778fd-7605-4f33-af9a-9f9cb71164e5">
+    <Deployment runDeploymentRoot="brunocapuano_CPC-bruno-U7R9O_2026-04-21_21_15_49" />
   </TestSettings>
   <Results>
-    <UnitTestResult executionId="7aea52ed-b3bc-4ad0-9c50-118611e9c02c" testId="dfb03537-a988-21c2-a05b-7a5c187eb994" testName="OpenClawNet.IntegrationTests.SessionsApiTests.UpdateTitle_ChangesSessionTitle" computerName="CPC-bruno-U7R9O" duration="00:00:00.0536608" startTime="2026-04-16T07:31:19.3609265-04:00" endTime="2026-04-16T07:31:19.4148799-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7aea52ed-b3bc-4ad0-9c50-118611e9c02c" />
-    <UnitTestResult executionId="11cda12c-e996-4832-97f9-40cdba913cae" testId="bb7e8ff4-0682-004b-face-c0980e86323a" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolCompleteEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0074421" startTime="2026-04-16T07:31:27.5690778-04:00" endTime="2026-04-16T07:31:31.6490164-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="11cda12c-e996-4832-97f9-40cdba913cae" />
-    <UnitTestResult executionId="a8fc2d88-7478-4446-9af9-ebe1d59da3d4" testId="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_AutoCreatesSession_WhenSessionIdUnknown" computerName="CPC-bruno-U7R9O" duration="00:00:00.0141340" startTime="2026-04-16T07:31:19.5437195-04:00" endTime="2026-04-16T07:31:19.5581903-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a8fc2d88-7478-4446-9af9-ebe1d59da3d4" />
-    <UnitTestResult executionId="298661e9-4d2c-4bfa-91e5-6da983194e42" testId="23047fa9-6b49-36e2-4379-cf1c54c376ea" testName="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_HubMethod_HasExactlyThreeParameters" computerName="CPC-bruno-U7R9O" duration="00:00:00.0023727" startTime="2026-04-16T07:31:17.6335891-04:00" endTime="2026-04-16T07:31:17.6336607-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="298661e9-4d2c-4bfa-91e5-6da983194e42" />
-    <UnitTestResult executionId="55fd579b-c6e8-4fae-89a7-2cb52ff4af18" testId="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5" testName="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_MakesSessionUnreachable" computerName="CPC-bruno-U7R9O" duration="00:00:00.0048705" startTime="2026-04-16T07:31:19.4273561-04:00" endTime="2026-04-16T07:31:19.4325726-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="55fd579b-c6e8-4fae-89a7-2cb52ff4af18" />
-    <UnitTestResult executionId="a747d418-b2aa-4904-a7f0-91c54c087297" testId="4d52bdf1-d813-e63c-edbc-6c72ed297efb" testName="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_IncludesCreatedSessions" computerName="CPC-bruno-U7R9O" duration="00:00:00.0255816" startTime="2026-04-16T07:31:19.3348009-04:00" endTime="2026-04-16T07:31:19.3606926-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a747d418-b2aa-4904-a7f0-91c54c087297" />
-    <UnitTestResult executionId="78b5aaab-b1a4-4be9-9a1f-0fae357de047" testId="13bf637f-c8b3-df12-9bce-e3645dc0bf7b" testName="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_ReturnsSession_WhenExists" computerName="CPC-bruno-U7R9O" duration="00:00:00.0041392" startTime="2026-04-16T07:31:19.4356154-04:00" endTime="2026-04-16T07:31:19.4400456-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="78b5aaab-b1a4-4be9-9a1f-0fae357de047" />
-    <UnitTestResult executionId="96e75534-ed0d-464a-834a-dbe5a32b95bc" testId="53ae3654-5c1c-1393-b1aa-ae155e830e86" testName="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_ReturnsCreated" computerName="CPC-bruno-U7R9O" duration="00:00:00.0041253" startTime="2026-04-16T07:31:19.4190140-04:00" endTime="2026-04-16T07:31:19.4234015-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="96e75534-ed0d-464a-834a-dbe5a32b95bc" />
-    <UnitTestResult executionId="803bd763-ce54-462f-8a4c-a47fe99b85e9" testId="e2561f93-3d89-e23a-d954-d5998302ae75" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_ReturnsContentEvents_FromFakeModel" computerName="CPC-bruno-U7R9O" duration="00:00:00.0094048" startTime="2026-04-16T07:31:23.5013396-04:00" endTime="2026-04-16T07:31:27.5805585-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="803bd763-ce54-462f-8a4c-a47fe99b85e9" />
-    <UnitTestResult executionId="f7692167-cbf8-4d03-8d28-209fed709bef" testId="e69ec014-416b-5331-c2e7-6ebf2d0c9828" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsContentFromFakeModel" computerName="CPC-bruno-U7R9O" duration="00:00:00.0107775" startTime="2026-04-16T07:31:19.5669784-04:00" endTime="2026-04-16T07:31:19.5780576-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="f7692167-cbf8-4d03-8d28-209fed709bef" />
-    <UnitTestResult executionId="7db869eb-785a-4770-93fd-6e6d2539ab4f" testId="ea5a2034-0cd5-9da8-f731-7cba2661bbd6" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ResponseIsNotEmpty" computerName="CPC-bruno-U7R9O" duration="00:00:00.0063427" startTime="2026-04-16T07:31:31.6496120-04:00" endTime="2026-04-16T07:31:35.6839679-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="7db869eb-785a-4770-93fd-6e6d2539ab4f" />
-    <UnitTestResult executionId="234db42a-f443-4d24-b363-ad67c150e53b" testId="115c518c-616d-acfc-4a1e-7760d5a6f870" testName="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsExpectedFields" computerName="CPC-bruno-U7R9O" duration="00:00:01.6515030" startTime="2026-04-16T07:31:17.5884912-04:00" endTime="2026-04-16T07:31:19.2505143-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="234db42a-f443-4d24-b363-ad67c150e53b" />
-    <UnitTestResult executionId="9e57e5d1-e343-4c57-920b-9fc34652ec9b" testId="76d32dc7-f225-8804-66bc-b29000d89f3e" testName="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_ReturnsOk_WhenEmpty" computerName="CPC-bruno-U7R9O" duration="00:00:00.0033816" startTime="2026-04-16T07:31:19.4150716-04:00" endTime="2026-04-16T07:31:19.4188308-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9e57e5d1-e343-4c57-920b-9fc34652ec9b" />
-    <UnitTestResult executionId="5610ca42-e11a-4623-b6a2-031a7d27ab03" testId="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsOk_WithContent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0081026" startTime="2026-04-16T07:31:19.5583736-04:00" endTime="2026-04-16T07:31:19.5667799-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5610ca42-e11a-4623-b6a2-031a7d27ab03" />
-    <UnitTestResult executionId="553c3f66-28ba-495b-a5a0-d951b06adcc3" testId="fb0a61c7-91bc-ae95-754a-7aeade696375" testName="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsOk" computerName="CPC-bruno-U7R9O" duration="00:00:00.0024838" startTime="2026-04-16T07:31:19.2729818-04:00" endTime="2026-04-16T07:31:19.2757745-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="553c3f66-28ba-495b-a5a0-d951b06adcc3" />
-    <UnitTestResult executionId="59abf054-6511-46ea-a535-f7df9b7e8a51" testId="82a0973d-0217-a1ef-f8ca-ede03842c59c" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_StoresMessagesInHistory" computerName="CPC-bruno-U7R9O" duration="00:00:01.9522661" startTime="2026-04-16T07:31:17.5884249-04:00" endTime="2026-04-16T07:31:19.5435346-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="59abf054-6511-46ea-a535-f7df9b7e8a51" />
-    <UnitTestResult executionId="12df992f-2c90-4e62-8acc-f8c92fed6692" testId="d28b1fd7-b813-e551-328a-b8777783a8c1" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_CompleteEvent_IsAlwaysLastEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0482428" startTime="2026-04-16T07:31:17.5884463-04:00" endTime="2026-04-16T07:31:23.5000757-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="12df992f-2c90-4e62-8acc-f8c92fed6692" />
-    <UnitTestResult executionId="0b29662a-43a3-4e9d-bd29-362b302f7f2f" testId="c34180cc-745b-a0b8-059d-a7922eea5dba" testName="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_ThirdParameter_IsNullableString" computerName="CPC-bruno-U7R9O" duration="00:00:00.0219380" startTime="2026-04-16T07:31:17.5884701-04:00" endTime="2026-04-16T07:31:17.6199843-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0b29662a-43a3-4e9d-bd29-362b302f7f2f" />
-    <UnitTestResult executionId="89be855f-39f3-441f-9732-dbbd5993e34e" testId="6085dd71-c6f9-f612-7627-0bd18ebed5d6" testName="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsHealthyStatus" computerName="CPC-bruno-U7R9O" duration="00:00:00.0121003" startTime="2026-04-16T07:31:19.2530829-04:00" endTime="2026-04-16T07:31:19.2664602-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89be855f-39f3-441f-9732-dbbd5993e34e" />
-    <UnitTestResult executionId="09a67217-739c-48ac-8dc8-a9499e14096f" testId="6bfbc607-530d-ec8a-edb2-cd30d30f89cf" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolStartEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0063416" startTime="2026-04-16T07:31:35.6845521-04:00" endTime="2026-04-16T07:31:39.7535808-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="09a67217-739c-48ac-8dc8-a9499e14096f" />
-    <UnitTestResult executionId="806359bc-abdf-40b8-bca9-d0a1ae5e88a2" testId="bf8189d3-9137-364a-b649-9ef91fe4b399" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EndsWithCompleteOrError" computerName="CPC-bruno-U7R9O" duration="00:00:00.0113360" startTime="2026-04-16T07:31:23.5013024-04:00" endTime="2026-04-16T07:31:27.5683656-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="806359bc-abdf-40b8-bca9-d0a1ae5e88a2" />
-    <UnitTestResult executionId="2431e0b0-44bd-40fd-9ea2-94a7281706b1" testId="70855f99-ae08-dc59-002e-d5ee7098d2a8" testName="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_ReturnsNoContent" computerName="CPC-bruno-U7R9O" duration="00:00:01.7433232" startTime="2026-04-16T07:31:17.5883800-04:00" endTime="2026-04-16T07:31:19.3345904-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2431e0b0-44bd-40fd-9ea2-94a7281706b1" />
-    <UnitTestResult executionId="39664851-3d1c-4d8d-a0a1-a36f43742d02" testId="1a4b6387-4854-8a87-7c42-707ccb85963a" testName="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" computerName="CPC-bruno-U7R9O" duration="00:00:00.0032906" startTime="2026-04-16T07:31:19.4255188-04:00" endTime="2026-04-16T07:31:19.4271909-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="39664851-3d1c-4d8d-a0a1-a36f43742d02" />
-    <UnitTestResult executionId="16ab4540-3322-4c3c-9fa3-1831ee8a59d9" testId="24cccb21-b956-ea58-9f0a-8ec5670b914d" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ToolStartBeforeToolComplete" computerName="CPC-bruno-U7R9O" duration="00:00:00.0505353" startTime="2026-04-16T07:31:17.5866324-04:00" endTime="2026-04-16T07:31:23.4999813-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="16ab4540-3322-4c3c-9fa3-1831ee8a59d9" />
-    <UnitTestResult executionId="8d6622f1-effe-48f5-b311-5a9ab6f49fb6" testId="d56e279b-a99e-4723-a40d-5bea8b15591f" testName="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_Returns404_WhenNotFound" computerName="CPC-bruno-U7R9O" duration="00:00:00.0023915" startTime="2026-04-16T07:31:19.4327349-04:00" endTime="2026-04-16T07:31:19.4354649-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8d6622f1-effe-48f5-b311-5a9ab6f49fb6" />
-    <UnitTestResult executionId="1a80b845-0886-4f1c-b99d-d749e6d7a51b" testId="f3e0935e-2cff-b7cb-b224-de09d4d1811e" testName="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsOk" computerName="CPC-bruno-U7R9O" duration="00:00:00.0057486" startTime="2026-04-16T07:31:19.2666777-04:00" endTime="2026-04-16T07:31:19.2728068-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1a80b845-0886-4f1c-b99d-d749e6d7a51b" />
-    <UnitTestResult executionId="638e28fd-36a6-47d7-90be-ba1c95ddbf70" testId="94df0669-234e-42d9-ef32-78ef1cfea9d4" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" computerName="CPC-bruno-U7R9O" duration="00:00:00.0067797" startTime="2026-04-16T07:31:27.5808388-04:00" endTime="2026-04-16T07:31:31.6484583-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="638e28fd-36a6-47d7-90be-ba1c95ddbf70" />
+    <UnitTestResult executionId="da10f304-3eac-490d-99d8-0126450144a8" testId="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsOk_WithContent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0123325" startTime="2026-04-21T21:15:52.0848018-04:00" endTime="2026-04-21T21:15:52.0974442-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="da10f304-3eac-490d-99d8-0126450144a8" />
+    <UnitTestResult executionId="5d972647-ca69-4988-9421-69379f453010" testId="9beffc52-6f2c-3059-0703-cf951d46e627" testName="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_EmptyRequestId_Returns400" computerName="CPC-bruno-U7R9O" duration="00:00:00.0074939" startTime="2026-04-21T21:15:51.4222874-04:00" endTime="2026-04-21T21:15:51.4387714-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="5d972647-ca69-4988-9421-69379f453010" />
+    <UnitTestResult executionId="e3b943f3-7dab-4b68-8921-465ce0deddcd" testId="2622c9ab-d881-f20d-a04f-a56fcced5822" testName="OpenClawNet.IntegrationTests.McpServerEndpointsTests.FullCrudFlow_CreateListUpdateDelete" computerName="CPC-bruno-U7R9O" duration="00:00:00.0881331" startTime="2026-04-21T21:15:51.6027679-04:00" endTime="2026-04-21T21:15:51.6912035-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e3b943f3-7dab-4b68-8921-465ce0deddcd" />
+    <UnitTestResult executionId="e500cdf6-bbdd-4861-8027-ff61ea7a8229" testId="b1676cc4-640b-17d5-0e66-ebe9216c1ac6" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;text-to-speech-snippet&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:03.1981957" startTime="2026-04-21T21:15:48.2588021-04:00" endTime="2026-04-21T21:15:51.4389433-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e500cdf6-bbdd-4861-8027-ff61ea7a8229" />
+    <UnitTestResult executionId="6c705c6d-84f5-465d-8591-70570d1795b3" testId="d95b8f33-a776-4480-1204-ae838114599c" testName="OpenClawNet.IntegrationTests.McpServerEndpointsTests.RegistrySearch_WithStubbedClient_ReturnsNormalizedResults" computerName="CPC-bruno-U7R9O" duration="00:00:04.3773590" startTime="2026-04-21T21:15:51.6914575-04:00" endTime="2026-04-21T21:15:56.0692454-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c705c6d-84f5-465d-8591-70570d1795b3" />
+    <UnitTestResult executionId="6cb5d7bf-b4f6-4662-a92a-a4142243bf14" testId="4d52bdf1-d813-e63c-edbc-6c72ed297efb" testName="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_IncludesCreatedSessions" computerName="CPC-bruno-U7R9O" duration="00:00:00.0454856" startTime="2026-04-21T21:15:51.4753771-04:00" endTime="2026-04-21T21:15:51.5195939-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6cb5d7bf-b4f6-4662-a92a-a4142243bf14" />
+    <UnitTestResult executionId="41d5726e-2902-413f-8765-4398f7be3108" testId="2dbf106c-414f-0f6f-d49a-66214fcefd2d" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;research-and-archive&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0041367" startTime="2026-04-21T21:15:51.4875384-04:00" endTime="2026-04-21T21:15:51.4920071-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="41d5726e-2902-413f-8765-4398f7be3108" />
+    <UnitTestResult executionId="409b5704-6a55-4809-a803-b96f61e7794d" testId="ea5a2034-0cd5-9da8-f731-7cba2661bbd6" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ResponseIsNotEmpty" computerName="CPC-bruno-U7R9O" duration="00:00:00.0059308" startTime="2026-04-21T21:16:03.8855636-04:00" endTime="2026-04-21T21:16:07.9630027-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="409b5704-6a55-4809-a803-b96f61e7794d" />
+    <UnitTestResult executionId="2cf40fa3-a647-4930-9af3-a37e12ec1436" testId="70855f99-ae08-dc59-002e-d5ee7098d2a8" testName="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_ReturnsNoContent" computerName="CPC-bruno-U7R9O" duration="00:00:03.2449747" startTime="2026-04-21T21:15:48.2544948-04:00" endTime="2026-04-21T21:15:51.4734121-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="2cf40fa3-a647-4930-9af3-a37e12ec1436" />
+    <UnitTestResult executionId="c072ef0e-eefc-4470-aec6-5537fdc7fafb" testId="bb7e8ff4-0682-004b-face-c0980e86323a" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolCompleteEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0279325" startTime="2026-04-21T21:15:59.7929801-04:00" endTime="2026-04-21T21:16:03.8849458-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c072ef0e-eefc-4470-aec6-5537fdc7fafb" />
+    <UnitTestResult executionId="ff2a469c-38b3-4f8a-aeb2-dc5b08411d9a" testId="23047fa9-6b49-36e2-4379-cf1c54c376ea" testName="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_HubMethod_HasExactlyThreeParameters" computerName="CPC-bruno-U7R9O" duration="00:00:00.0024941" startTime="2026-04-21T21:15:48.2878267-04:00" endTime="2026-04-21T21:15:48.2879377-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ff2a469c-38b3-4f8a-aeb2-dc5b08411d9a" />
+    <UnitTestResult executionId="12f5aecd-87b4-4621-a4da-18df0c1c59fb" testId="1a4b6387-4854-8a87-7c42-707ccb85963a" testName="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" computerName="CPC-bruno-U7R9O" duration="00:00:00.0042072" startTime="2026-04-21T21:15:51.6148125-04:00" endTime="2026-04-21T21:15:51.6178604-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="12f5aecd-87b4-4621-a4da-18df0c1c59fb" />
+    <UnitTestResult executionId="77f33c03-1c0f-48a7-82b1-6d4e933f2895" testId="868a53dd-c355-2d8c-73b3-c783b01dd971" testName="OpenClawNet.IntegrationTests.InProcessMcpHostE2ETests.BundledWebServer_StartsAndExposesFetchToolThroughProvider" computerName="CPC-bruno-U7R9O" duration="00:00:02.3893753" startTime="2026-04-21T21:15:48.2588506-04:00" endTime="2026-04-21T21:15:50.6299729-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="77f33c03-1c0f-48a7-82b1-6d4e933f2895" />
+    <UnitTestResult executionId="99fdff0c-86c9-4eab-9b3f-8227c9f6e531" testId="e396d07b-96d8-34b9-f712-752b1e4ba127" testName="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests.BulkDelete_NoBody_Returns400" computerName="CPC-bruno-U7R9O" duration="00:00:00.0115046" startTime="2026-04-21T21:15:51.5697877-04:00" endTime="2026-04-21T21:15:51.5814210-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="99fdff0c-86c9-4eab-9b3f-8227c9f6e531" />
+    <UnitTestResult executionId="48f5d05f-6fe1-4fbd-8fcc-22d05fc11546" testId="6085dd71-c6f9-f612-7627-0bd18ebed5d6" testName="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsHealthyStatus" computerName="CPC-bruno-U7R9O" duration="00:00:00.0199706" startTime="2026-04-21T21:15:51.3781351-04:00" endTime="2026-04-21T21:15:51.3990227-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="48f5d05f-6fe1-4fbd-8fcc-22d05fc11546" />
+    <UnitTestResult executionId="8a9ee085-46b5-4599-807e-ed6fb0685c77" testId="94df0669-234e-42d9-ef32-78ef1cfea9d4" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" computerName="CPC-bruno-U7R9O" duration="00:00:00.0281119" startTime="2026-04-21T21:15:59.7912512-04:00" endTime="2026-04-21T21:16:03.8847739-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8a9ee085-46b5-4599-807e-ed6fb0685c77" />
+    <UnitTestResult executionId="c4ee0225-433e-486d-8193-81b7ce955fe7" testId="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_AutoCreatesSession_WhenSessionIdUnknown" computerName="CPC-bruno-U7R9O" duration="00:00:00.0192554" startTime="2026-04-21T21:15:52.0648006-04:00" endTime="2026-04-21T21:15:52.0845244-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c4ee0225-433e-486d-8193-81b7ce955fe7" />
+    <UnitTestResult executionId="02f3ac65-0cc0-491e-81a9-c647648385e9" testId="d28b1fd7-b813-e551-328a-b8777783a8c1" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_CompleteEvent_IsAlwaysLastEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0497324" startTime="2026-04-21T21:15:48.2586662-04:00" endTime="2026-04-21T21:15:55.7056224-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="02f3ac65-0cc0-491e-81a9-c647648385e9" />
+    <UnitTestResult executionId="a4ce5f9e-851c-4b07-865f-7c0fc5a542d5" testId="7aaef6a2-3888-daad-657a-360565663d1f" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.ListTemplates_ReturnsAllFiveBuiltInTemplates" computerName="CPC-bruno-U7R9O" duration="00:00:00.0737679" startTime="2026-04-21T21:15:51.5085727-04:00" endTime="2026-04-21T21:15:51.5826462-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a4ce5f9e-851c-4b07-865f-7c0fc5a542d5" />
+    <UnitTestResult executionId="dfad3536-f2b2-411d-b201-110a0a815dcc" testId="63f0c776-193d-3ae7-6867-565d0e7cb16e" testName="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_Denied_ResolvesPendingRequestAsDenied" computerName="CPC-bruno-U7R9O" duration="00:00:00.0108810" startTime="2026-04-21T21:15:51.3930160-04:00" endTime="2026-04-21T21:15:51.4041941-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="dfad3536-f2b2-411d-b201-110a0a815dcc" />
+    <UnitTestResult executionId="866fc3a7-f83f-4857-96a7-49b077fbd349" testId="2130c063-6db2-c14c-adce-ec46b2c9dbb7" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_UnknownId_Returns404" computerName="CPC-bruno-U7R9O" duration="00:00:00.0097763" startTime="2026-04-21T21:15:51.4758541-04:00" endTime="2026-04-21T21:15:51.4871641-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="866fc3a7-f83f-4857-96a7-49b077fbd349" />
+    <UnitTestResult executionId="1044ba19-d0ac-4436-a558-8c2b4869364d" testId="82a0973d-0217-a1ef-f8ca-ede03842c59c" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_StoresMessagesInHistory" computerName="CPC-bruno-U7R9O" duration="00:00:03.8359803" startTime="2026-04-21T21:15:48.2573410-04:00" endTime="2026-04-21T21:15:52.0645252-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1044ba19-d0ac-4436-a558-8c2b4869364d" />
+    <UnitTestResult executionId="4a073b48-6d58-41b2-b5eb-7d0432914d5a" testId="1509f632-70f2-66c2-e3bc-79efc123ebc6" testName="OpenClawNet.IntegrationTests.Demos.WatchedFolderSummarizerLiveE2ETests.WatchedFolderTemplate_AcceptedByGateway_AndJobIsExecutable" computerName="CPC-bruno-U7R9O" duration="00:00:00.0010000" startTime="2026-04-21T21:15:48.2588688-04:00" endTime="2026-04-21T21:15:51.4300236-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="NotExecuted" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="4a073b48-6d58-41b2-b5eb-7d0432914d5a">
+      <Output>
+        <ErrorInfo>
+          <Message>Live demo execution skipped. Set OPENCLAWNET_LIVE_DEMOS=1 and run aspire+Ollama, then run with --filter "Category=Live" to exercise the full demo against a real model.</Message>
+        </ErrorInfo>
+      </Output>
+    </UnitTestResult>
+    <UnitTestResult executionId="6c6168b7-6b9b-4168-a9bf-98f4906b3db7" testId="baaf534a-2c3f-5779-585b-23a165f1024f" testName="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_UnknownRequestId_Returns404" computerName="CPC-bruno-U7R9O" duration="00:00:00.0168292" startTime="2026-04-21T21:15:51.4046295-04:00" endTime="2026-04-21T21:15:51.4219081-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6c6168b7-6b9b-4168-a9bf-98f4906b3db7" />
+    <UnitTestResult executionId="90f27589-8eb7-478d-bce9-90eeee82b235" testId="fb0a61c7-91bc-ae95-754a-7aeade696375" testName="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsOk" computerName="CPC-bruno-U7R9O" duration="00:00:00.0047615" startTime="2026-04-21T21:15:51.4080861-04:00" endTime="2026-04-21T21:15:51.4133619-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="90f27589-8eb7-478d-bce9-90eeee82b235" />
+    <UnitTestResult executionId="e81c1f84-26cb-486e-8b9b-1dd1cdb5b4e1" testId="4813b244-bae2-c6b1-4b88-d57c788dcf08" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;image-batch-resize&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0020567" startTime="2026-04-21T21:15:51.4987190-04:00" endTime="2026-04-21T21:15:51.5013775-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e81c1f84-26cb-486e-8b9b-1dd1cdb5b4e1" />
+    <UnitTestResult executionId="d1888a77-7795-41cf-94d0-ce1c38b5ed4a" testId="a85a5f2c-cc66-c4e0-9ea6-b5bd49d3c977" testName="OpenClawNet.IntegrationTests.McpServerEndpointsTests.GetServers_ReturnsBundledBuiltins" computerName="CPC-bruno-U7R9O" duration="00:00:00.0209219" startTime="2026-04-21T21:15:51.5812966-04:00" endTime="2026-04-21T21:15:51.6024003-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d1888a77-7795-41cf-94d0-ce1c38b5ed4a" />
+    <UnitTestResult executionId="00ede13f-3d4d-48e0-8130-5342a350c1a7" testId="abcb4e95-4b38-d115-a0ed-26a1c81eaf64" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;watched-folder-summarizer&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0040154" startTime="2026-04-21T21:15:51.4442881-04:00" endTime="2026-04-21T21:15:51.4488441-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="00ede13f-3d4d-48e0-8130-5342a350c1a7" />
+    <UnitTestResult executionId="bbfe3db5-8a5b-4c89-81eb-dd920ff054a8" testId="eb716411-1d03-02dc-b664-321d544ccd7a" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetEvents_UnknownRun_Returns404" computerName="CPC-bruno-U7R9O" duration="00:00:00.0206721" startTime="2026-04-21T21:15:51.4533932-04:00" endTime="2026-04-21T21:15:51.4755129-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="bbfe3db5-8a5b-4c89-81eb-dd920ff054a8" />
+    <UnitTestResult executionId="34f801be-ca92-43d2-a398-aa75b1376797" testId="15274f1f-5c34-1f1a-80d9-a0feb3fd4c65" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;github-issue-triage&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0026365" startTime="2026-04-21T21:15:51.4922837-04:00" endTime="2026-04-21T21:15:51.4953170-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="34f801be-ca92-43d2-a398-aa75b1376797" />
+    <UnitTestResult executionId="9cbb9d10-89b9-4b7a-815b-e077abe45139" testId="e69ec014-416b-5331-c2e7-6ebf2d0c9828" testName="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsContentFromFakeModel" computerName="CPC-bruno-U7R9O" duration="00:00:00.0138868" startTime="2026-04-21T21:15:52.0988133-04:00" endTime="2026-04-21T21:15:52.1119364-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9cbb9d10-89b9-4b7a-815b-e077abe45139" />
+    <UnitTestResult executionId="69fea4fa-e126-4a25-82c3-0a0fae046bd5" testId="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5" testName="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_MakesSessionUnreachable" computerName="CPC-bruno-U7R9O" duration="00:00:00.0058336" startTime="2026-04-21T21:15:51.6180498-04:00" endTime="2026-04-21T21:15:51.6242683-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="69fea4fa-e126-4a25-82c3-0a0fae046bd5" />
+    <UnitTestResult executionId="89ed28c9-5787-4ebb-83c4-5e9859462e8a" testId="24cccb21-b956-ea58-9f0a-8ec5670b914d" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ToolStartBeforeToolComplete" computerName="CPC-bruno-U7R9O" duration="00:00:00.0545332" startTime="2026-04-21T21:15:48.2587285-04:00" endTime="2026-04-21T21:15:55.7037251-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="89ed28c9-5787-4ebb-83c4-5e9859462e8a" />
+    <UnitTestResult executionId="457b22bf-ba62-4d10-be57-708cc0474690" testId="13bf637f-c8b3-df12-9bce-e3645dc0bf7b" testName="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_ReturnsSession_WhenExists" computerName="CPC-bruno-U7R9O" duration="00:00:00.0058021" startTime="2026-04-21T21:15:51.6633184-04:00" endTime="2026-04-21T21:15:51.6693323-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="457b22bf-ba62-4d10-be57-708cc0474690" />
+    <UnitTestResult executionId="45b0e4b1-e3a5-4330-a121-f13383bb8119" testId="115c518c-616d-acfc-4a1e-7760d5a6f870" testName="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsExpectedFields" computerName="CPC-bruno-U7R9O" duration="00:00:03.1442339" startTime="2026-04-21T21:15:48.2587758-04:00" endTime="2026-04-21T21:15:51.3776442-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="45b0e4b1-e3a5-4330-a121-f13383bb8119" />
+    <UnitTestResult executionId="c05c764f-818d-4318-90be-0b47cc6dfd87" testId="6bfbc607-530d-ec8a-edb2-cd30d30f89cf" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolStartEvent" computerName="CPC-bruno-U7R9O" duration="00:00:00.0064878" startTime="2026-04-21T21:16:07.9636337-04:00" endTime="2026-04-21T21:16:12.0543857-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c05c764f-818d-4318-90be-0b47cc6dfd87" />
+    <UnitTestResult executionId="8aeedb55-5d3e-4fe2-be0e-b90badf49424" testId="bf8189d3-9137-364a-b649-9ef91fe4b399" testName="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EndsWithCompleteOrError" computerName="CPC-bruno-U7R9O" duration="00:00:00.0094987" startTime="2026-04-21T21:15:55.7058951-04:00" endTime="2026-04-21T21:15:59.7917256-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="8aeedb55-5d3e-4fe2-be0e-b90badf49424" />
+    <UnitTestResult executionId="0d0befe5-e96e-4bcf-9b83-071c22115e1d" testId="0413bd58-0195-0bd2-266f-62caaea483f0" testName="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_Approved_ResolvesPendingRequest" computerName="CPC-bruno-U7R9O" duration="00:00:03.1586685" startTime="2026-04-21T21:15:48.2573703-04:00" endTime="2026-04-21T21:15:51.3925678-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="0d0befe5-e96e-4bcf-9b83-071c22115e1d" />
+    <UnitTestResult executionId="9629bcce-d589-4d0f-a410-b9132329e9b5" testId="d56e279b-a99e-4723-a40d-5bea8b15591f" testName="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_Returns404_WhenNotFound" computerName="CPC-bruno-U7R9O" duration="00:00:00.0373910" startTime="2026-04-21T21:15:51.6244733-04:00" endTime="2026-04-21T21:15:51.6628610-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="9629bcce-d589-4d0f-a410-b9132329e9b5" />
+    <UnitTestResult executionId="ffc97fe9-525e-4cae-b2c2-2b00d4eb8847" testId="3d05dafc-69c7-645e-934d-0686081047a2" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;text-to-speech-snippet&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0062712" startTime="2026-04-21T21:15:51.5016199-04:00" endTime="2026-04-21T21:15:51.5082992-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="ffc97fe9-525e-4cae-b2c2-2b00d4eb8847" />
+    <UnitTestResult executionId="e6a76b05-170f-433e-ba00-fb30d711e3ab" testId="a24be6f8-6c47-e9fe-4b55-9d651bca30a5" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;research-and-archive&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0035412" startTime="2026-04-21T21:15:51.4490274-04:00" endTime="2026-04-21T21:15:51.4530115-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e6a76b05-170f-433e-ba00-fb30d711e3ab" />
+    <UnitTestResult executionId="3805782e-80e5-4a28-9b30-53ee82401c1e" testId="c34180cc-745b-a0b8-059d-a7922eea5dba" testName="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_ThirdParameter_IsNullableString" computerName="CPC-bruno-U7R9O" duration="00:00:00.0311211" startTime="2026-04-21T21:15:48.2586989-04:00" endTime="2026-04-21T21:15:48.2691983-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="3805782e-80e5-4a28-9b30-53ee82401c1e" />
+    <UnitTestResult executionId="c675e2e7-9fe8-4a81-937f-da33f3f24e6b" testId="dfb03537-a988-21c2-a05b-7a5c187eb994" testName="OpenClawNet.IntegrationTests.SessionsApiTests.UpdateTitle_ChangesSessionTitle" computerName="CPC-bruno-U7R9O" duration="00:00:00.0848180" startTime="2026-04-21T21:15:51.5228929-04:00" endTime="2026-04-21T21:15:51.6049566-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="c675e2e7-9fe8-4a81-937f-da33f3f24e6b" />
+    <UnitTestResult executionId="83e1a21b-69a7-4d02-b283-cf900f6b9ec6" testId="72d9d230-e2fa-73b3-34b9-83ed6e9a7404" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;image-batch-resize&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0043637" startTime="2026-04-21T21:15:51.4395211-04:00" endTime="2026-04-21T21:15:51.4440448-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="83e1a21b-69a7-4d02-b283-cf900f6b9ec6" />
+    <UnitTestResult executionId="6907fbd4-b70f-46bc-be46-1a047d53716a" testId="e2561f93-3d89-e23a-d954-d5998302ae75" testName="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_ReturnsContentEvents_FromFakeModel" computerName="CPC-bruno-U7R9O" duration="00:00:00.0082893" startTime="2026-04-21T21:15:55.7059742-04:00" endTime="2026-04-21T21:15:59.7903232-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="6907fbd4-b70f-46bc-be46-1a047d53716a" />
+    <UnitTestResult executionId="a1e68deb-3427-40a6-98f4-57c8794b00ad" testId="9231f83a-c26e-4e6e-4868-a5e88a7dfe3b" testName="OpenClawNet.IntegrationTests.McpAvailableToolsEndpointTests.AvailableTools_ReturnsBundledServerGroups" computerName="CPC-bruno-U7R9O" duration="00:00:03.2107568" startTime="2026-04-21T21:15:48.2587523-04:00" endTime="2026-04-21T21:15:51.4444687-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="a1e68deb-3427-40a6-98f4-57c8794b00ad" />
+    <UnitTestResult executionId="53e602d4-192d-48b5-a618-c826b9314d37" testId="3ef4c0ae-ace1-db02-3099-f0b0b8cbecf4" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;watched-folder-summarizer&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0025110" startTime="2026-04-21T21:15:51.4956109-04:00" endTime="2026-04-21T21:15:51.4984319-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="53e602d4-192d-48b5-a618-c826b9314d37" />
+    <UnitTestResult executionId="1b99af88-1f6e-4c42-9aff-8f2f0b8dbf2a" testId="76d32dc7-f225-8804-66bc-b29000d89f3e" testName="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_ReturnsOk_WhenEmpty" computerName="CPC-bruno-U7R9O" duration="00:00:00.0036288" startTime="2026-04-21T21:15:51.6051980-04:00" endTime="2026-04-21T21:15:51.6091115-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1b99af88-1f6e-4c42-9aff-8f2f0b8dbf2a" />
+    <UnitTestResult executionId="422e95f1-4fe6-4810-add2-26da233ca6f6" testId="60874868-baf1-8cea-f6f9-f5de453285ef" testName="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;github-issue-triage&quot;)" computerName="CPC-bruno-U7R9O" duration="00:00:00.0062019" startTime="2026-04-21T21:15:51.4391966-04:00" endTime="2026-04-21T21:15:51.4393057-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="422e95f1-4fe6-4810-add2-26da233ca6f6" />
+    <UnitTestResult executionId="d9eb0f40-fc19-47aa-902d-c6dc589b387d" testId="f3e0935e-2cff-b7cb-b224-de09d4d1811e" testName="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsOk" computerName="CPC-bruno-U7R9O" duration="00:00:00.0078178" startTime="2026-04-21T21:15:51.3993794-04:00" endTime="2026-04-21T21:15:51.4077256-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="d9eb0f40-fc19-47aa-902d-c6dc589b387d" />
+    <UnitTestResult executionId="e9b904f8-c6dc-4c52-a544-8b6c264b5802" testId="3d44e01e-7cec-12a6-f72f-25e484db5747" testName="OpenClawNet.IntegrationTests.ToolApprovalCronJobTests.CronJob_WithRequiringProfile_FailsFast" computerName="CPC-bruno-U7R9O" duration="00:00:03.0990851" startTime="2026-04-21T21:15:48.2573982-04:00" endTime="2026-04-21T21:15:51.3319333-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="e9b904f8-c6dc-4c52-a544-8b6c264b5802" />
+    <UnitTestResult executionId="1c006151-0f25-4b99-be03-d2aecd1ffee6" testId="7d42a40d-4388-0be0-5c23-a0d5a76424fc" testName="OpenClawNet.IntegrationTests.McpServerEndpointsTests.GetSuggestions_ReturnsEntries" computerName="CPC-bruno-U7R9O" duration="00:00:03.3473822" startTime="2026-04-21T21:15:48.2588291-04:00" endTime="2026-04-21T21:15:51.5809021-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="1c006151-0f25-4b99-be03-d2aecd1ffee6" />
+    <UnitTestResult executionId="36b3a148-1f74-4fe2-95fa-d7e725286b57" testId="53ae3654-5c1c-1393-b1aa-ae155e830e86" testName="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_ReturnsCreated" computerName="CPC-bruno-U7R9O" duration="00:00:00.0035002" startTime="2026-04-21T21:15:51.6093068-04:00" endTime="2026-04-21T21:15:51.6131881-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="36b3a148-1f74-4fe2-95fa-d7e725286b57" />
+    <UnitTestResult executionId="27d755ea-ccfd-489a-8c28-2a7e2c6ba702" testId="3f1899e2-e77d-98c3-6ca0-df8704d17e05" testName="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests.BulkDelete_DeletesNonDefault_AndSkipsDefaultAndMissing" computerName="CPC-bruno-U7R9O" duration="00:00:03.3407990" startTime="2026-04-21T21:15:48.2572857-04:00" endTime="2026-04-21T21:15:51.5694003-04:00" testType="13cdc9d9-ddb5-4fa4-a97d-d965ccfc6d4b" outcome="Passed" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" relativeResultsDirectory="27d755ea-ccfd-489a-8c28-2a7e2c6ba702" />
   </Results>
   <TestDefinitions>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_ReturnsNoContent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="70855f99-ae08-dc59-002e-d5ee7098d2a8">
-      <Execution id="2431e0b0-44bd-40fd-9ea2-94a7281706b1" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="DeleteSession_ReturnsNoContent" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsContentFromFakeModel" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="e69ec014-416b-5331-c2e7-6ebf2d0c9828">
-      <Execution id="f7692167-cbf8-4d03-8d28-209fed709bef" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_ReturnsContentFromFakeModel" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolStartEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="6bfbc607-530d-ec8a-edb2-cd30d30f89cf">
-      <Execution id="09a67217-739c-48ac-8dc8-a9499e14096f" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EmitsToolStartEvent" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_MakesSessionUnreachable" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5">
-      <Execution id="55fd579b-c6e8-4fae-89a7-2cb52ff4af18" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="DeleteSession_MakesSessionUnreachable" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_ReturnsContentEvents_FromFakeModel" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="e2561f93-3d89-e23a-d954-d5998302ae75">
-      <Execution id="803bd763-ce54-462f-8a4c-a47fe99b85e9" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_ReturnsContentEvents_FromFakeModel" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.UpdateTitle_ChangesSessionTitle" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="dfb03537-a988-21c2-a05b-7a5c187eb994">
-      <Execution id="7aea52ed-b3bc-4ad0-9c50-118611e9c02c" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="UpdateTitle_ChangesSessionTitle" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsExpectedFields" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="115c518c-616d-acfc-4a1e-7760d5a6f870">
-      <Execution id="234db42a-f443-4d24-b363-ad67c150e53b" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Version_ReturnsExpectedFields" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolCompleteEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="bb7e8ff4-0682-004b-face-c0980e86323a">
-      <Execution id="11cda12c-e996-4832-97f9-40cdba913cae" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EmitsToolCompleteEvent" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_AutoCreatesSession_WhenSessionIdUnknown" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4">
-      <Execution id="a8fc2d88-7478-4446-9af9-ebe1d59da3d4" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_AutoCreatesSession_WhenSessionIdUnknown" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_StoresMessagesInHistory" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="82a0973d-0217-a1ef-f8ca-ede03842c59c">
-      <Execution id="59abf054-6511-46ea-a535-f7df9b7e8a51" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_StoresMessagesInHistory" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_ThirdParameter_IsNullableString" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="c34180cc-745b-a0b8-059d-a7922eea5dba">
-      <Execution id="0b29662a-43a3-4e9d-bd29-362b302f7f2f" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubContractTests" name="StreamChat_ThirdParameter_IsNullableString" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_CompleteEvent_IsAlwaysLastEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="d28b1fd7-b813-e551-328a-b8777783a8c1">
-      <Execution id="12df992f-2c90-4e62-8acc-f8c92fed6692" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_CompleteEvent_IsAlwaysLastEvent" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ResponseIsNotEmpty" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="ea5a2034-0cd5-9da8-f731-7cba2661bbd6">
-      <Execution id="7db869eb-785a-4770-93fd-6e6d2539ab4f" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_ResponseIsNotEmpty" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsOk" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="fb0a61c7-91bc-ae95-754a-7aeade696375">
-      <Execution id="553c3f66-28ba-495b-a5a0-d951b06adcc3" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Health_ReturnsOk" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ToolStartBeforeToolComplete" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="24cccb21-b956-ea58-9f0a-8ec5670b914d">
-      <Execution id="16ab4540-3322-4c3c-9fa3-1831ee8a59d9" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_ToolStartBeforeToolComplete" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_ReturnsCreated" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="53ae3654-5c1c-1393-b1aa-ae155e830e86">
-      <Execution id="96e75534-ed0d-464a-834a-dbe5a32b95bc" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="CreateSession_ReturnsCreated" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsOk" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="f3e0935e-2cff-b7cb-b224-de09d4d1811e">
-      <Execution id="1a80b845-0886-4f1c-b99d-d749e6d7a51b" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Version_ReturnsOk" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="94df0669-234e-42d9-ef32-78ef1cfea9d4">
-      <Execution id="638e28fd-36a6-47d7-90be-ba1c95ddbf70" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" />
-    </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsOk_WithContent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171">
-      <Execution id="5610ca42-e11a-4623-b6a2-031a7d27ab03" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_ReturnsOk_WithContent" />
-    </UnitTest>
     <UnitTest name="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_HubMethod_HasExactlyThreeParameters" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="23047fa9-6b49-36e2-4379-cf1c54c376ea">
-      <Execution id="298661e9-4d2c-4bfa-91e5-6da983194e42" />
+      <Execution id="ff2a469c-38b3-4f8a-aeb2-dc5b08411d9a" />
       <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubContractTests" name="StreamChat_HubMethod_HasExactlyThreeParameters" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EndsWithCompleteOrError" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="bf8189d3-9137-364a-b649-9ef91fe4b399">
-      <Execution id="806359bc-abdf-40b8-bca9-d0a1ae5e88a2" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EndsWithCompleteOrError" />
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsOk_WithContent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171">
+      <Execution id="da10f304-3eac-490d-99d8-0126450144a8" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_ReturnsOk_WithContent" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="1a4b6387-4854-8a87-7c42-707ccb85963a">
-      <Execution id="39664851-3d1c-4d8d-a0a1-a36f43742d02" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" />
+    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsExpectedFields" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="115c518c-616d-acfc-4a1e-7760d5a6f870">
+      <Execution id="45b0e4b1-e3a5-4330-a121-f13383bb8119" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Version_ReturnsExpectedFields" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_ReturnsOk_WhenEmpty" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="76d32dc7-f225-8804-66bc-b29000d89f3e">
-      <Execution id="9e57e5d1-e343-4c57-920b-9fc34652ec9b" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="ListSessions_ReturnsOk_WhenEmpty" />
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_AutoCreatesSession_WhenSessionIdUnknown" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4">
+      <Execution id="c4ee0225-433e-486d-8193-81b7ce955fe7" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_AutoCreatesSession_WhenSessionIdUnknown" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_ReturnsSession_WhenExists" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="13bf637f-c8b3-df12-9bce-e3645dc0bf7b">
-      <Execution id="78b5aaab-b1a4-4be9-9a1f-0fae357de047" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="GetSession_ReturnsSession_WhenExists" />
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetEvents_UnknownRun_Returns404" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="eb716411-1d03-02dc-b664-321d544ccd7a">
+      <Execution id="bbfe3db5-8a5b-4c89-81eb-dd920ff054a8" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetEvents_UnknownRun_Returns404" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsHealthyStatus" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="6085dd71-c6f9-f612-7627-0bd18ebed5d6">
-      <Execution id="89be855f-39f3-441f-9732-dbbd5993e34e" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Health_ReturnsHealthyStatus" />
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolCompleteEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="bb7e8ff4-0682-004b-face-c0980e86323a">
+      <Execution id="c072ef0e-eefc-4470-aec6-5537fdc7fafb" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EmitsToolCompleteEvent" />
     </UnitTest>
-    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_Returns404_WhenNotFound" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="d56e279b-a99e-4723-a40d-5bea8b15591f">
-      <Execution id="8d6622f1-effe-48f5-b311-5a9ab6f49fb6" />
-      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="GetSession_Returns404_WhenNotFound" />
+    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Version_ReturnsOk" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="f3e0935e-2cff-b7cb-b224-de09d4d1811e">
+      <Execution id="d9eb0f40-fc19-47aa-902d-c6dc589b387d" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Version_ReturnsOk" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;text-to-speech-snippet&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="3d05dafc-69c7-645e-934d-0686081047a2">
+      <Execution id="ffc97fe9-525e-4cae-b2c2-2b00d4eb8847" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_ById_ReturnsTemplate" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubContractTests.StreamChat_ThirdParameter_IsNullableString" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="c34180cc-745b-a0b8-059d-a7922eea5dba">
+      <Execution id="3805782e-80e5-4a28-9b30-53ee82401c1e" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubContractTests" name="StreamChat_ThirdParameter_IsNullableString" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;watched-folder-summarizer&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="3ef4c0ae-ace1-db02-3099-f0b0b8cbecf4">
+      <Execution id="53e602d4-192d-48b5-a618-c826b9314d37" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_ById_ReturnsTemplate" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;image-batch-resize&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="4813b244-bae2-c6b1-4b88-d57c788dcf08">
+      <Execution id="e81c1f84-26cb-486e-8b9b-1dd1cdb5b4e1" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_ById_ReturnsTemplate" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;research-and-archive&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="2dbf106c-414f-0f6f-d49a-66214fcefd2d">
+      <Execution id="41d5726e-2902-413f-8765-4398f7be3108" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_ById_ReturnsTemplate" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests.BulkDelete_DeletesNonDefault_AndSkipsDefaultAndMissing" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="3f1899e2-e77d-98c3-6ca0-df8704d17e05">
+      <Execution id="27d755ea-ccfd-489a-8c28-2a7e2c6ba702" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests" name="BulkDelete_DeletesNonDefault_AndSkipsDefaultAndMissing" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.McpServerEndpointsTests.FullCrudFlow_CreateListUpdateDelete" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="2622c9ab-d881-f20d-a04f-a56fcced5822">
+      <Execution id="e3b943f3-7dab-4b68-8921-465ce0deddcd" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.McpServerEndpointsTests" name="FullCrudFlow_CreateListUpdateDelete" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_ReturnsContentFromFakeModel" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="e69ec014-416b-5331-c2e7-6ebf2d0c9828">
+      <Execution id="9cbb9d10-89b9-4b7a-815b-e077abe45139" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_ReturnsContentFromFakeModel" />
     </UnitTest>
     <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_IncludesCreatedSessions" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="4d52bdf1-d813-e63c-edbc-6c72ed297efb">
-      <Execution id="a747d418-b2aa-4904-a7f0-91c54c087297" />
+      <Execution id="6cb5d7bf-b4f6-4662-a92a-a4142243bf14" />
       <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="ListSessions_IncludesCreatedSessions" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="94df0669-234e-42d9-ef32-78ef1cfea9d4">
+      <Execution id="8a9ee085-46b5-4599-807e-ed6fb0685c77" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_WithThreeArgs_DoesNotThrowArgumentCountError" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.WatchedFolderSummarizerLiveE2ETests.WatchedFolderTemplate_AcceptedByGateway_AndJobIsExecutable" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="1509f632-70f2-66c2-e3bc-79efc123ebc6">
+      <Execution id="4a073b48-6d58-41b2-b5eb-7d0432914d5a" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.WatchedFolderSummarizerLiveE2ETests" name="WatchedFolderTemplate_AcceptedByGateway_AndJobIsExecutable" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_UnknownRequestId_Returns404" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="baaf534a-2c3f-5779-585b-23a165f1024f">
+      <Execution id="6c6168b7-6b9b-4168-a9bf-98f4906b3db7" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests" name="PostApproval_UnknownRequestId_Returns404" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_ReturnsContentEvents_FromFakeModel" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="e2561f93-3d89-e23a-d954-d5998302ae75">
+      <Execution id="6907fbd4-b70f-46bc-be46-1a047d53716a" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_ReturnsContentEvents_FromFakeModel" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;image-batch-resize&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="72d9d230-e2fa-73b3-34b9-83ed6e9a7404">
+      <Execution id="83e1a21b-69a7-4d02-b283-cf900f6b9ec6" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="PostingTemplateDefaultJob_CreatesScheduledJob" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_UnknownId_Returns404" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="2130c063-6db2-c14c-adce-ec46b2c9dbb7">
+      <Execution id="866fc3a7-f83f-4857-96a7-49b077fbd349" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_UnknownId_Returns404" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ResponseIsNotEmpty" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="ea5a2034-0cd5-9da8-f731-7cba2661bbd6">
+      <Execution id="409b5704-6a55-4809-a803-b96f61e7794d" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_ResponseIsNotEmpty" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="1a4b6387-4854-8a87-7c42-707ccb85963a">
+      <Execution id="12f5aecd-87b4-4621-a4da-18df0c1c59fb" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="CreateSession_NoTitle_ReturnsCreated_WithDefaultTitle" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_ReturnsSession_WhenExists" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="13bf637f-c8b3-df12-9bce-e3645dc0bf7b">
+      <Execution id="457b22bf-ba62-4d10-be57-708cc0474690" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="GetSession_ReturnsSession_WhenExists" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_EmptyRequestId_Returns400" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="9beffc52-6f2c-3059-0703-cf951d46e627">
+      <Execution id="5d972647-ca69-4988-9421-69379f453010" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests" name="PostApproval_EmptyRequestId_Returns400" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.InProcessMcpHostE2ETests.BundledWebServer_StartsAndExposesFetchToolThroughProvider" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="868a53dd-c355-2d8c-73b3-c783b01dd971">
+      <Execution id="77f33c03-1c0f-48a7-82b1-6d4e933f2895" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.InProcessMcpHostE2ETests" name="BundledWebServer_StartsAndExposesFetchToolThroughProvider" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;github-issue-triage&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="60874868-baf1-8cea-f6f9-f5de453285ef">
+      <Execution id="422e95f1-4fe6-4810-add2-26da233ca6f6" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="PostingTemplateDefaultJob_CreatesScheduledJob" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.McpAvailableToolsEndpointTests.AvailableTools_ReturnsBundledServerGroups" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="9231f83a-c26e-4e6e-4868-a5e88a7dfe3b">
+      <Execution id="a1e68deb-3427-40a6-98f4-57c8794b00ad" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.McpAvailableToolsEndpointTests" name="AvailableTools_ReturnsBundledServerGroups" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatApiTests.PostChat_StoresMessagesInHistory" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="82a0973d-0217-a1ef-f8ca-ede03842c59c">
+      <Execution id="1044ba19-d0ac-4436-a558-8c2b4869364d" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatApiTests" name="PostChat_StoresMessagesInHistory" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_Denied_ResolvesPendingRequestAsDenied" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="63f0c776-193d-3ae7-6867-565d0e7cb16e">
+      <Execution id="dfad3536-f2b2-411d-b201-110a0a815dcc" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests" name="PostApproval_Denied_ResolvesPendingRequestAsDenied" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests.BulkDelete_NoBody_Returns400" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="e396d07b-96d8-34b9-f712-752b1e4ba127">
+      <Execution id="99fdff0c-86c9-4eab-9b3f-8227c9f6e531" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.AgentProfilesBulkDeleteTests" name="BulkDelete_NoBody_Returns400" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.CreateSession_ReturnsCreated" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="53ae3654-5c1c-1393-b1aa-ae155e830e86">
+      <Execution id="36b3a148-1f74-4fe2-95fa-d7e725286b57" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="CreateSession_ReturnsCreated" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.ListTemplates_ReturnsAllFiveBuiltInTemplates" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="7aaef6a2-3888-daad-657a-360565663d1f">
+      <Execution id="a4ce5f9e-851c-4b07-865f-7c0fc5a542d5" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="ListTemplates_ReturnsAllFiveBuiltInTemplates" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_ToolStartBeforeToolComplete" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="24cccb21-b956-ea58-9f0a-8ec5670b914d">
+      <Execution id="89ed28c9-5787-4ebb-83c4-5e9859462e8a" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_ToolStartBeforeToolComplete" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.McpServerEndpointsTests.RegistrySearch_WithStubbedClient_ReturnsNormalizedResults" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="d95b8f33-a776-4480-1204-ae838114599c">
+      <Execution id="6c705c6d-84f5-465d-8591-70570d1795b3" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.McpServerEndpointsTests" name="RegistrySearch_WithStubbedClient_ReturnsNormalizedResults" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;text-to-speech-snippet&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="b1676cc4-640b-17d5-0e66-ebe9216c1ac6">
+      <Execution id="e500cdf6-bbdd-4861-8027-ff61ea7a8229" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="PostingTemplateDefaultJob_CreatesScheduledJob" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.McpServerEndpointsTests.GetSuggestions_ReturnsEntries" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="7d42a40d-4388-0be0-5c23-a0d5a76424fc">
+      <Execution id="1c006151-0f25-4b99-be03-d2aecd1ffee6" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.McpServerEndpointsTests" name="GetSuggestions_ReturnsEntries" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;research-and-archive&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="a24be6f8-6c47-e9fe-4b55-9d651bca30a5">
+      <Execution id="e6a76b05-170f-433e-ba00-fb30d711e3ab" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="PostingTemplateDefaultJob_CreatesScheduledJob" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests.PostApproval_Approved_ResolvesPendingRequest" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="0413bd58-0195-0bd2-266f-62caaea483f0">
+      <Execution id="0d0befe5-e96e-4bcf-9b83-071c22115e1d" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ToolApprovalEndpointTests" name="PostApproval_Approved_ResolvesPendingRequest" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsHealthyStatus" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="6085dd71-c6f9-f612-7627-0bd18ebed5d6">
+      <Execution id="48f5d05f-6fe1-4fbd-8fcc-22d05fc11546" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Health_ReturnsHealthyStatus" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.HealthTests.Health_ReturnsOk" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="fb0a61c7-91bc-ae95-754a-7aeade696375">
+      <Execution id="90f27589-8eb7-478d-bce9-90eeee82b235" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.HealthTests" name="Health_ReturnsOk" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EmitsToolStartEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="6bfbc607-530d-ec8a-edb2-cd30d30f89cf">
+      <Execution id="c05c764f-818d-4318-90be-0b47cc6dfd87" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EmitsToolStartEvent" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.PostingTemplateDefaultJob_CreatesScheduledJob(templateId: &quot;watched-folder-summarizer&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="abcb4e95-4b38-d115-a0ed-26a1c81eaf64">
+      <Execution id="00ede13f-3d4d-48e0-8130-5342a350c1a7" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="PostingTemplateDefaultJob_CreatesScheduledJob" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.UpdateTitle_ChangesSessionTitle" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="dfb03537-a988-21c2-a05b-7a5c187eb994">
+      <Execution id="c675e2e7-9fe8-4a81-937f-da33f3f24e6b" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="UpdateTitle_ChangesSessionTitle" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.McpServerEndpointsTests.GetServers_ReturnsBundledBuiltins" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="a85a5f2c-cc66-c4e0-9ea6-b5bd49d3c977">
+      <Execution id="d1888a77-7795-41cf-94d0-ce1c38b5ed4a" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.McpServerEndpointsTests" name="GetServers_ReturnsBundledBuiltins" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.ListSessions_ReturnsOk_WhenEmpty" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="76d32dc7-f225-8804-66bc-b29000d89f3e">
+      <Execution id="1b99af88-1f6e-4c42-9aff-8f2f0b8dbf2a" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="ListSessions_ReturnsOk_WhenEmpty" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_ReturnsNoContent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="70855f99-ae08-dc59-002e-d5ee7098d2a8">
+      <Execution id="2cf40fa3-a647-4930-9af3-a37e12ec1436" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="DeleteSession_ReturnsNoContent" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubStreamTests.StreamChat_CompleteEvent_IsAlwaysLastEvent" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="d28b1fd7-b813-e551-328a-b8777783a8c1">
+      <Execution id="02f3ac65-0cc0-491e-81a9-c647648385e9" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubStreamTests" name="StreamChat_CompleteEvent_IsAlwaysLastEvent" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests.StreamChat_WithToolCalls_EndsWithCompleteOrError" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="bf8189d3-9137-364a-b649-9ef91fe4b399">
+      <Execution id="8aeedb55-5d3e-4fe2-be0e-b90badf49424" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ChatHubToolCallStreamTests" name="StreamChat_WithToolCalls_EndsWithCompleteOrError" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.ToolApprovalCronJobTests.CronJob_WithRequiringProfile_FailsFast" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="3d44e01e-7cec-12a6-f72f-25e484db5747">
+      <Execution id="e9b904f8-c6dc-4c52-a544-8b6c264b5802" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.ToolApprovalCronJobTests" name="CronJob_WithRequiringProfile_FailsFast" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests.GetTemplate_ById_ReturnsTemplate(templateId: &quot;github-issue-triage&quot;)" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="15274f1f-5c34-1f1a-80d9-a0feb3fd4c65">
+      <Execution id="34f801be-ca92-43d2-a398-aa75b1376797" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.Demos.JobTemplatesE2ETests" name="GetTemplate_ById_ReturnsTemplate" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.DeleteSession_MakesSessionUnreachable" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5">
+      <Execution id="69fea4fa-e126-4a25-82c3-0a0fae046bd5" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="DeleteSession_MakesSessionUnreachable" />
+    </UnitTest>
+    <UnitTest name="OpenClawNet.IntegrationTests.SessionsApiTests.GetSession_Returns404_WhenNotFound" storage="c:\src\openclawnet-plan\tests\openclawnet.integrationtests\bin\debug\net10.0\openclawnet.integrationtests.dll" id="d56e279b-a99e-4723-a40d-5bea8b15591f">
+      <Execution id="9629bcce-d589-4d0f-a410-b9132329e9b5" />
+      <TestMethod codeBase="C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\OpenClawNet.IntegrationTests.dll" adapterTypeName="executor://xunit/VsTestRunner3/netcore/" className="OpenClawNet.IntegrationTests.SessionsApiTests" name="GetSession_Returns404_WhenNotFound" />
     </UnitTest>
   </TestDefinitions>
   <TestEntries>
-    <TestEntry testId="dfb03537-a988-21c2-a05b-7a5c187eb994" executionId="7aea52ed-b3bc-4ad0-9c50-118611e9c02c" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="bb7e8ff4-0682-004b-face-c0980e86323a" executionId="11cda12c-e996-4832-97f9-40cdba913cae" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4" executionId="a8fc2d88-7478-4446-9af9-ebe1d59da3d4" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="23047fa9-6b49-36e2-4379-cf1c54c376ea" executionId="298661e9-4d2c-4bfa-91e5-6da983194e42" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5" executionId="55fd579b-c6e8-4fae-89a7-2cb52ff4af18" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="4d52bdf1-d813-e63c-edbc-6c72ed297efb" executionId="a747d418-b2aa-4904-a7f0-91c54c087297" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="13bf637f-c8b3-df12-9bce-e3645dc0bf7b" executionId="78b5aaab-b1a4-4be9-9a1f-0fae357de047" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="53ae3654-5c1c-1393-b1aa-ae155e830e86" executionId="96e75534-ed0d-464a-834a-dbe5a32b95bc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="e2561f93-3d89-e23a-d954-d5998302ae75" executionId="803bd763-ce54-462f-8a4c-a47fe99b85e9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="e69ec014-416b-5331-c2e7-6ebf2d0c9828" executionId="f7692167-cbf8-4d03-8d28-209fed709bef" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="ea5a2034-0cd5-9da8-f731-7cba2661bbd6" executionId="7db869eb-785a-4770-93fd-6e6d2539ab4f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="115c518c-616d-acfc-4a1e-7760d5a6f870" executionId="234db42a-f443-4d24-b363-ad67c150e53b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="76d32dc7-f225-8804-66bc-b29000d89f3e" executionId="9e57e5d1-e343-4c57-920b-9fc34652ec9b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171" executionId="5610ca42-e11a-4623-b6a2-031a7d27ab03" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="fb0a61c7-91bc-ae95-754a-7aeade696375" executionId="553c3f66-28ba-495b-a5a0-d951b06adcc3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="82a0973d-0217-a1ef-f8ca-ede03842c59c" executionId="59abf054-6511-46ea-a535-f7df9b7e8a51" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="d28b1fd7-b813-e551-328a-b8777783a8c1" executionId="12df992f-2c90-4e62-8acc-f8c92fed6692" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="c34180cc-745b-a0b8-059d-a7922eea5dba" executionId="0b29662a-43a3-4e9d-bd29-362b302f7f2f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="6085dd71-c6f9-f612-7627-0bd18ebed5d6" executionId="89be855f-39f3-441f-9732-dbbd5993e34e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="6bfbc607-530d-ec8a-edb2-cd30d30f89cf" executionId="09a67217-739c-48ac-8dc8-a9499e14096f" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="bf8189d3-9137-364a-b649-9ef91fe4b399" executionId="806359bc-abdf-40b8-bca9-d0a1ae5e88a2" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="70855f99-ae08-dc59-002e-d5ee7098d2a8" executionId="2431e0b0-44bd-40fd-9ea2-94a7281706b1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="1a4b6387-4854-8a87-7c42-707ccb85963a" executionId="39664851-3d1c-4d8d-a0a1-a36f43742d02" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="24cccb21-b956-ea58-9f0a-8ec5670b914d" executionId="16ab4540-3322-4c3c-9fa3-1831ee8a59d9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="d56e279b-a99e-4723-a40d-5bea8b15591f" executionId="8d6622f1-effe-48f5-b311-5a9ab6f49fb6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="f3e0935e-2cff-b7cb-b224-de09d4d1811e" executionId="1a80b845-0886-4f1c-b99d-d749e6d7a51b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
-    <TestEntry testId="94df0669-234e-42d9-ef32-78ef1cfea9d4" executionId="638e28fd-36a6-47d7-90be-ba1c95ddbf70" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="34e8d35b-93c2-399c-f0d3-8e4f6f9b8171" executionId="da10f304-3eac-490d-99d8-0126450144a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9beffc52-6f2c-3059-0703-cf951d46e627" executionId="5d972647-ca69-4988-9421-69379f453010" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2622c9ab-d881-f20d-a04f-a56fcced5822" executionId="e3b943f3-7dab-4b68-8921-465ce0deddcd" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b1676cc4-640b-17d5-0e66-ebe9216c1ac6" executionId="e500cdf6-bbdd-4861-8027-ff61ea7a8229" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d95b8f33-a776-4480-1204-ae838114599c" executionId="6c705c6d-84f5-465d-8591-70570d1795b3" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4d52bdf1-d813-e63c-edbc-6c72ed297efb" executionId="6cb5d7bf-b4f6-4662-a92a-a4142243bf14" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2dbf106c-414f-0f6f-d49a-66214fcefd2d" executionId="41d5726e-2902-413f-8765-4398f7be3108" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="ea5a2034-0cd5-9da8-f731-7cba2661bbd6" executionId="409b5704-6a55-4809-a803-b96f61e7794d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="70855f99-ae08-dc59-002e-d5ee7098d2a8" executionId="2cf40fa3-a647-4930-9af3-a37e12ec1436" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bb7e8ff4-0682-004b-face-c0980e86323a" executionId="c072ef0e-eefc-4470-aec6-5537fdc7fafb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="23047fa9-6b49-36e2-4379-cf1c54c376ea" executionId="ff2a469c-38b3-4f8a-aeb2-dc5b08411d9a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1a4b6387-4854-8a87-7c42-707ccb85963a" executionId="12f5aecd-87b4-4621-a4da-18df0c1c59fb" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="868a53dd-c355-2d8c-73b3-c783b01dd971" executionId="77f33c03-1c0f-48a7-82b1-6d4e933f2895" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e396d07b-96d8-34b9-f712-752b1e4ba127" executionId="99fdff0c-86c9-4eab-9b3f-8227c9f6e531" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6085dd71-c6f9-f612-7627-0bd18ebed5d6" executionId="48f5d05f-6fe1-4fbd-8fcc-22d05fc11546" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="94df0669-234e-42d9-ef32-78ef1cfea9d4" executionId="8a9ee085-46b5-4599-807e-ed6fb0685c77" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fb0cf6ae-076f-22f3-d8e1-24965c06e5d4" executionId="c4ee0225-433e-486d-8193-81b7ce955fe7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d28b1fd7-b813-e551-328a-b8777783a8c1" executionId="02f3ac65-0cc0-491e-81a9-c647648385e9" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7aaef6a2-3888-daad-657a-360565663d1f" executionId="a4ce5f9e-851c-4b07-865f-7c0fc5a542d5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="63f0c776-193d-3ae7-6867-565d0e7cb16e" executionId="dfad3536-f2b2-411d-b201-110a0a815dcc" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="2130c063-6db2-c14c-adce-ec46b2c9dbb7" executionId="866fc3a7-f83f-4857-96a7-49b077fbd349" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="82a0973d-0217-a1ef-f8ca-ede03842c59c" executionId="1044ba19-d0ac-4436-a558-8c2b4869364d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="1509f632-70f2-66c2-e3bc-79efc123ebc6" executionId="4a073b48-6d58-41b2-b5eb-7d0432914d5a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="baaf534a-2c3f-5779-585b-23a165f1024f" executionId="6c6168b7-6b9b-4168-a9bf-98f4906b3db7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="fb0a61c7-91bc-ae95-754a-7aeade696375" executionId="90f27589-8eb7-478d-bce9-90eeee82b235" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="4813b244-bae2-c6b1-4b88-d57c788dcf08" executionId="e81c1f84-26cb-486e-8b9b-1dd1cdb5b4e1" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a85a5f2c-cc66-c4e0-9ea6-b5bd49d3c977" executionId="d1888a77-7795-41cf-94d0-ce1c38b5ed4a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="abcb4e95-4b38-d115-a0ed-26a1c81eaf64" executionId="00ede13f-3d4d-48e0-8130-5342a350c1a7" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="eb716411-1d03-02dc-b664-321d544ccd7a" executionId="bbfe3db5-8a5b-4c89-81eb-dd920ff054a8" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="15274f1f-5c34-1f1a-80d9-a0feb3fd4c65" executionId="34f801be-ca92-43d2-a398-aa75b1376797" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e69ec014-416b-5331-c2e7-6ebf2d0c9828" executionId="9cbb9d10-89b9-4b7a-815b-e077abe45139" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="b5a9d528-97d0-65b2-f7ee-2e04f3c4e3e5" executionId="69fea4fa-e126-4a25-82c3-0a0fae046bd5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="24cccb21-b956-ea58-9f0a-8ec5670b914d" executionId="89ed28c9-5787-4ebb-83c4-5e9859462e8a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="13bf637f-c8b3-df12-9bce-e3645dc0bf7b" executionId="457b22bf-ba62-4d10-be57-708cc0474690" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="115c518c-616d-acfc-4a1e-7760d5a6f870" executionId="45b0e4b1-e3a5-4330-a121-f13383bb8119" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="6bfbc607-530d-ec8a-edb2-cd30d30f89cf" executionId="c05c764f-818d-4318-90be-0b47cc6dfd87" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="bf8189d3-9137-364a-b649-9ef91fe4b399" executionId="8aeedb55-5d3e-4fe2-be0e-b90badf49424" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="0413bd58-0195-0bd2-266f-62caaea483f0" executionId="0d0befe5-e96e-4bcf-9b83-071c22115e1d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="d56e279b-a99e-4723-a40d-5bea8b15591f" executionId="9629bcce-d589-4d0f-a410-b9132329e9b5" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d05dafc-69c7-645e-934d-0686081047a2" executionId="ffc97fe9-525e-4cae-b2c2-2b00d4eb8847" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="a24be6f8-6c47-e9fe-4b55-9d651bca30a5" executionId="e6a76b05-170f-433e-ba00-fb30d711e3ab" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="c34180cc-745b-a0b8-059d-a7922eea5dba" executionId="3805782e-80e5-4a28-9b30-53ee82401c1e" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="dfb03537-a988-21c2-a05b-7a5c187eb994" executionId="c675e2e7-9fe8-4a81-937f-da33f3f24e6b" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="72d9d230-e2fa-73b3-34b9-83ed6e9a7404" executionId="83e1a21b-69a7-4d02-b283-cf900f6b9ec6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="e2561f93-3d89-e23a-d954-d5998302ae75" executionId="6907fbd4-b70f-46bc-be46-1a047d53716a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="9231f83a-c26e-4e6e-4868-a5e88a7dfe3b" executionId="a1e68deb-3427-40a6-98f4-57c8794b00ad" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3ef4c0ae-ace1-db02-3099-f0b0b8cbecf4" executionId="53e602d4-192d-48b5-a618-c826b9314d37" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="76d32dc7-f225-8804-66bc-b29000d89f3e" executionId="1b99af88-1f6e-4c42-9aff-8f2f0b8dbf2a" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="60874868-baf1-8cea-f6f9-f5de453285ef" executionId="422e95f1-4fe6-4810-add2-26da233ca6f6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="f3e0935e-2cff-b7cb-b224-de09d4d1811e" executionId="d9eb0f40-fc19-47aa-902d-c6dc589b387d" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3d44e01e-7cec-12a6-f72f-25e484db5747" executionId="e9b904f8-c6dc-4c52-a544-8b6c264b5802" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="7d42a40d-4388-0be0-5c23-a0d5a76424fc" executionId="1c006151-0f25-4b99-be03-d2aecd1ffee6" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="53ae3654-5c1c-1393-b1aa-ae155e830e86" executionId="36b3a148-1f74-4fe2-95fa-d7e725286b57" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
+    <TestEntry testId="3f1899e2-e77d-98c3-6ca0-df8704d17e05" executionId="27d755ea-ccfd-489a-8c28-2a7e2c6ba702" testListId="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
   </TestEntries>
   <TestLists>
     <TestList name="Results Not in a List" id="8c84fa94-04c1-424b-9868-57a2d4851a1d" />
     <TestList name="All Loaded Results" id="19431567-8539-422a-85d7-44ee4e166bda" />
   </TestLists>
   <ResultSummary outcome="Completed">
-    <Counters total="27" executed="27" passed="27" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
+    <Counters total="54" executed="53" passed="53" failed="0" error="0" timeout="0" aborted="0" inconclusive="0" passedButRunAborted="0" notRunnable="0" notExecuted="0" disconnected="0" warning="0" completed="0" inProgress="0" pending="0" />
     <Output>
       <StdOut>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.6)&#xD;
-[xUnit.net 00:00:00.11]   Discovering: OpenClawNet.IntegrationTests&#xD;
-[xUnit.net 00:00:00.15]   Discovered:  OpenClawNet.IntegrationTests&#xD;
-[xUnit.net 00:00:00.18]   Starting:    OpenClawNet.IntegrationTests&#xD;
+[xUnit.net 00:00:00.14]   Discovering: OpenClawNet.IntegrationTests&#xD;
+[xUnit.net 00:00:00.21]   Discovered:  OpenClawNet.IntegrationTests&#xD;
+[xUnit.net 00:00:00.24]   Starting:    OpenClawNet.IntegrationTests&#xD;
      Warning:&#xD;
      The component "Fluent Assertions" is governed by the rules defined in the Xceed License Agreement and&#xD;
      the Xceed Fluent Assertions Community License. You may use Fluent Assertions free of charge for&#xD;
@@ -202,6 +370,404 @@ info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
       FileSystem workspace root: C:\src\openclawnet-plan&#xD;
 info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
       FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0752ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1145ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1002ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.152ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0835ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1472ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1463ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1649ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0774ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1421ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1288ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1431ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0836ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0778ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0669ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0942ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.077ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0942ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0977ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0997ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0576ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0843ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0718ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0922ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0628ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1059ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0628ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0812ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0883ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0605ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0789ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0649ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0618ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0696ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0731ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1005ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.06ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0842ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0541ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0712ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0617ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0867ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0774ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0602ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0994ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0593ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0911ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.0739ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application started. Press Ctrl+C to shut down.&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
@@ -213,7 +779,21 @@ info: Microsoft.Hosting.Lifetime[0]&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Hosting environment: Testing&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Hosting environment: Testing&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
@@ -229,23 +809,145 @@ info: Microsoft.Hosting.Lifetime[0]&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      RuntimeModelSettings initialised: Provider=ollama, Model=test&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0907ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0424ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0202ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0153ms.&#xD;
+info: OpenClawNet.Gateway.Services.JobExecutor[0]&#xD;
+      Using AgentProfile 'approval-required-8b1190b7e9ab421e836094d39f9a26c6' (Provider: ollama, Model: test)&#xD;
+warn: OpenClawNet.Gateway.Services.JobExecutor[0]&#xD;
+      Refusing to run cron job f0a8bd1d-1792-49fc-a058-1554e9a896b3 on requiring profile 'approval-required-8b1190b7e9ab421e836094d39f9a26c6': Cron jobs cannot use AgentProfiles that require tool approval. Either disable approval on profile 'approval-required-8b1190b7e9ab421e836094d39f9a26c6' or run the agent interactively.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0865ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0474ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0576ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0341ms.&#xD;
+info: OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator[0]&#xD;
+      Approval request 5f4af2fb-21d4-48e2-b108-084ff83a5f32 resolved: Approved=True, RememberForSession=True&#xD;
+info: OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator[0]&#xD;
+      Approval request 433bab61-45c6-4980-808e-aec1fa430537 resolved: Approved=False, RememberForSession=False&#xD;
+warn: OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator[0]&#xD;
+      Approval resolution for unknown request 8cdf6001-3388-4d8d-93de-48c22a004c15&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: OpenClawNet.Gateway.Endpoints.ToolApprovalDecisionRequest[0]&#xD;
+      Tool approval decision for unknown or already-resolved request 8cdf6001-3388-4d8d-93de-48c22a004c15&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+[xUnit.net 00:00:03.49]       Live demo execution skipped. Set OPENCLAWNET_LIVE_DEMOS=1 and run aspire+Ollama, then run with --filter "Category=Live" to exercise the full demo against a real model.&#xD;
+Test 'OpenClawNet.IntegrationTests.Demos.WatchedFolderSummarizerLiveE2ETests.WatchedFolderTemplate_AcceptedByGateway_AndJobIsExecutable' was skipped in the test run.&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application is shutting down...&#xD;
 info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
       RuntimeModelSettings initialised: Provider=ollama, Model=test&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0657ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0537ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.07ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0514ms.&#xD;
 info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
       Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
 info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
       Model provider changed to ollama&#xD;
 info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Processing agent request: SessionId=38ec0673-d6b0-4cdd-a3ee-dc9437c55852, Provider=ollama&#xD;
+      Processing agent request: SessionId=ca820272-b6ef-4106-88f8-3e87b1b9d5f2, Provider=ollama&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0763ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0428ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0541ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0394ms.&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application is shutting down...&#xD;
 info: Microsoft.Agents.AI.AgentFileSkillsSource[1385388169]&#xD;
       Discovered 5 potential skills&#xD;
+info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]&#xD;
+      FileSystem workspace root: C:\src\openclawnet-plan&#xD;
 info: Microsoft.Agents.AI.AgentFileSkillsSource[1325002157]&#xD;
       Loaded skill: doc-processor&#xD;
 fail: Microsoft.Agents.AI.AgentFileSkillsSource[898247162]&#xD;
@@ -258,42 +960,106 @@ fail: Microsoft.Agents.AI.AgentFileSkillsSource[898247162]&#xD;
       SKILL.md at 'C:\src\openclawnet-plan\tests\OpenClawNet.IntegrationTests\bin\Debug\net10.0\skills\web-search\SKILL.md' does not contain valid YAML frontmatter delimited by '---'&#xD;
 info: Microsoft.Agents.AI.AgentFileSkillsSource[1381921812]&#xD;
       Successfully loaded 1 skills&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      RuntimeModelSettings initialised: Provider=ollama, Model=test&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1435ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1451ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.1081ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0) method 'initialize' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'initialize' request handler completed in 0.067ms.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'web' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'shell' with 1 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'browser' with 5 tool(s).&#xD;
+info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]&#xD;
+      Started bundled MCP server 'filesystem' with 4 tool(s).&#xD;
 info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
-      [RunAsync] Agent b7f4c7cddcc44527a96f332ace264fb5/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
+      [RunAsync] Agent f75fffe369fa4b0b898e63835c992467/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
 info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
       Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
-info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
-      Model provider changed to ollama&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Processing agent request: SessionId=38ec0673-d6b0-4cdd-a3ee-dc9437c55852, Provider=ollama&#xD;
-info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
-      [RunAsync] Agent 3c841aa650004f5e8042c810fd3d2256/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 4.&#xD;
-info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
-      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
-info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
-      Model provider changed to ollama&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Processing agent request: SessionId=dd62c316-8e01-456c-8e84-5ad70052e299, Provider=ollama&#xD;
-info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
-      [RunAsync] Agent 89fc5c5594ce4703ad6620c98644788e/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
-info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
-      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
-info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
-      Model provider changed to ollama&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Processing agent request: SessionId=da4b89dd-a3a6-4ae8-9147-c0aa5f8cd4ec, Provider=ollama&#xD;
-info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
-      [RunAsync] Agent 2e5118692fbe42b584ebe913d10354bc/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
-info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
-      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
-info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
-      Model provider changed to ollama&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Processing agent request: SessionId=33016f83-0b1d-4180-9c31-c01c18ce591e, Provider=ollama&#xD;
-info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
-      [RunAsync] Agent 904eaa1a31904c0aaa20076c9cdf43f2/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application started. Press Ctrl+C to shut down.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Hosting environment: Testing&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application is shutting down...&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      Model provider changed to ollama&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Processing agent request: SessionId=ca820272-b6ef-4106-88f8-3e87b1b9d5f2, Provider=ollama&#xD;
+info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
+      [RunAsync] Agent 5b91079d0ecf4626b69d399997f66a8c/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 4.&#xD;
+info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
+      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      Model provider changed to ollama&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Processing agent request: SessionId=35ceb593-d948-49ec-bdd9-fc03a7d30168, Provider=ollama&#xD;
+info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
+      [RunAsync] Agent bce18242098a42c090b10388ce3fb542/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
+info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
+      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      Model provider changed to ollama&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Processing agent request: SessionId=48d3797c-3364-4c68-bb4a-a6172f71f23c, Provider=ollama&#xD;
+info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
+      [RunAsync] Agent 42a7cb6d039542479291acb16158882a/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
+info: OpenClawNet.Gateway.Services.ProviderResolver[0]&#xD;
+      Resolved provider 'ollama-default' \u001a definition 'ollama-default' (type=ollama)&#xD;
+info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
+      Model provider changed to ollama&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Processing agent request: SessionId=b4851523-351e-49f5-bade-5631b0b96497, Provider=ollama&#xD;
+info: Microsoft.Agents.AI.ChatClientAgent[2113764234]&#xD;
+      [RunAsync] Agent 1c8a58f280fb42a48d702a7373ffaae6/UnnamedAgent Invoked client OpenClawNet.Agent.ModelClientChatClientAdapter with message count: 2.&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
+      Warming up Ollama model (fake)...&#xD;
 info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
       Warming up Ollama model (fake-toolcall)...&#xD;
 info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
@@ -302,80 +1068,205 @@ info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
       Ollama warmup complete - model is ready.&#xD;
 info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
       Ollama warmup complete - model is ready.&#xD;
+info: OpenClawNet.Gateway.Services.OllamaWarmupService[0]&#xD;
+      Ollama warmup complete - model is ready.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
 info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
       RuntimeModelSettings initialised: Provider=ollama, Model=test&#xD;
 info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]&#xD;
       RuntimeModelSettings initialised: Provider=ollama, Model=test&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0915ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (web 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0888ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.027ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (shell 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0226ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0285ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (browser 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0271ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0349ms.&#xD;
+info: ModelContextProtocol.Server.McpServer[570385771]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler called.&#xD;
+info: ModelContextProtocol.Server.McpServer[1867955179]&#xD;
+      Server (filesystem 1.0.0), Client (testhost 15.0.0.0) method 'tools/list' request handler completed in 0.0397ms.&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=2b518462-0c1d-45a1-ab7b-6d702ab1b55c, Model=default, MessageLength=18&#xD;
+      StreamChat invoked: SessionId=264f5414-9221-4c78-9a02-2ad836531532, Model=default, MessageLength=18&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=e12ec321-afa1-4d1d-ad54-aa1dd83faa2f, Model=default, MessageLength=4&#xD;
+      StreamChat invoked: SessionId=d6b367a3-01c0-4d04-9e12-c91621511681, Model=default, MessageLength=4&#xD;
 info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=e12ec321-afa1-4d1d-ad54-aa1dd83faa2f&#xD;
+      Streaming agent request: SessionId=d6b367a3-01c0-4d04-9e12-c91621511681&#xD;
 info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=2b518462-0c1d-45a1-ab7b-6d702ab1b55c&#xD;
+      Streaming agent request: SessionId=264f5414-9221-4c78-9a02-2ad836531532&#xD;
 info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=47103097-25dc-4a46-84c6-85b8cb337402, SessionId=2b518462-0c1d-45a1-ab7b-6d702ab1b55c&#xD;
+      Starting streaming execution: InteractionId=eafb52ce-eb7a-4903-855d-5a091f0fe17d, SessionId=264f5414-9221-4c78-9a02-2ad836531532&#xD;
 info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=57e67682-35fd-4764-92b2-1c8c03c1e92c, SessionId=e12ec321-afa1-4d1d-ad54-aa1dd83faa2f&#xD;
+      Starting streaming execution: InteractionId=880db2de-2491-4eed-81ff-38479f1fe843, SessionId=d6b367a3-01c0-4d04-9e12-c91621511681&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=e12ec321-afa1-4d1d-ad54-aa1dd83faa2f, Events=3&#xD;
+      StreamChat completed: SessionId=d6b367a3-01c0-4d04-9e12-c91621511681, Events=3&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=2b518462-0c1d-45a1-ab7b-6d702ab1b55c, Events=31&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=1a478c04-b4af-4264-9a58-d1ba7a86a16b, Model=default, MessageLength=18&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=1a478c04-b4af-4264-9a58-d1ba7a86a16b&#xD;
-info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=2cb8d90a-4f26-44ee-81ba-9f0c37ab0c1f, SessionId=1a478c04-b4af-4264-9a58-d1ba7a86a16b&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=1a478c04-b4af-4264-9a58-d1ba7a86a16b, Events=31&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=7c960e2e-6aee-4b1c-b642-19af084c49d0, Model=default, MessageLength=2&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=7c960e2e-6aee-4b1c-b642-19af084c49d0&#xD;
-info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=2c253228-f578-40a2-affd-e82da796dce4, SessionId=7c960e2e-6aee-4b1c-b642-19af084c49d0&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=7c960e2e-6aee-4b1c-b642-19af084c49d0, Events=3&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=a85e7b4c-8337-4fc7-8d7c-d4d4f65f1a3f, Model=default, MessageLength=18&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=a85e7b4c-8337-4fc7-8d7c-d4d4f65f1a3f&#xD;
-info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=c6ee0356-2a6d-468d-bca0-a2da22ef7b31, SessionId=a85e7b4c-8337-4fc7-8d7c-d4d4f65f1a3f&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=23bc6856-41db-4c68-a013-c391eda831a7, Model=default, MessageLength=5&#xD;
-info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=23bc6856-41db-4c68-a013-c391eda831a7&#xD;
-info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=c2ea038e-8a67-46f0-bb9b-5ae345f264ca, SessionId=23bc6856-41db-4c68-a013-c391eda831a7&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=23bc6856-41db-4c68-a013-c391eda831a7, Events=3&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=a85e7b4c-8337-4fc7-8d7c-d4d4f65f1a3f, Events=31&#xD;
+      StreamChat completed: SessionId=264f5414-9221-4c78-9a02-2ad836531532, Events=31&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application is shutting down...&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=0930ed4a-7e36-42ae-afe4-b7991fd54b6d, Model=default, MessageLength=18&#xD;
+      StreamChat invoked: SessionId=f1a3e106-f94f-4fe0-9b78-a81f796c91ed, Model=default, MessageLength=18&#xD;
 info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=0930ed4a-7e36-42ae-afe4-b7991fd54b6d&#xD;
-info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=8f457407-d295-4de0-b20c-4933a2f89747, SessionId=0930ed4a-7e36-42ae-afe4-b7991fd54b6d&#xD;
+      Streaming agent request: SessionId=f1a3e106-f94f-4fe0-9b78-a81f796c91ed&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=0930ed4a-7e36-42ae-afe4-b7991fd54b6d, Events=31&#xD;
-info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat invoked: SessionId=5cf47f44-e254-4b6f-a218-e32b9afcc48b, Model=default, MessageLength=18&#xD;
+      StreamChat invoked: SessionId=fc5f8abe-7a85-43cc-96d7-adf73ad35371, Model=default, MessageLength=2&#xD;
 info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
-      Streaming agent request: SessionId=5cf47f44-e254-4b6f-a218-e32b9afcc48b&#xD;
+      Streaming agent request: SessionId=fc5f8abe-7a85-43cc-96d7-adf73ad35371&#xD;
 info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
-      Starting streaming execution: InteractionId=df4a2c45-ebd4-49db-9868-091d68294805, SessionId=5cf47f44-e254-4b6f-a218-e32b9afcc48b&#xD;
+      Starting streaming execution: InteractionId=2fe3cf9f-213b-46a0-aa85-128b9a41cea5, SessionId=fc5f8abe-7a85-43cc-96d7-adf73ad35371&#xD;
+info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
+      Starting streaming execution: InteractionId=89af537f-be40-4928-bd60-c696f8af5aa3, SessionId=f1a3e106-f94f-4fe0-9b78-a81f796c91ed&#xD;
 info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
-      StreamChat completed: SessionId=5cf47f44-e254-4b6f-a218-e32b9afcc48b, Events=31&#xD;
+      StreamChat completed: SessionId=fc5f8abe-7a85-43cc-96d7-adf73ad35371, Events=3&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat completed: SessionId=f1a3e106-f94f-4fe0-9b78-a81f796c91ed, Events=31&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat invoked: SessionId=299824c0-1a43-494c-93d5-db17e5c94a48, Model=default, MessageLength=18&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Streaming agent request: SessionId=299824c0-1a43-494c-93d5-db17e5c94a48&#xD;
+info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
+      Starting streaming execution: InteractionId=b9bc8a3b-a96f-42f1-be87-e1da79ad47d8, SessionId=299824c0-1a43-494c-93d5-db17e5c94a48&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat invoked: SessionId=9991f6e9-f305-4006-860e-cf7cf96673b9, Model=default, MessageLength=5&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Streaming agent request: SessionId=9991f6e9-f305-4006-860e-cf7cf96673b9&#xD;
+info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
+      Starting streaming execution: InteractionId=e02f7715-4b75-4ea5-889b-55f5b4aaf184, SessionId=9991f6e9-f305-4006-860e-cf7cf96673b9&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat completed: SessionId=9991f6e9-f305-4006-860e-cf7cf96673b9, Events=3&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat completed: SessionId=299824c0-1a43-494c-93d5-db17e5c94a48, Events=31&#xD;
 info: Microsoft.Hosting.Lifetime[0]&#xD;
       Application is shutting down...&#xD;
-[xUnit.net 00:00:22.38]   Finished:    OpenClawNet.IntegrationTests&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat invoked: SessionId=9c95db29-bccc-46b0-9f8a-8968d0342125, Model=default, MessageLength=18&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Streaming agent request: SessionId=9c95db29-bccc-46b0-9f8a-8968d0342125&#xD;
+info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
+      Starting streaming execution: InteractionId=29951848-25fc-4339-8aef-aeb08d5e86d0, SessionId=9c95db29-bccc-46b0-9f8a-8968d0342125&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat completed: SessionId=9c95db29-bccc-46b0-9f8a-8968d0342125, Events=31&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat invoked: SessionId=d7adb07c-f968-4f29-8dcd-783fedc97f13, Model=default, MessageLength=18&#xD;
+info: OpenClawNet.Agent.AgentOrchestrator[0]&#xD;
+      Streaming agent request: SessionId=d7adb07c-f968-4f29-8dcd-783fedc97f13&#xD;
+info: OpenClawNet.Agent.DefaultAgentRuntime[0]&#xD;
+      Starting streaming execution: InteractionId=215f34c0-4177-4a04-a94f-e6032dfb2a8d, SessionId=d7adb07c-f968-4f29-8dcd-783fedc97f13&#xD;
+info: OpenClawNet.Gateway.Hubs.ChatHub[0]&#xD;
+      StreamChat completed: SessionId=d7adb07c-f968-4f29-8dcd-783fedc97f13, Events=31&#xD;
+info: Microsoft.Hosting.Lifetime[0]&#xD;
+      Application is shutting down...&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620001.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620002.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620004.&#xD;
+info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]&#xD;
+      Stopped in-process MCP server 8f7d1c80-1111-4a11-8001-77627e620003.&#xD;
+[xUnit.net 00:00:28.13]   Finished:    OpenClawNet.IntegrationTests&#xD;
 </StdOut>
     </Output>
+    <RunInfos>
+      <RunInfo computerName="CPC-bruno-U7R9O" outcome="Warning" timestamp="2026-04-21T21:15:51.4335916-04:00">
+        <Text>[xUnit.net 00:00:03.49]     OpenClawNet.IntegrationTests.Demos.WatchedFolderSummarizerLiveE2ETests.WatchedFolderTemplate_AcceptedByGateway_AndJobIsExecutable [SKIP]</Text>
+      </RunInfo>
+    </RunInfos>
   </ResultSummary>
 </TestRun>
