@@ -42,18 +42,14 @@ dotnet --version
 
 **Version Required:** Latest stable release (13.2+)
 
-**Install:**
-```bash
-dotnet workload install aspire
-```
+For up-to-date install instructions across Windows, macOS, and Linux, follow the official Aspire documentation. We intentionally don't inline the commands here so this page never goes stale:
+
+- **Official site:** [https://aspire.dev/](https://aspire.dev/)
 
 **Verify Installation:**
 ```bash
 aspire --version
 ```
-
-**Official Documentation:**
-- [https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling)
 
 ---
 
@@ -159,7 +155,7 @@ Choose one:
 | **Visual Studio Code** | Lightweight, cross-platform | [https://code.visualstudio.com/](https://code.visualstudio.com/) |
 | **JetBrains Rider** | Advanced .NET IDE (paid) | [https://www.jetbrains.com/rider/](https://www.jetbrains.com/rider/) |
 
-**For VS Code Users:** Install the **C# Dev Kit** extension.
+**For VS Code Users (optional):** The **C# Dev Kit** extension is recommended for a richer .NET editing experience (solution explorer, test runner, debugging UI), but it is **not required** to build or run OpenClaw .NET. The base **C#** extension (powered by the .NET language server) is sufficient. Install C# Dev Kit only if you want the extra IDE features.
 
 ---
 
