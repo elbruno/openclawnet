@@ -19,11 +19,15 @@ footer: "OpenClawNet · Session 2 · Tools & Agent Workflows"
 
 <br>
 
+<div class="speakers">
+
 **Bruno Capuano** — Principal Cloud Advocate, Microsoft
 [github.com/elbruno](https://github.com/elbruno) · [@elbruno](https://twitter.com/elbruno)
 
-**Pablo Nunes** — Co-presenter
+**Pablo Nunes Lopes** — Cloud Advocate, Microsoft
 [linkedin.com/in/pablonuneslopes](https://www.linkedin.com/in/pablonuneslopes/)
+
+</div>
 
 <!--
 SPEAKER NOTES — title slide.
@@ -781,11 +785,15 @@ Session 3 is about memory — we've been keeping every message in a list this wh
 
 # Questions?
 
+<div class="speakers">
+
 **Bruno Capuano** — Principal Cloud Advocate, Microsoft
 [github.com/elbruno](https://github.com/elbruno) · [@elbruno](https://twitter.com/elbruno)
 
-**Pablo Nunes** — Co-presenter
+**Pablo Nunes Lopes** — Cloud Advocate, Microsoft
 [linkedin.com/in/pablonuneslopes](https://www.linkedin.com/in/pablonuneslopes/)
+
+</div>
 
 <br>
 

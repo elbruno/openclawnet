@@ -13,13 +13,15 @@ size: 16:9
 
 **Microsoft Reactor Series · 75–90 min · Intermediate .NET**
 
-<br>
+<div class="speakers">
 
 **Bruno Capuano** — Principal Cloud Advocate, Microsoft
 [github.com/elbruno](https://github.com/elbruno) · [@elbruno](https://twitter.com/elbruno)
 
-**Pablo Nunes** — Co-presenter
+**Pablo Nunes Lopes** — Cloud Advocate, Microsoft
 [linkedin.com/in/pablonuneslopes](https://www.linkedin.com/in/pablonuneslopes/)
+
+</div>
 
 ---
 
@@ -289,11 +291,15 @@ Then:
 
 # Questions?
 
+<div class="speakers">
+
 **Bruno Capuano** — Principal Cloud Advocate, Microsoft
 [github.com/elbruno](https://github.com/elbruno) · [@elbruno](https://twitter.com/elbruno)
 
-**Pablo Nunes** — Co-presenter
+**Pablo Nunes Lopes** — Cloud Advocate, Microsoft
 [linkedin.com/in/pablonuneslopes](https://www.linkedin.com/in/pablonuneslopes/)
+
+</div>
 
 <br>
 

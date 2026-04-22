@@ -2,6 +2,7 @@
 /*
  * OpenClawNet shared Marp theme
  * - Defaults to system preference (prefers-color-scheme)
+ * - User override via html.theme-light / html.theme-dark (set by the switcher widget injected post-render)
  * - Per-slide override: <!-- _class: light --> or <!-- _class: dark -->
  * - Title slides: <!-- _class: lead -->
  */
@@ -38,6 +39,30 @@
     --oc-border:    #30363d;
     --oc-quote-bg:  #161b22;
   }
+}
+
+/* User-selected theme via switcher (overrides system preference) */
+html.theme-light {
+  --oc-bg:        #fdfdfd;
+  --oc-fg:        #1f2328;
+  --oc-muted:     #57606a;
+  --oc-accent:    #6f42c1;
+  --oc-accent-2:  #218bff;
+  --oc-code-bg:   #f6f8fa;
+  --oc-code-fg:   #24292f;
+  --oc-border:    #d0d7de;
+  --oc-quote-bg:  #f6f8fa;
+}
+html.theme-dark {
+  --oc-bg:        #0d1117;
+  --oc-fg:        #e6edf3;
+  --oc-muted:     #8b949e;
+  --oc-accent:    #b392f0;
+  --oc-accent-2:  #58a6ff;
+  --oc-code-bg:   #161b22;
+  --oc-code-fg:   #e6edf3;
+  --oc-border:    #30363d;
+  --oc-quote-bg:  #161b22;
 }
 
 section.light {
@@ -105,3 +130,11 @@ section footer { color: var(--oc-muted); font-size: 16px; }
 
 section .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
 section .muted { color: var(--oc-muted); font-size: 22px; }
+
+section .speakers {
+  font-size: 18px;
+  line-height: 1.45;
+  margin-top: 16px;
+}
+section .speakers p { margin: 4px 0; }
+section .speakers strong { color: var(--oc-accent); }
