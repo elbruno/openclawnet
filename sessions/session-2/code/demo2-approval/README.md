@@ -11,7 +11,7 @@ Two runs of the **same** dangerous tool, with two different `IToolApprovalPolicy
 ## Run
 
 ```pwsh
-cd docs\sessions\session-2\code\demo2-approval
+cd sessions\session-2\code\demo2-approval
 dotnet run
 ```
 

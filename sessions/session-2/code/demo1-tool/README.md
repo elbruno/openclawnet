@@ -12,7 +12,7 @@ A 60-line console app that builds a custom tool from scratch and calls it throug
 ## Run
 
 ```pwsh
-cd docs\sessions\session-2\code\demo1-tool
+cd sessions\session-2\code\demo1-tool
 dotnet run
 dotnet run -- "Bruno"
 ```

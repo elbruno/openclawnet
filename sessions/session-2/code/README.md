@@ -12,9 +12,9 @@ Three small console apps that exercise the **`OpenClawNet.Tools`** stack from th
 
 ```pwsh
 $env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
-dotnet build docs\sessions\session-2\code\demo1-tool
-dotnet build docs\sessions\session-2\code\demo2-approval
-dotnet build docs\sessions\session-2\code\demo3-agent-loop
+dotnet build sessions\session-2\code\demo1-tool
+dotnet build sessions\session-2\code\demo2-approval
+dotnet build sessions\session-2\code\demo3-agent-loop
 ```
 
 Each demo is a normal .NET 10 console app with `ProjectReference`s into `src\OpenClawNet.Tools.*`. Open them in VS Code or Visual Studio and run with F5.

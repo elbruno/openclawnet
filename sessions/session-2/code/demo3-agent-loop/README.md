@@ -14,7 +14,7 @@ A small console that wires `OllamaAgentProvider` to `Microsoft.Extensions.AI`'s 
 ## Run
 
 ```pwsh
-cd docs\sessions\session-2\code\demo3-agent-loop
+cd sessions\session-2\code\demo3-agent-loop
 dotnet run "What is sqrt(2024) rounded to 2 decimals?"
 dotnet run "What time is it in Tokyo right now?"
 $env:OLLAMA_MODEL = "llama3.1"; dotnet run "Compute 12 * (4 + 3) / 2"
