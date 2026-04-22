@@ -32,7 +32,7 @@ dotnet run
 ## Primary Demo (if using the running app)
 
 The main Demo 3 uses the full running OpenClawNet app with workspace files:
-- Swap `src/OpenClawNet.Agent/workspace/AGENTS.md` with personas from `docs/sessions/session-1/demo-agents/`
+- Swap `src/OpenClawNet.Agent/workspace/AGENTS.md` with personas from `sessions/session-1/demo-agents/`
 - The running app picks up the new personality immediately
 
 This Plan B console app serves as a self-contained fallback if the full app isn't available.
