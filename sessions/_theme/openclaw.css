@@ -1,0 +1,107 @@
+/* @theme openclaw */
+/*
+ * OpenClawNet shared Marp theme
+ * - Defaults to system preference (prefers-color-scheme)
+ * - Per-slide override: <!-- _class: light --> or <!-- _class: dark -->
+ * - Title slides: <!-- _class: lead -->
+ */
+
+@import 'default';
+
+:root {
+  --oc-bg:        #fdfdfd;
+  --oc-fg:        #1f2328;
+  --oc-muted:     #57606a;
+  --oc-accent:    #6f42c1;
+  --oc-accent-2:  #218bff;
+  --oc-success:   #1a7f37;
+  --oc-warn:      #9a6700;
+  --oc-danger:    #cf222e;
+  --oc-code-bg:   #f6f8fa;
+  --oc-code-fg:   #24292f;
+  --oc-border:    #d0d7de;
+  --oc-quote-bg:  #f6f8fa;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --oc-bg:        #0d1117;
+    --oc-fg:        #e6edf3;
+    --oc-muted:     #8b949e;
+    --oc-accent:    #b392f0;
+    --oc-accent-2:  #58a6ff;
+    --oc-success:   #3fb950;
+    --oc-warn:      #d29922;
+    --oc-danger:    #f85149;
+    --oc-code-bg:   #161b22;
+    --oc-code-fg:   #e6edf3;
+    --oc-border:    #30363d;
+    --oc-quote-bg:  #161b22;
+  }
+}
+
+section.light {
+  --oc-bg:#fdfdfd; --oc-fg:#1f2328; --oc-muted:#57606a;
+  --oc-accent:#6f42c1; --oc-accent-2:#218bff;
+  --oc-code-bg:#f6f8fa; --oc-code-fg:#24292f;
+  --oc-border:#d0d7de; --oc-quote-bg:#f6f8fa;
+}
+section.dark {
+  --oc-bg:#0d1117; --oc-fg:#e6edf3; --oc-muted:#8b949e;
+  --oc-accent:#b392f0; --oc-accent-2:#58a6ff;
+  --oc-code-bg:#161b22; --oc-code-fg:#e6edf3;
+  --oc-border:#30363d; --oc-quote-bg:#161b22;
+}
+
+section {
+  background: var(--oc-bg);
+  color: var(--oc-fg);
+  font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', sans-serif;
+  font-size: 28px;
+  padding: 64px 72px;
+}
+
+section h1, section h2, section h3 { color: var(--oc-fg); font-weight: 600; letter-spacing: -0.01em; }
+section h1 { font-size: 56px; }
+section h2 { font-size: 40px; border-bottom: 2px solid var(--oc-border); padding-bottom: 12px; margin-bottom: 24px; }
+section h3 { font-size: 30px; color: var(--oc-accent); }
+
+section a { color: var(--oc-accent-2); text-decoration: none; }
+section a:hover { text-decoration: underline; }
+section strong { color: var(--oc-accent); }
+section em { color: var(--oc-muted); font-style: normal; font-weight: 500; }
+
+section code {
+  background: var(--oc-code-bg); color: var(--oc-code-fg);
+  padding: 2px 6px; border-radius: 4px;
+  font-family: 'Cascadia Code', Consolas, monospace; font-size: 0.92em;
+}
+section pre {
+  background: var(--oc-code-bg); color: var(--oc-code-fg);
+  border: 1px solid var(--oc-border); border-radius: 8px;
+  padding: 16px 20px; font-size: 22px; line-height: 1.45; overflow-x: auto;
+}
+section pre code { background: transparent; padding: 0; }
+
+section blockquote {
+  border-left: 4px solid var(--oc-accent);
+  background: var(--oc-quote-bg); color: var(--oc-fg);
+  padding: 12px 20px; margin: 16px 0; font-style: italic;
+}
+
+section table { border-collapse: collapse; margin: 12px 0; font-size: 24px; }
+section th, section td { border: 1px solid var(--oc-border); padding: 8px 14px; text-align: left; }
+section th { background: var(--oc-code-bg); color: var(--oc-fg); }
+
+section ul, section ol { line-height: 1.5; }
+section li + li { margin-top: 6px; }
+
+section.lead { text-align: center; display: flex; flex-direction: column; justify-content: center; }
+section.lead h1 { font-size: 72px; color: var(--oc-accent); margin-bottom: 8px; }
+section.lead h2 { border: none; font-size: 36px; color: var(--oc-fg); }
+
+section::after { color: var(--oc-muted); font-size: 16px; }
+section footer { color: var(--oc-muted); font-size: 16px; }
+
+section .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; align-items: start; }
+section .muted { color: var(--oc-muted); font-size: 22px; }

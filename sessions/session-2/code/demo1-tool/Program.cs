@@ -25,8 +25,13 @@ services.AddTool<GreeterTool>();      // our custom tool
 
 await using var sp = services.BuildServiceProvider();
 
-// 1) Registry knows what exists.
+// Populate the registry from DI (the registry doesn't auto-discover ITool).
+// In the Gateway this happens once at startup in Program.cs.
 var registry = sp.GetRequiredService<IToolRegistry>();
+foreach (var tool in sp.GetServices<ITool>())
+    registry.Register(tool);
+
+// 1) Registry knows what exists.
 Console.WriteLine("\n📚 Tools in registry:");
 foreach (var t in registry.GetAllTools())
     Console.WriteLine($"   • {t.Name} — {t.Description}");

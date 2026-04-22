@@ -35,6 +35,12 @@ static async Task RunWithPolicy<TPolicy>(string banner)
     services.AddTool<DeleteFileTool>();
 
     await using var sp = services.BuildServiceProvider();
+
+    // Populate the registry from DI (the registry doesn't auto-discover ITool).
+    var registry = sp.GetRequiredService<IToolRegistry>();
+    foreach (var tool in sp.GetServices<ITool>())
+        registry.Register(tool);
+
     var executor = sp.GetRequiredService<IToolExecutor>();
 
     var safeArgs    = JsonSerializer.Serialize(new { path = "C:\\temp\\junk.txt" });
