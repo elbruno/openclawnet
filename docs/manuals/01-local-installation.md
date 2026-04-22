@@ -11,8 +11,8 @@ This guide walks you through installing and running **OpenClaw .NET** on your lo
 Open a terminal in the directory where you want the project to live and clone the repo:
 
 ```bash
-git clone https://github.com/elbruno/openclawnet-plan.git
-cd openclawnet-plan
+git clone https://github.com/elbruno/openclawnet.git
+cd openclawnet
 ```
 
 Verify you are on the default branch:
