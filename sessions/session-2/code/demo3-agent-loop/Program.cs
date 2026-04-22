@@ -3,6 +3,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using NCalc;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Models.Ollama;
 using ChatMessage = Microsoft.Extensions.AI.ChatMessage;
@@ -38,7 +39,7 @@ services.Configure<OllamaOptions>(o =>
     o.Endpoint = "http://localhost:11434";
     // Model must support tool calling. Good picks:
     //   gemma3:4b, llama3.1, qwen2.5, phi4
-    o.Model = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "gemma3:4b";
+    o.Model = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.2";
 });
 services.AddSingleton<IAgentProvider, OllamaAgentProvider>();
 
@@ -79,10 +80,12 @@ AIFunction calculator = AIFunctionFactory.Create(
         Console.WriteLine($"\n   🛠️  tool: calculator({expression})");
         try
         {
-            // System.Data.DataTable.Compute is sandboxed arithmetic — no code exec.
-            var table = new System.Data.DataTable();
-            table.Locale = CultureInfo.InvariantCulture;
-            var value = table.Compute(expression, filter: string.Empty);
+            // NCalc supports sqrt, abs, pow, sin, cos, log, etc.
+            var expr = new Expression(expression, ExpressionOptions.IgnoreCaseAtBuiltInFunctions)
+            {
+                CultureInfo = CultureInfo.InvariantCulture
+            };
+            var value = expr.Evaluate();
             var result = Convert.ToString(value, CultureInfo.InvariantCulture) ?? "null";
             Console.WriteLine($"   ✅ result: {result}");
             return result;
@@ -94,7 +97,9 @@ AIFunction calculator = AIFunctionFactory.Create(
         }
     },
     name: "calculator",
-    description: "Evaluate an arithmetic expression like '12 * (4 + 3) / 2'. " +
+    description: "Evaluate an arithmetic expression. Supports operators (+, -, *, /, %, ^) and " +
+                 "functions: sqrt, abs, pow, log, log10, exp, sin, cos, tan, min, max, round, floor, ceiling. " +
+                 "Examples: 'sqrt(2024)', 'pow(2, 10)', '12 * (4 + 3) / 2'. " +
                  "Use whenever the answer requires math the model cannot do reliably.");
 
 AIFunction now = AIFunctionFactory.Create(
