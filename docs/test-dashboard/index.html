@@ -176,25 +176,25 @@ body{
       <div class="hero-subtitle">Test Dashboard &mdash; Unit Tests + E2E (Playwright + Aspire)</div>
     </div>
     <div class="hero-badge">
-      <span class="big"><!-- TOTAL_PASSED -->399<!-- /TOTAL_PASSED --> / <!-- TOTAL_TESTS -->399<!-- /TOTAL_TESTS --></span>
-      All Tests Passing
+      <span class="big"><!-- TOTAL_PASSED -->649<!-- /TOTAL_PASSED --> / <!-- TOTAL_TESTS -->652<!-- /TOTAL_TESTS --></span>
+      649 Passing &bull; 1 Failing &bull; 2 Skipped
     </div>
   </div>
   <div class="nav-links">
-    <a href="#e2e-tests">&#x1F3AD; E2E Tests (52)</a>
-    <a href="#unit-tests">&#x1F9EA; Unit Tests (306)</a>
+    <a href="#e2e-tests">&#x1F3AD; E2E Tests (60)</a>
+    <a href="#unit-tests">&#x1F9EA; Unit Tests (527)</a>
     <a href="#live-tests">&#x1F525; Live Tests (11)</a>
   </div>
 </header>
 <section class="container">
   <div class="summary-bar">
-    <div class="stat-card stat-total"><div class="stat-value"><!-- TOTAL_TESTS -->399<!-- /TOTAL_TESTS --></div><div class="stat-label">Total Tests</div><div class="stat-breakdown">60 E2E &bull; 314 Unit &bull; 27 Integration &bull; 11 Live</div></div>
-    <div class="stat-card stat-passed"><div class="stat-value"><!-- TOTAL_PASSED -->399<!-- /TOTAL_PASSED --></div><div class="stat-label">Passed</div><div class="stat-breakdown">60 E2E &bull; 314 Unit &bull; 27 Integration &bull; 11 Live</div></div>
-    <div class="stat-card stat-failed"><div class="stat-value"><!-- TOTAL_FAILED -->0<!-- /TOTAL_FAILED --></div><div class="stat-label">Failed</div><div class="stat-breakdown">0 E2E &bull; 0 Unit &bull; 0 Integration &bull; 0 Live</div></div>
-    <div class="stat-card stat-duration"><div class="stat-value"><!-- TOTAL_DURATION -->4m 54s<!-- /TOTAL_DURATION --></div><div class="stat-label">Duration</div><div class="stat-breakdown">E2E: 3m 49s &bull; Unit: 4s &bull; Integration: 22s &bull; Live: 39s</div></div>
+    <div class="stat-card stat-total"><div class="stat-value"><!-- TOTAL_TESTS -->652<!-- /TOTAL_TESTS --></div><div class="stat-label">Total Tests</div><div class="stat-breakdown">60 E2E &bull; 527 Unit &bull; 54 Integration &bull; 11 Live</div></div>
+    <div class="stat-card stat-passed"><div class="stat-value"><!-- TOTAL_PASSED -->649<!-- /TOTAL_PASSED --></div><div class="stat-label">Passed</div><div class="stat-breakdown">60 E2E &bull; 525 Unit &bull; 53 Integration &bull; 11 Live</div></div>
+    <div class="stat-card stat-failed"><div class="stat-value"><!-- TOTAL_FAILED -->1<!-- /TOTAL_FAILED --></div><div class="stat-label">Failed</div><div class="stat-breakdown">0 E2E &bull; 1 Unit &bull; 0 Integration &bull; 0 Live</div></div>
+    <div class="stat-card stat-duration"><div class="stat-value"><!-- TOTAL_DURATION -->4m 58s<!-- /TOTAL_DURATION --></div><div class="stat-label">Duration</div><div class="stat-breakdown">E2E: 3m 49s &bull; Unit: 6s &bull; Integration: 23s &bull; Live: 40s</div></div>
   </div>
   <div style="text-align:center; margin-bottom: 16px; font-size: 0.8rem; color: var(--muted);">
-      Dashboard generated: <!-- DASHBOARD_DATE -->April 21, 2026 at 9:16 PM UTC<!-- /DASHBOARD_DATE -->
+      Dashboard generated: <!-- DASHBOARD_DATE -->April 22, 2026 at 4:22 PM UTC<!-- /DASHBOARD_DATE -->
   </div>
 <!-- SECTION: E2E TESTS -->
 <div id="e2e-tests" style="margin: 24px 0; padding: 12px 0;">
@@ -370,7 +370,7 @@ body{
 <div id="unit-tests" style="margin: 40px 0 24px; padding: 20px 0; border-top: 2px solid rgba(124,92,252,0.2);">
   <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--teal-light); display: flex; align-items: center; gap: 10px;">
     <span>&#x1F9EA;</span> Unit Tests
-    <span style="font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-left: auto;">314 tests &bull; 4s total</span>
+    <span style="font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-left: auto;">527 tests &bull; 6s total &bull; 1 failing</span>
   </h2>
   <p style="font-size: 0.85rem; color: var(--muted); margin-top: 6px;">Fast isolated tests &mdash; no Aspire, no Ollama, no network. Run with <code style="font-family:'JetBrains Mono',monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; color: var(--teal-light);">dotnet test tests/OpenClawNet.UnitTests</code></p>
 </div>
@@ -841,7 +841,7 @@ body{
 <div id="live-tests" style="margin: 40px 0 24px; padding: 20px 0; border-top: 2px solid rgba(232,89,12,0.3);">
   <h2 style="font-size: 1.3rem; font-weight: 700; color: var(--coral); display: flex; align-items: center; gap: 10px;">
     <span>&#x1F525;</span> Live Provider Tests
-    <span style="font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-left: auto;">11 tests &bull; ~39s total</span>
+    <span style="font-size: 0.8rem; color: var(--muted); font-weight: 500; margin-left: auto;">11 tests &bull; ~40s total</span>
   </h2>
   <p style="font-size: 0.85rem; color: var(--muted); margin-top: 6px;">Real LLM calls against local Ollama and Azure OpenAI. Run with <code style="font-family:'JetBrains Mono',monospace; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; font-size: 0.8rem; color: var(--coral);">dotnet test --filter "Category=Live"</code></p>
 </div>
@@ -904,7 +904,7 @@ body{
       <h3>CI / CD</h3>
       <p>Tests run in <a href="https://github.com/elbruno/openclawnet-plan/actions" target="_blank">GitHub Actions (private repo)</a>. Results are published here automatically via <code>publish-test-dashboard.ps1</code>.</p>
       <h3>Last Updated</h3>
-      <p><!-- LAST_UPDATED -->2026-04-14<!-- /LAST_UPDATED --></p>
+      <p><!-- LAST_UPDATED -->2026-04-22<!-- /LAST_UPDATED --></p>
     </div>
   </details>
 </section>
