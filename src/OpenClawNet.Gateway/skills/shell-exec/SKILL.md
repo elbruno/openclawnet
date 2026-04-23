@@ -1,3 +1,19 @@
+---
+name: shell-exec
+description: "Execute shell commands and scripts on the local machine (PowerShell on Windows, bash on Linux/macOS)."
+category: system
+tags:
+  - shell
+  - execution
+  - commands
+  - scripting
+examples:
+  - "Run dotnet build to compile the project"
+  - "Execute a PowerShell script to check system status"
+  - "List running processes with ps or Get-Process"
+enabled: true
+---
+
 # Shell Execution Skill
 
 You have access to a shell execution tool that allows you to run commands on the local machine.

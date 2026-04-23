@@ -1,4 +1,4 @@
-@page "/"
+@page "/chat"
 @using System.IO
 @using System.Text.Json
 @using OpenClawNet.Web.Components
@@ -219,7 +219,7 @@
     private PendingApprovalRequest? PendingApproval;
 
     private sealed record PendingApprovalRequest(
-        string RequestId,
+        Guid RequestId,
         string ToolName,
         string? ToolDescription,
         string? ToolArgsJson);
@@ -240,7 +240,7 @@
         _pendingApprovalTool = string.Empty;
         await InvokeAsync(StateHasChanged);
 
-        if (pending is null || string.IsNullOrEmpty(pending.RequestId))
+        if (pending is null || pending.RequestId == Guid.Empty)
         {
             return;
         }
@@ -513,7 +513,7 @@
                         if (evt.RequestId is { } reqId && reqId != Guid.Empty)
                         {
                             PendingApproval = new PendingApprovalRequest(
-                                reqId.ToString(),
+                                reqId,
                                 evt.ToolName ?? string.Empty,
                                 evt.ToolDescription,
                                 evt.ToolArgsJson);

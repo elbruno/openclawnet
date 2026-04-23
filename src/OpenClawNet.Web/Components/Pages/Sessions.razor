@@ -7,7 +7,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h3 class="mb-0">Chat Sessions</h3>
-    <a class="btn btn-primary btn-sm" href="/">+ New Chat</a>
+    <a class="btn btn-primary btn-sm" href="/chat">+ New Chat</a>
 </div>
 
 <p class="text-muted small">View and manage your conversation history. Sessions are stored in SQLite via the Gateway API.</p>
@@ -27,7 +27,7 @@ else if (_sessions.Count == 0)
 {
     <div class="text-center text-muted py-5">
         <div style="font-size:2rem;">💬</div>
-        <p class="mt-2">No sessions yet. <a href="/">Start chatting</a> to create your first session!</p>
+        <p class="mt-2">No sessions yet. <a href="/chat">Start chatting</a> to create your first session!</p>
     </div>
 }
 else
@@ -54,25 +54,10 @@ else
     </div>
 
     @* ── Bulk-action toolbar ── *@
-    <div class="d-flex align-items-center gap-2 mb-2" style="min-height:38px;">
-        <div class="form-check mb-0">
-            <input class="form-check-input" type="checkbox" id="selectAll"
-                   checked="@AllSelected"
-                   @onchange="ToggleSelectAll" />
-            <label class="form-check-label text-muted small" for="selectAll">
-                @if (_selected.Count == 0)
-                {
-                    <span>Select all</span>
-                }
-                else
-                {
-                    <span>@_selected.Count selected</span>
-                }
-            </label>
-        </div>
-
-        @if (_selected.Count > 0)
-        {
+    @if (_selected.Count > 0)
+    {
+        <div class="d-flex align-items-center gap-2 mb-2">
+            <span class="text-muted small">@_selected.Count selected</span>
             <button class="btn btn-danger btn-sm" @onclick="DeleteSelected" disabled="@_bulkDeleting">
                 @if (_bulkDeleting)
                 {
@@ -85,67 +70,100 @@ else
                 }
             </button>
             <button class="btn btn-outline-secondary btn-sm" @onclick="ClearSelection">✕ Deselect all</button>
-        }
-    </div>
-
-    @* ── Session list ── *@
-    @if (_filteredSessions.Count == 0)
-    {
-        <div class="text-muted small py-3">No sessions match the current filters.</div>
+        </div>
     }
-    else
-    {
-    <div class="list-group">
-        @foreach (var (s, index) in _filteredSessions.Select((s, i) => (s, i)))
-        {
-            var isSelected = _selected.Contains(s.Id);
-            <div class="list-group-item d-flex align-items-center gap-2 py-2 @(isSelected ? "list-group-item-primary" : "")"
-                 style="cursor:default">
 
-                @* Checkbox *@
-                <input class="form-check-input flex-shrink-0" type="checkbox"
-                       checked="@isSelected"
-                       @onchange="e => ToggleItem(s.Id, e, index)" />
-
-                @if (_renamingId == s.Id)
-                {
-                    <input class="form-control form-control-sm flex-grow-1" style="max-width:300px"
-                           @bind="_renameTitle" @onkeydown="@(e => HandleRenameKey(e, s.Id))" />
-                    <button class="btn btn-sm btn-success" @onclick="() => CommitRename(s.Id)">✓</button>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="CancelRename">✕</button>
-                }
-                else
-                {
-                    <a class="flex-grow-1 text-decoration-none text-dark" href="/?sessionId=@s.Id">
-                        <span class="fw-semibold">@s.Title</span>
-                        <small class="text-muted ms-2">@s.UpdatedAt.ToLocalTime().ToString("MMM d, HH:mm")</small>
-                    </a>
-                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => StartRename(s)" title="Rename">✏️</button>
-                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSession(s.Id)" title="Delete">🗑</button>
-                }
-            </div>
-        }
-    </div>
-    }
+    <MudDataGrid @ref="_grid" T="SessionDto"
+                 ServerData="LoadGridDataAsync"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="false"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_filteredSessions.Count session(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <TemplateColumn Title="" Sortable="false" Filterable="false" CellClass="text-center" HeaderClass="text-center">
+                <HeaderTemplate>
+                    <input class="form-check-input" type="checkbox"
+                           checked="@AllSelected"
+                           @onchange="ToggleSelectAll"
+                           title="Select all" />
+                </HeaderTemplate>
+                <CellTemplate>
+                    <input class="form-check-input" type="checkbox"
+                           checked="@_selected.Contains(context.Item.Id)"
+                           @onchange="e => ToggleItem(context.Item.Id, e)" />
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.Title" Title="Title">
+                <CellTemplate>
+                    @{ var s = context.Item; }
+                    @if (_renamingId == s.Id)
+                    {
+                        <div class="d-inline-flex align-items-center gap-1">
+                            <input class="form-control form-control-sm" style="max-width:300px"
+                                   @bind="_renameTitle" @onkeydown="@(e => HandleRenameKey(e, s.Id))" />
+                            <button class="btn btn-sm btn-success" @onclick="() => CommitRename(s.Id)">✓</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="CancelRename">✕</button>
+                        </div>
+                    }
+                    else
+                    {
+                        <a class="text-decoration-none text-dark" href="/?sessionId=@s.Id" data-testid="session-row-@s.Id">
+                            <span class="fw-semibold">@s.Title</span>
+                        </a>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.UpdatedAt" Title="Updated" InitialDirection="SortDirection.Descending">
+                <CellTemplate>
+                    <small class="text-muted">@context.Item.UpdatedAt.ToLocalTime().ToString("MMM d, HH:mm")</small>
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end">
+                <CellTemplate>
+                    @{ var s = context.Item; }
+                    @if (_renamingId != s.Id)
+                    {
+                        <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => StartRename(s)" title="Rename">✏️</button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSession(s.Id)" title="Delete">🗑</button>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="SessionDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @code {
     private List<SessionDto> _sessions = [];
+    private List<SessionDto> _filteredSessions = [];
     private bool _loading = true;
     private string? _error;
+    private bool _dense = true;
+    private MudDataGrid<SessionDto>? _grid;
 
     private Guid? _renamingId;
     private string _renameTitle = string.Empty;
 
-    // Bulk selection
     private readonly HashSet<Guid> _selected = [];
     private bool _bulkDeleting;
-    private int? _lastClickedIndex; // for shift-click range
 
-    // Filters
     private string _searchText = string.Empty;
-    private string _dateFilter = "all"; // all | today | 7d | 30d
-    private List<SessionDto> _filteredSessions = [];
+    private string _dateFilter = "all";
 
     private bool IsFiltered =>
         !string.IsNullOrWhiteSpace(_searchText) || _dateFilter != "all";
@@ -176,24 +194,36 @@ else
         }
     }
 
-    // ── Selection logic ──────────────────────────────────────────────
+    // ── ServerData callback: paging + sorting come from MudDataGrid state ──
 
-    private void ToggleItem(Guid id, ChangeEventArgs e, int index)
+    private Task<GridData<SessionDto>> LoadGridDataAsync(GridState<SessionDto> state, CancellationToken ct)
     {
-        var check = e.Value is true;
+        IEnumerable<SessionDto> q = _filteredSessions;
 
-        // Shift+click range-select is not directly available via ChangeEventArgs,
-        // so we use the last-clicked index for range when multiple are selected
-        if (check)
+        // Apply sort definitions from the grid header
+        foreach (var sd in state.SortDefinitions)
         {
-            _selected.Add(id);
-        }
-        else
-        {
-            _selected.Remove(id);
+            q = sd.Descending
+                ? q.OrderByDescending(x => sd.SortFunc(x))
+                : q.OrderBy(x => sd.SortFunc(x));
         }
 
-        _lastClickedIndex = index;
+        var total = _filteredSessions.Count;
+        var page = q.Skip(state.Page * state.PageSize).Take(state.PageSize).ToList();
+
+        return Task.FromResult(new GridData<SessionDto>
+        {
+            Items = page,
+            TotalItems = total,
+        });
+    }
+
+    // ── Selection logic ──
+
+    private void ToggleItem(Guid id, ChangeEventArgs e)
+    {
+        if (e.Value is true) _selected.Add(id);
+        else _selected.Remove(id);
     }
 
     private void ToggleSelectAll()
@@ -202,35 +232,32 @@ else
             foreach (var s in _filteredSessions) _selected.Remove(s.Id);
         else
             foreach (var s in _filteredSessions) _selected.Add(s.Id);
-
-        _lastClickedIndex = null;
     }
 
-    private void ClearSelection()
-    {
-        _selected.Clear();
-        _lastClickedIndex = null;
-    }
+    private void ClearSelection() => _selected.Clear();
 
-    // ── Filters ──────────────────────────────────────────────────────
+    // ── Filters ──
 
-    private void OnSearchChanged(ChangeEventArgs e)
+    private async Task OnSearchChanged(ChangeEventArgs e)
     {
         _searchText = e.Value?.ToString() ?? string.Empty;
         ApplyFilters();
+        if (_grid is not null) await _grid.ReloadServerData();
     }
 
-    private void OnDateFilterChanged(ChangeEventArgs e)
+    private async Task OnDateFilterChanged(ChangeEventArgs e)
     {
         _dateFilter = e.Value?.ToString() ?? "all";
         ApplyFilters();
+        if (_grid is not null) await _grid.ReloadServerData();
     }
 
-    private void ClearFilters()
+    private async Task ClearFilters()
     {
         _searchText = string.Empty;
         _dateFilter = "all";
         ApplyFilters();
+        if (_grid is not null) await _grid.ReloadServerData();
     }
 
     private void ApplyFilters()
@@ -256,12 +283,11 @@ else
 
         _filteredSessions = q.ToList();
 
-        // Prune selection of items no longer visible
         var visibleIds = _filteredSessions.Select(s => s.Id).ToHashSet();
         _selected.RemoveWhere(id => !visibleIds.Contains(id));
     }
 
-    // ── Bulk delete ──────────────────────────────────────────────────
+    // ── Bulk delete ──
 
     private async Task DeleteSelected()
     {
@@ -280,6 +306,7 @@ else
                 _sessions.RemoveAll(s => ids.Contains(s.Id));
                 _selected.Clear();
                 ApplyFilters();
+                if (_grid is not null) await _grid.ReloadServerData();
             }
         }
         catch { /* ignore */ }
@@ -289,7 +316,7 @@ else
         }
     }
 
-    // ── Individual actions ───────────────────────────────────────────
+    // ── Individual actions ──
 
     private void StartRename(SessionDto s)
     {
@@ -319,6 +346,8 @@ else
             var s = _sessions.FirstOrDefault(x => x.Id == id);
             if (s is not null)
                 _sessions[_sessions.IndexOf(s)] = s with { Title = _renameTitle };
+            ApplyFilters();
+            if (_grid is not null) await _grid.ReloadServerData();
         }
         catch { /* ignore */ }
         CancelRename();
@@ -333,6 +362,7 @@ else
             _sessions.RemoveAll(s => s.Id == id);
             _selected.Remove(id);
             ApplyFilters();
+            if (_grid is not null) await _grid.ReloadServerData();
         }
         catch { /* ignore */ }
     }

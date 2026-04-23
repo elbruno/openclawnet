@@ -226,44 +226,67 @@ else
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead>
-                            <tr>
-                                <th>Started</th>
-                                <th>Status</th>
-                                <th>Duration</th>
-                                <th>Tokens</th>
-                                <th>Result</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var run in _job.Runs)
-                            {
-                                <tr>
-                                    <td>@run.StartedAt.ToLocalTime().ToString("g")</td>
-                                    <td><span class="badge @GetRunStatusBadgeClass(run.Status)">@run.Status</span></td>
-                                    <td>@GetDuration(run)</td>
-                                    <td>@(run.TokensUsed?.ToString() ?? "—")</td>
-                                    <td>
-                                        @if (run.Error is not null)
-                                        {
-                                            <span class="text-danger small" title="@run.Error">@Truncate(run.Error, 50)</span>
-                                        }
-                                        else if (run.Result is not null)
-                                        {
-                                            <span class="small" title="@run.Result">@Truncate(run.Result, 50)</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
-                </div>
+                <MudDataGrid T="JobRunDto"
+                             Items="_job.Runs"
+                             Dense="_dense"
+                             Hover="true"
+                             Striped="true"
+                             Bordered="false"
+                             Filterable="true"
+                             SortMode="SortMode.Single"
+                             ShowColumnOptions="true"
+                             Groupable="false"
+                             FixedHeader="true"
+                             Height="60vh"
+                             Elevation="0">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.subtitle2">@_job.Runs.Count run(s)</MudText>
+                        <MudSpacer />
+                        <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                                   Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+                    </ToolBarContent>
+                    <Columns>
+                        <PropertyColumn Property="x => x.StartedAt" Title="Started" InitialDirection="SortDirection.Descending">
+                            <CellTemplate>
+                                <span data-testid="job-run-row-@context.Item.Id">@context.Item.StartedAt.ToLocalTime().ToString("g")</span>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.Status" Title="Status">
+                            <CellTemplate>
+                                <MudChip T="string" Size="Size.Small"
+                                         Color="@RunStatusChipColor(context.Item.Status)"
+                                         Variant="Variant.Filled">@context.Item.Status</MudChip>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Duration"
+                                        SortBy="x => (x.CompletedAt is null ? 0 : (x.CompletedAt.Value - x.StartedAt).TotalSeconds)">
+                            <CellTemplate>@GetDuration(context.Item)</CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.TokensUsed" Title="Tokens">
+                            <CellTemplate>@(context.Item.TokensUsed?.ToString() ?? "—")</CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Result" Sortable="false" Filterable="false">
+                            <CellTemplate>
+                                @{ var run = context.Item; }
+                                @if (run.Error is not null)
+                                {
+                                    <span class="text-danger small" title="@run.Error">@Truncate(run.Error, 50)</span>
+                                }
+                                else if (run.Result is not null)
+                                {
+                                    <span class="small" title="@run.Result">@Truncate(run.Result, 50)</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <PagerContent>
+                        <MudDataGridPager T="JobRunDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                    </PagerContent>
+                </MudDataGrid>
             }
         </div>
     </div>
@@ -280,6 +303,7 @@ else
     private string? _actionSuccess;
     private bool _statsLoading;
     private string? _statsError;
+    private bool _dense = true;
 
     private JobStatsResponse _stats = new() { TotalRuns = 0, CompletedRuns = 0, FailedRuns = 0, SuccessRate = 0 };
 
@@ -343,6 +367,7 @@ else
 
     private async Task ExecuteJobAsync()
     {
+        if (_actionInProgress) return; // Guard against double-click
         _actionInProgress = true;
         _actionError = null;
         _actionSuccess = null;
@@ -433,6 +458,14 @@ else
         "failed" => "bg-danger",
         "running" => "bg-primary",
         _ => "bg-secondary"
+    };
+
+    private static Color RunStatusChipColor(string? status) => status?.ToLowerInvariant() switch
+    {
+        "completed" => Color.Success,
+        "failed"    => Color.Error,
+        "running"   => Color.Primary,
+        _           => Color.Secondary,
     };
 
     private static string GetDuration(JobRunDto run)

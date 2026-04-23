@@ -1,3 +1,4 @@
+using MudBlazor.Services;
 using OpenClawNet.Web.Components;
 using OpenClawNet.Web.Services;
 
@@ -9,24 +10,31 @@ builder.AddServiceDefaults();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
-// Named HttpClient for Gateway API calls (used by Settings page and other pages)
+// MudBlazor services (theme provider, popovers, dialogs, snackbars, JS interop).
+// Bootstrap remains the layout/CSS framework; MudBlazor is scoped to data tables
+// (and other components we opt-in to). See AppTheme.cs for palette mapping.
+builder.Services.AddMudServices();
+
+// Named HttpClient for Gateway API calls (used by Settings page and other pages).
+// BaseAddress uses the Aspire service-discovery scheme `https+http://gateway`;
+// the ResolvingHttpDelegatingHandler (registered by AddServiceDefaults ->
+// AddServiceDiscovery) resolves the scheme+host to the actual endpoint at
+// request time. An explicit OpenClawNet:GatewayBaseUrl override wins for
+// standalone runs where service discovery is not configured.
 builder.Services.AddHttpClient("gateway", (sp, client) =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var gatewayUrl = config["Services:gateway:https:0"]
-        ?? config["Services:gateway:http:0"]
-        ?? config["OpenClawNet:GatewayBaseUrl"]
-        ?? "https://localhost:7100";
+    var gatewayUrl = config["OpenClawNet:GatewayBaseUrl"]
+        ?? "https+http://gateway";
     client.BaseAddress = new Uri(gatewayUrl.TrimEnd('/') + "/");
 });
 
-// Named HttpClient for Scheduler service
+// Named HttpClient for Scheduler service (service-discovery resolved).
 builder.Services.AddHttpClient("scheduler", (sp, client) =>
 {
     var config = sp.GetRequiredService<IConfiguration>();
-    var schedulerUrl = config["Services:scheduler:https:0"]
-        ?? config["Services:scheduler:http:0"]
-        ?? "https://localhost:7200";
+    var schedulerUrl = config["OpenClawNet:SchedulerBaseUrl"]
+        ?? "https+http://scheduler";
     client.BaseAddress = new Uri(schedulerUrl.TrimEnd('/') + "/");
 });
 

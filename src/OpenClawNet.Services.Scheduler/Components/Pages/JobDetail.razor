@@ -16,7 +16,13 @@
 }
 else if (_job is null)
 {
-    <div class="alert alert-warning">Job not found.</div>
+    <div class="alert alert-warning">
+        Job not found.
+        @if (!string.IsNullOrEmpty(_loadError))
+        {
+            <div class="small text-muted mt-2">Error: @_loadError</div>
+        }
+    </div>
 }
 else
 {
@@ -122,18 +128,24 @@ else
 
     private JobDetailDto? _job;
     private bool _loading = true;
+    private string? _loadError;
 
     protected override async Task OnParametersSetAsync() => await Load();
 
     private async Task Load()
     {
         _loading = true;
+        _loadError = null;
         try
         {
             var client = HttpClientFactory.CreateClient("scheduler-self");
             _job = await client.GetFromJsonAsync<JobDetailDto>($"/api/scheduler/jobs/{Id}");
         }
-        catch { _job = null; }
+        catch (Exception ex)
+        {
+            _job = null;
+            _loadError = ex.Message;
+        }
         finally { _loading = false; }
     }
 

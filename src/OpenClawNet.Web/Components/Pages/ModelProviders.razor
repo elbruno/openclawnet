@@ -16,7 +16,7 @@
 else
 {
 <div class="row">
-    <div class="col-md-10">
+    <div class="col-12">
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
@@ -70,246 +70,257 @@ else
             }
             else
             {
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:32px;">
-                                    <input class="form-check-input" type="checkbox"
-                                           checked="@AllSelected"
-                                           @onchange="ToggleSelectAll"
-                                           title="Select all" />
-                                </th>
-                                <th>Name</th>
-                                <th>Type</th>
-                                <th>Status</th>
-                                <th>Last Test</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var provider in _providers)
-                            {
-                                var isSelected = _selected.Contains(provider.Name);
-                                @* ── Main Row ── *@
-                                <tr class="@(isSelected ? "table-primary" : "")">
-                                    <td>
-                                        <input class="form-check-input" type="checkbox"
-                                               checked="@isSelected"
-                                               @onchange="e => ToggleItem(provider.Name, e)" />
-                                    </td>
-                                    <td><code>@provider.Name</code></td>
-                                    <td>@FormatProviderType(provider.ProviderType)</td>
-                                    <td>
+                <div style="overflow-x: auto; width: 100%;">
+                <MudDataGrid T="ProviderDto"
+                             Items="_providers"
+                             Dense="_dense"
+                             Hover="true"
+                             Striped="true"
+                             Bordered="false"
+                             Filterable="true"
+                             SortMode="SortMode.Single"
+                             ShowColumnOptions="true"
+                             Groupable="false"
+                             FixedHeader="true"
+                             Height="70vh"
+                             Elevation="0"
+                             Style="width: 100%;">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.subtitle2">@_providers.Count provider(s)</MudText>
+                        <MudSpacer />
+                        <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                                   Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="" Sortable="false" Filterable="false" CellClass="text-center" HeaderClass="text-center" HeaderStyle="width: 40px;" CellStyle="width: 40px;">
+                            <HeaderTemplate>
+                                <input class="form-check-input" type="checkbox"
+                                       checked="@AllSelected"
+                                       @onchange="ToggleSelectAll"
+                                       title="Select all" />
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <input class="form-check-input" type="checkbox"
+                                       checked="@_selected.Contains(context.Item.Name)"
+                                       @onchange="e => ToggleItem(context.Item.Name, e)" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Name" Title="Name">
+                            <CellTemplate>
+                                <code data-testid="model-provider-row-@context.Item.Name">@context.Item.Name</code>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.ProviderType" Title="Type">
+                            <CellTemplate>@FormatProviderType(context.Item.ProviderType)</CellTemplate>
+                        </PropertyColumn>
+                        <TemplateColumn Title="Status" SortBy="x => x.IsSupported ? 0 : 1">
+                            <CellTemplate>
+                                @if (context.Item.IsSupported)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">✅ Enabled</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">⏸ Disabled</MudChip>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Last Test" SortBy="x => x.LastTestedAt ?? DateTime.MinValue">
+                            <CellTemplate>
+                                @{ var provider = context.Item; }
+                                @if (_testResults.TryGetValue(provider.Name, out var result))
+                                {
+                                    <MudChip T="string" Size="Size.Small"
+                                             Color="@(result.Success ? Color.Success : Color.Error)"
+                                             Variant="Variant.Filled"
+                                             title="@(result.Success ? "Test succeeded" : result.Message)">
+                                        @(result.Success ? "✅ Working" : "❌ Failed")
+                                    </MudChip>
+                                }
+                                else if (provider.LastTestedAt.HasValue)
+                                {
+                                    var relativeTime = FormatRelativeTime(provider.LastTestedAt.Value);
+                                    if (provider.LastTestSucceeded == true)
+                                    {
+                                        <span title="@provider.LastTestedAt.Value.ToString("u")">✅ @relativeTime</span>
+                                    }
+                                    else if (provider.LastTestSucceeded == false)
+                                    {
+                                        <span class="text-danger" title="@provider.LastTestError">❌ @relativeTime</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">—</span>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end" HeaderStyle="white-space: nowrap; width: 1%;" CellStyle="white-space: nowrap; width: 1%;">
+                            <CellTemplate>
+                                @{ var provider = context.Item; }
+                                <div class="d-inline-flex flex-nowrap gap-1 justify-content-end">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => EditProvider(provider)" title="Edit provider">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    <button class="btn @(provider.IsSupported ? "btn-outline-warning" : "btn-outline-success") btn-sm" @onclick="() => ToggleEnabled(provider)" disabled="@_toggling" title="@(provider.IsSupported ? "Disable provider" : "Enable provider")">
                                         @if (provider.IsSupported)
                                         {
-                                            <span class="badge bg-success">✅ Enabled</span>
+                                            <i class="bi bi-pause-circle"></i> <span>Disable</span>
                                         }
                                         else
                                         {
-                                            <span class="badge bg-secondary">⏸ Disabled</span>
+                                            <i class="bi bi-check-circle"></i> <span>Enable</span>
                                         }
-                                    </td>
-                                    <td>
-                                        @if (_testResults.TryGetValue(provider.Name, out var result))
+                                    </button>
+                                    <button class="btn btn-outline-info btn-sm" @onclick="() => TestProvider(provider.Name)" disabled="@_testing" title="Test connection">
+                                        @if (_testing && _testingName == provider.Name)
                                         {
-                                            <span class="badge @(result.Success ? "bg-success" : "bg-danger")"
-                                                  title="@(result.Success ? "Test succeeded" : result.Message)">
-                                                @(result.Success ? "✅ Working" : "❌ Failed")
-                                            </span>
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                                         }
-                                        else if (provider.LastTestedAt.HasValue)
-                                        {
-                                            var relativeTime = FormatRelativeTime(provider.LastTestedAt.Value);
-                                            if (provider.LastTestSucceeded == true)
-                                            {
-                                                <span title="@provider.LastTestedAt.Value.ToString("u")">
-                                                    ✅ @relativeTime
-                                                </span>
-                                            }
-                                            else if (provider.LastTestSucceeded == false)
-                                            {
-                                                <span class="text-danger" title="@provider.LastTestError">
-                                                    ❌ @relativeTime
-                                                    @if (!string.IsNullOrEmpty(provider.LastTestError))
-                                                    {
-                                                        <i class="bi bi-info-circle ms-1" title="@provider.LastTestError"></i>
-                                                    }
-                                                </span>
-                                            }
-                                        }
-                                        else
-                                        {
-                                            <span class="text-muted">—</span>
-                                        }
-                                    </td>
-                                    <td class="text-end" style="white-space: nowrap;">
-                                        <div class="d-inline-flex flex-nowrap gap-1 justify-content-end">
-                                            <button class="btn btn-outline-primary btn-sm" @onclick="() => EditProvider(provider)" title="Edit provider">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            <button class="btn @(provider.IsSupported ? "btn-outline-warning" : "btn-outline-success") btn-sm" @onclick="() => ToggleEnabled(provider)" disabled="@_toggling" title="@(provider.IsSupported ? "Disable provider" : "Enable provider")">
-                                                @if (provider.IsSupported)
-                                                {
-                                                    <i class="bi bi-pause-circle"></i> <span>Disable</span>
-                                                }
-                                                else
-                                                {
-                                                    <i class="bi bi-check-circle"></i> <span>Enable</span>
-                                                }
-                                            </button>
-                                            <button class="btn btn-outline-info btn-sm" @onclick="() => TestProvider(provider.Name)" disabled="@_testing" title="Test connection">
-                                                @if (_testing && _testingName == provider.Name)
-                                                {
-                                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                                }
-                                                <i class="bi bi-play-circle"></i> Test
-                                            </button>
-                                            <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteProvider(provider.Name)" disabled="@_deleting" title="Delete provider">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @* ── Sub-Row with provider details ── *@
-                                <tr class="@(isSelected ? "table-primary" : "")">
-                                    <td></td>
-                                    <td colspan="5">
-                                        <small class="text-muted">
-                                            @* Always-included fields *@
-                                            <span>Last tested: </span>
-                                            @if (provider.LastTestedAt.HasValue)
-                                            {
-                                                <span title="@provider.LastTestedAt.Value.ToString("u")">
-                                                    @provider.LastTestedAt.Value.ToString("yyyy-MM-dd HH:mm") (@FormatRelativeTime(provider.LastTestedAt.Value))
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span>Never tested</span>
-                                            }
-                                            <span> · Test result: </span>
-                                            @if (_testResults.TryGetValue(provider.Name, out var testRes))
-                                            {
-                                                if (testRes.Success)
-                                                {
-                                                    <span>✅ Success</span>
-                                                }
-                                                else
-                                                {
-                                                    <span title="@testRes.Message">❌ Failed</span>
-                                                }
-                                            }
-                                            else if (provider.LastTestSucceeded == true)
-                                            {
-                                                <span>✅ Success</span>
-                                            }
-                                            else if (provider.LastTestSucceeded == false)
-                                            {
-                                                <span title="@provider.LastTestError">❌ Failed</span>
-                                            }
-                                            else
-                                            {
-                                                <span>— Never run</span>
-                                            }
-                                            <span> · Enabled: @(provider.IsSupported ? "Yes" : "No")</span>
+                                        <i class="bi bi-play-circle"></i> Test
+                                    </button>
+                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteProvider(provider.Name)" disabled="@_deleting" title="Delete provider">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <ChildRowContent>
+                        @{ var provider = context.Item; }
+                        <MudCard Elevation="0" Class="pa-2 mud-background-gray">
+                            <small class="text-muted">
+                                <span>Last tested: </span>
+                                @if (provider.LastTestedAt.HasValue)
+                                {
+                                    <span title="@provider.LastTestedAt.Value.ToString("u")">
+                                        @provider.LastTestedAt.Value.ToString("yyyy-MM-dd HH:mm") (@FormatRelativeTime(provider.LastTestedAt.Value))
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>Never tested</span>
+                                }
+                                <span> · Test result: </span>
+                                @if (_testResults.TryGetValue(provider.Name, out var testRes))
+                                {
+                                    if (testRes.Success)
+                                    {
+                                        <span>✅ Success</span>
+                                    }
+                                    else
+                                    {
+                                        <span title="@testRes.Message">❌ Failed</span>
+                                    }
+                                }
+                                else if (provider.LastTestSucceeded == true)
+                                {
+                                    <span>✅ Success</span>
+                                }
+                                else if (provider.LastTestSucceeded == false)
+                                {
+                                    <span title="@provider.LastTestError">❌ Failed</span>
+                                }
+                                else
+                                {
+                                    <span>— Never run</span>
+                                }
+                                <span> · Enabled: @(provider.IsSupported ? "Yes" : "No")</span>
 
-                                            @* Type-specific fields *@
-                                            @if (provider.ProviderType == "ollama")
-                                            {
-                                                @if (!string.IsNullOrEmpty(provider.Endpoint))
-                                                {
-                                                    <span> · Endpoint: <code>@provider.Endpoint</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.Model))
-                                                {
-                                                    <span> · Model: <code>@provider.Model</code></span>
-                                                }
-                                            }
-                                            else if (provider.ProviderType == "lm-studio")
-                                            {
-                                                @if (!string.IsNullOrEmpty(provider.Endpoint))
-                                                {
-                                                    <span> · Endpoint: <code>@provider.Endpoint</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.Model))
-                                                {
-                                                    <span> · Model: <code>@provider.Model</code></span>
-                                                }
-                                            }
-                                            else if (provider.ProviderType == "azure-openai")
-                                            {
-                                                @if (!string.IsNullOrEmpty(provider.Endpoint))
-                                                {
-                                                    <span> · Endpoint: <code>@provider.Endpoint</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.DeploymentName))
-                                                {
-                                                    <span> · Deployment Name: <code>@provider.DeploymentName</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.AuthMode))
-                                                {
-                                                    <span> · Auth Mode: @provider.AuthMode</span>
-                                                }
-                                                <span> · API key: @(provider.HasApiKey ? "Set" : "Not set")</span>
-                                            }
-                                            else if (provider.ProviderType == "foundry")
-                                            {
-                                                @if (!string.IsNullOrEmpty(provider.Endpoint))
-                                                {
-                                                    <span> · Endpoint: <code>@provider.Endpoint</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.Model))
-                                                {
-                                                    <span> · Model: <code>@provider.Model</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.AuthMode))
-                                                {
-                                                    <span> · Auth Mode: @provider.AuthMode</span>
-                                                }
-                                                <span> · API key: @(provider.HasApiKey ? "Set" : "Not set")</span>
-                                            }
-                                            else if (provider.ProviderType == "foundry-local")
-                                            {
-                                                @if (!string.IsNullOrEmpty(provider.Model))
-                                                {
-                                                    <span> · Model: <code>@provider.Model</code></span>
-                                                }
-                                            }
-                                            else if (provider.ProviderType == "github-copilot")
-                                            {
-                                                @* No extra fields for GitHub Copilot *@
-                                            }
-                                            else
-                                            {
-                                                @* Unknown provider type - show all available fields *@
-                                                @if (!string.IsNullOrEmpty(provider.Endpoint))
-                                                {
-                                                    <span> · Endpoint: <code>@provider.Endpoint</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.Model))
-                                                {
-                                                    <span> · Model: <code>@provider.Model</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.DeploymentName))
-                                                {
-                                                    <span> · Deployment Name: <code>@provider.DeploymentName</code></span>
-                                                }
-                                                @if (!string.IsNullOrEmpty(provider.AuthMode))
-                                                {
-                                                    <span> · Auth Mode: @provider.AuthMode</span>
-                                                }
-                                                @if (provider.HasApiKey)
-                                                {
-                                                    <span> · API key: Set</span>
-                                                }
-                                            }
-                                        </small>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                @if (provider.ProviderType == "ollama")
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Endpoint))
+                                    {
+                                        <span> · Endpoint: <code>@provider.Endpoint</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.Model))
+                                    {
+                                        <span> · Model: <code>@provider.Model</code></span>
+                                    }
+                                }
+                                else if (provider.ProviderType == "lm-studio")
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Endpoint))
+                                    {
+                                        <span> · Endpoint: <code>@provider.Endpoint</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.Model))
+                                    {
+                                        <span> · Model: <code>@provider.Model</code></span>
+                                    }
+                                }
+                                else if (provider.ProviderType == "azure-openai")
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Endpoint))
+                                    {
+                                        <span> · Endpoint: <code>@provider.Endpoint</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.DeploymentName))
+                                    {
+                                        <span> · Deployment Name: <code>@provider.DeploymentName</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.AuthMode))
+                                    {
+                                        <span> · Auth Mode: @provider.AuthMode</span>
+                                    }
+                                    <span> · API key: @(provider.HasApiKey ? "Set" : "Not set")</span>
+                                }
+                                else if (provider.ProviderType == "foundry")
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Endpoint))
+                                    {
+                                        <span> · Endpoint: <code>@provider.Endpoint</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.Model))
+                                    {
+                                        <span> · Model: <code>@provider.Model</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.AuthMode))
+                                    {
+                                        <span> · Auth Mode: @provider.AuthMode</span>
+                                    }
+                                    <span> · API key: @(provider.HasApiKey ? "Set" : "Not set")</span>
+                                }
+                                else if (provider.ProviderType == "foundry-local")
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Model))
+                                    {
+                                        <span> · Model: <code>@provider.Model</code></span>
+                                    }
+                                }
+                                else if (provider.ProviderType == "github-copilot")
+                                {
+                                }
+                                else
+                                {
+                                    @if (!string.IsNullOrEmpty(provider.Endpoint))
+                                    {
+                                        <span> · Endpoint: <code>@provider.Endpoint</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.Model))
+                                    {
+                                        <span> · Model: <code>@provider.Model</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.DeploymentName))
+                                    {
+                                        <span> · Deployment Name: <code>@provider.DeploymentName</code></span>
+                                    }
+                                    @if (!string.IsNullOrEmpty(provider.AuthMode))
+                                    {
+                                        <span> · Auth Mode: @provider.AuthMode</span>
+                                    }
+                                    @if (provider.HasApiKey)
+                                    {
+                                        <span> · API key: Set</span>
+                                    }
+                                }
+                            </small>
+                        </MudCard>
+                    </ChildRowContent>
+                    <PagerContent>
+                        <MudDataGridPager T="ProviderDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                    </PagerContent>
+                </MudDataGrid>
                 </div>
             }
         }
@@ -508,6 +519,7 @@ else
 @code {
     // ── State ────────────────────────────────────────────────
     private bool _loading = true;
+    private bool _dense = true;
     private bool _saving;
     private bool _deleting;
     private bool _testing;

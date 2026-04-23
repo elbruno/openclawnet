@@ -11,6 +11,7 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="*" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="*" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="*" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="*" />

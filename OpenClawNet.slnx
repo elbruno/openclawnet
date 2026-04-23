@@ -2,6 +2,7 @@
   <Folder Name="/src/">
     <Project Path="src/OpenClawNet.Agent/OpenClawNet.Agent.csproj" />
     <Project Path="src/OpenClawNet.AppHost/OpenClawNet.AppHost.csproj" />
+    <Project Path="src/OpenClawNet.Channels/OpenClawNet.Channels.csproj" />
     <Project Path="src/OpenClawNet.Gateway/OpenClawNet.Gateway.csproj" />
     <Project Path="src/OpenClawNet.Memory/OpenClawNet.Memory.csproj" />
     <Project Path="src/OpenClawNet.Models.Abstractions/OpenClawNet.Models.Abstractions.csproj" />

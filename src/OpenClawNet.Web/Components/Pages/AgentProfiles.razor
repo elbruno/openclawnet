@@ -16,7 +16,7 @@
 else
 {
 <div class="row">
-    <div class="col-md-10">
+    <div class="col-12">
 
         @if (!string.IsNullOrEmpty(_errorMessage))
         {
@@ -117,179 +117,190 @@ else
                     <div class="alert alert-warning py-1 small">@_bulkSkipMessage</div>
                 }
 
-                <div class="table-responsive">
-                    <table class="table table-sm table-hover align-middle">
-                        <thead class="table-light">
-                            <tr>
-                                <th style="width:32px;">
-                                    <input class="form-check-input" type="checkbox"
-                                           checked="@AllSelected"
-                                           @onchange="ToggleSelectAll"
-                                           title="Select all" />
-                                </th>
-                                <th>Name</th>
-                                <th>Display Name</th>
-                                <th>Labels</th>
-                                <th class="text-end">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach (var profile in _profiles)
-                            {
-                                var isSelected = _selected.Contains(profile.Name);
-                                <tr class="@(isSelected ? "table-primary" : "")">
-                                    <td>
-                                        <input class="form-check-input" type="checkbox"
-                                               checked="@isSelected"
-                                               @onchange="e => ToggleItem(profile.Name, e)" />
-                                    </td>
-                                    <td><code>@profile.Name</code></td>
-                                    <td>@profile.DisplayName</td>
-                                    <td>
-                                        @{
-                                            var kind = string.IsNullOrWhiteSpace(profile.Kind) ? "Standard" : profile.Kind;
-                                            var (kindCss, kindLabel) = kind.ToLowerInvariant() switch
-                                            {
-                                                "system"     => ("bg-info text-dark", "System"),
-                                                "tooltester" => ("bg-warning text-dark", "ToolTester"),
-                                                _            => ("bg-secondary", "Standard"),
-                                            };
-                                        }
-                                        @{
-                                            var provider = profile.Provider ?? string.Empty;
-                                            var providerCss = provider.ToLowerInvariant() switch
-                                            {
-                                                "azureopenai"   => "bg-primary",
-                                                "openai"        => "bg-dark",
-                                                "ollama"        => "bg-success",
-                                                "foundry"       => "bg-info text-dark",
-                                                "foundrylocal"  => "bg-info text-dark",
-                                                "githubcopilot" => "bg-dark",
-                                                _               => "bg-secondary",
-                                            };
-                                            var providerLabel = string.IsNullOrWhiteSpace(provider) ? "—" : provider;
-                                        }
-                                        <span class="badge @kindCss me-1" title="Profile kind">@kindLabel</span>
-                                        <span class="badge @providerCss me-1" title="Provider">@providerLabel</span>
-                                        @if (profile.IsDefault)
+                <div style="overflow-x: auto; width: 100%;">
+                <MudDataGrid T="AgentProfileDto"
+                             Items="_profiles"
+                             Dense="_dense"
+                             Hover="true"
+                             Striped="true"
+                             Bordered="false"
+                             Filterable="true"
+                             SortMode="SortMode.Single"
+                             ShowColumnOptions="true"
+                             Groupable="false"
+                             FixedHeader="true"
+                             Height="70vh"
+                             Elevation="0"
+                             Style="width: 100%;">
+                    <ToolBarContent>
+                        <MudText Typo="Typo.subtitle2">@_profiles.Count profile(s)</MudText>
+                        <MudSpacer />
+                        <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                                   Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+                    </ToolBarContent>
+                    <Columns>
+                        <TemplateColumn Title="" Sortable="false" Filterable="false" CellClass="text-center" HeaderClass="text-center" HeaderStyle="width: 40px;" CellStyle="width: 40px;">
+                            <HeaderTemplate>
+                                <input class="form-check-input" type="checkbox"
+                                       checked="@AllSelected"
+                                       @onchange="ToggleSelectAll"
+                                       title="Select all" />
+                            </HeaderTemplate>
+                            <CellTemplate>
+                                <input class="form-check-input" type="checkbox"
+                                       checked="@_selected.Contains(context.Item.Name)"
+                                       @onchange="e => ToggleItem(context.Item.Name, e)" />
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <PropertyColumn Property="x => x.Name" Title="Name">
+                            <CellTemplate>
+                                <code data-testid="agent-profile-row-@context.Item.Name">@context.Item.Name</code>
+                            </CellTemplate>
+                        </PropertyColumn>
+                        <PropertyColumn Property="x => x.DisplayName" Title="Display Name" CellStyle="white-space: normal; word-break: break-word;" />
+                        <TemplateColumn Title="Labels" SortBy="x => x.Kind ?? string.Empty" CellStyle="white-space: normal; min-width: 220px;">
+                            <CellTemplate>
+                                @{
+                                    var profile = context.Item;
+                                    var kind = string.IsNullOrWhiteSpace(profile.Kind) ? "Standard" : profile.Kind;
+                                    var kindColor = kind.ToLowerInvariant() switch
+                                    {
+                                        "system"     => Color.Info,
+                                        "tooltester" => Color.Warning,
+                                        _            => Color.Secondary,
+                                    };
+                                    var provider = profile.Provider ?? string.Empty;
+                                    var providerColor = provider.ToLowerInvariant() switch
+                                    {
+                                        "azureopenai"   => Color.Primary,
+                                        "openai"        => Color.Dark,
+                                        "ollama"        => Color.Success,
+                                        "foundry"       => Color.Info,
+                                        "foundrylocal"  => Color.Info,
+                                        "githubcopilot" => Color.Dark,
+                                        _               => Color.Secondary,
+                                    };
+                                    var providerLabel = string.IsNullOrWhiteSpace(provider) ? "—" : provider;
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@kindColor" Variant="Variant.Filled" Class="me-1" title="Profile kind">@kind</MudChip>
+                                <MudChip T="string" Size="Size.Small" Color="@providerColor" Variant="Variant.Filled" Class="me-1" title="Provider">@providerLabel</MudChip>
+                                @if (profile.IsDefault)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled" Class="me-1" title="Default profile used in chat">Default</MudChip>
+                                }
+                                @if (profile.IsEnabled)
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Outlined" title="Profile is enabled">Enabled</MudChip>
+                                }
+                                else
+                                {
+                                    <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" title="Profile is disabled">Disabled</MudChip>
+                                }
+                            </CellTemplate>
+                        </TemplateColumn>
+                        <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end" HeaderStyle="white-space: nowrap; width: 1%;" CellStyle="white-space: nowrap; width: 1%;">
+                            <CellTemplate>
+                                @{ var profile = context.Item; }
+                                <div class="d-inline-flex flex-nowrap gap-1 justify-content-end">
+                                    <button class="btn btn-outline-info btn-sm" @onclick="() => TestAgent(profile.Name)" disabled="@_testing" title="Test profile">
+                                        @if (_testing && _testingName == profile.Name)
                                         {
-                                            <span class="badge bg-success me-1" title="Default profile used in chat">Default</span>
+                                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                                         }
-                                        @if (profile.IsEnabled)
-                                        {
-                                            <span class="badge border border-success text-success" title="Profile is enabled">Enabled</span>
-                                        }
-                                        else
-                                        {
-                                            <span class="badge bg-danger" title="Profile is disabled">Disabled</span>
-                                        }
-                                    </td>
-                                    <td class="text-end" style="white-space: nowrap;">
-                                        <div class="d-inline-flex flex-nowrap gap-1 justify-content-end">
-                                            <button class="btn btn-outline-info btn-sm" @onclick="() => TestAgent(profile.Name)" disabled="@_testing" title="Test profile">
-                                                @if (_testing && _testingName == profile.Name)
-                                                {
-                                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                                }
-                                                <i class="bi bi-play-circle"></i> Test
-                                            </button>
-                                            <button class="btn btn-outline-primary btn-sm" @onclick="() => EditProfile(profile)" title="Edit profile">
-                                                <i class="bi bi-pencil"></i> Edit
-                                            </button>
-                                            @if (profile.IsEnabled)
-                                            {
-                                                <button class="btn btn-outline-secondary btn-sm" @onclick="() => ToggleEnabled(profile.Name, false)" title="Disable profile">
-                                                    <i class="bi bi-pause-circle"></i> Disable
-                                                </button>
-                                            }
-                                            else
-                                            {
-                                                <button class="btn btn-outline-success btn-sm" @onclick="() => ToggleEnabled(profile.Name, true)" title="Enable profile">
-                                                    <i class="bi bi-check-circle"></i> Enable
-                                                </button>
-                                            }
-                                            <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteProfile(profile.Name)" disabled="@_deleting" title="Delete profile">
-                                                <i class="bi bi-trash"></i> Delete
-                                            </button>
-                                        </div>
-                                    </td>
-                                </tr>
-                                @* ── Sub-Row with profile details ── *@
-                                <tr class="@(isSelected ? "table-primary" : "")">
-                                    <td></td>
-                                    <td colspan="4">
-                                        <small class="text-muted">
-                                            @* Last test datetime + result *@
-                                            <span>Last tested: </span>
-                                            @if (profile.LastTestedAt.HasValue)
-                                            {
-                                                <span title="@profile.LastTestedAt.Value.ToString("u")">
-                                                    @profile.LastTestedAt.Value.ToString("yyyy-MM-dd HH:mm") (@FormatRelativeTime(profile.LastTestedAt.Value))
-                                                </span>
-                                            }
-                                            else
-                                            {
-                                                <span>Never tested</span>
-                                            }
-                                            <span> · Test result: </span>
-                                            @if (_testResults.TryGetValue(profile.Name, out var testRes))
-                                            {
-                                                if (testRes.Success)
-                                                {
-                                                    <span>✅ @(testRes.Message ?? "Success")</span>
-                                                }
-                                                else
-                                                {
-                                                    <span class="text-danger" title="@testRes.Message">❌ @(testRes.Message ?? "Failed")</span>
-                                                }
-                                            }
-                                            else if (profile.LastTestSucceeded == true)
-                                            {
-                                                <span>✅ Success</span>
-                                            }
-                                            else if (profile.LastTestSucceeded == false)
-                                            {
-                                                <span class="text-danger" title="@profile.LastTestError">❌ Failed</span>
-                                            }
-                                            else
-                                            {
-                                                <span>— Never run</span>
-                                            }
-                                            @* Tools *@
-                                            @if (profile.EnabledTools is { Length: > 0 })
-                                            {
-                                                <span> · Tools (@profile.EnabledTools.Length): <code>@string.Join(", ", profile.EnabledTools)</code></span>
-                                            }
-                                            else
-                                            {
-                                                <span> · Tools: none</span>
-                                            }
-
-                                            @* Generation params *@
-                                            @if (profile.Temperature.HasValue)
-                                            {
-                                                <span> · Temperature: @profile.Temperature.Value.ToString("0.##")</span>
-                                            }
-                                            @if (profile.MaxTokens.HasValue)
-                                            {
-                                                <span> · MaxTokens: @profile.MaxTokens.Value</span>
-                                            }
-                                            <span> · Tool approval: @(profile.RequireToolApproval ? "Required" : "Auto")</span>
-
-                                            @* Instructions preview *@
-                                            @if (!string.IsNullOrWhiteSpace(profile.Instructions))
-                                            {
-                                                var preview = profile.Instructions.Length > 120
-                                                    ? profile.Instructions.Substring(0, 120) + "…"
-                                                    : profile.Instructions;
-                                                <span> · Instructions: <em title="@profile.Instructions">@preview</em></span>
-                                            }
-                                        </small>
-                                    </td>
-                                </tr>
-                            }
-                        </tbody>
-                    </table>
+                                        <i class="bi bi-play-circle"></i> Test
+                                    </button>
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="() => EditProfile(profile)" title="Edit profile">
+                                        <i class="bi bi-pencil"></i> Edit
+                                    </button>
+                                    @if (profile.IsEnabled)
+                                    {
+                                        <button class="btn btn-outline-secondary btn-sm" @onclick="() => ToggleEnabled(profile.Name, false)" title="Disable profile">
+                                            <i class="bi bi-pause-circle"></i> Disable
+                                        </button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-outline-success btn-sm" @onclick="() => ToggleEnabled(profile.Name, true)" title="Enable profile">
+                                            <i class="bi bi-check-circle"></i> Enable
+                                        </button>
+                                    }
+                                    <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteProfile(profile.Name)" disabled="@_deleting" title="Delete profile">
+                                        <i class="bi bi-trash"></i> Delete
+                                    </button>
+                                </div>
+                            </CellTemplate>
+                        </TemplateColumn>
+                    </Columns>
+                    <ChildRowContent>
+                        @{ var profile = context.Item; }
+                        <MudCard Elevation="0" Class="pa-2 mud-background-gray">
+                            <small class="text-muted">
+                                <span>Last tested: </span>
+                                @if (profile.LastTestedAt.HasValue)
+                                {
+                                    <span title="@profile.LastTestedAt.Value.ToString("u")">
+                                        @profile.LastTestedAt.Value.ToString("yyyy-MM-dd HH:mm") (@FormatRelativeTime(profile.LastTestedAt.Value))
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span>Never tested</span>
+                                }
+                                <span> · Test result: </span>
+                                @if (_testResults.TryGetValue(profile.Name, out var testRes))
+                                {
+                                    if (testRes.Success)
+                                    {
+                                        <span>✅ @(testRes.Message ?? "Success")</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-danger" title="@testRes.Message">❌ @(testRes.Message ?? "Failed")</span>
+                                    }
+                                }
+                                else if (profile.LastTestSucceeded == true)
+                                {
+                                    <span>✅ Success</span>
+                                }
+                                else if (profile.LastTestSucceeded == false)
+                                {
+                                    <span class="text-danger" title="@profile.LastTestError">❌ Failed</span>
+                                }
+                                else
+                                {
+                                    <span>— Never run</span>
+                                }
+                                @if (profile.EnabledTools is { Length: > 0 })
+                                {
+                                    <span> · Tools (@profile.EnabledTools.Length): <code>@string.Join(", ", profile.EnabledTools)</code></span>
+                                }
+                                else
+                                {
+                                    <span> · Tools: none</span>
+                                }
+                                @if (profile.Temperature.HasValue)
+                                {
+                                    <span> · Temperature: @profile.Temperature.Value.ToString("0.##")</span>
+                                }
+                                @if (profile.MaxTokens.HasValue)
+                                {
+                                    <span> · MaxTokens: @profile.MaxTokens.Value</span>
+                                }
+                                <span> · Tool approval: @(profile.RequireToolApproval ? "Required" : "Auto")</span>
+                                @if (!string.IsNullOrWhiteSpace(profile.Instructions))
+                                {
+                                    var preview = profile.Instructions.Length > 120
+                                        ? profile.Instructions.Substring(0, 120) + "…"
+                                        : profile.Instructions;
+                                    <span> · Instructions: <em title="@profile.Instructions">@preview</em></span>
+                                }
+                            </small>
+                        </MudCard>
+                    </ChildRowContent>
+                    <PagerContent>
+                        <MudDataGridPager T="AgentProfileDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                    </PagerContent>
+                </MudDataGrid>
                 </div>
             }
         }
@@ -507,6 +518,7 @@ else
 @code {
     // ── State ────────────────────────────────────────────────
     private bool _loading = true;
+    private bool _dense = true;
     private bool _saving;
     private bool _deleting;
     private bool? _saveSuccess;

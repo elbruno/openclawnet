@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.2.2">
+<Project Sdk="Aspire.AppHost.Sdk/13.2.3">
 
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Gateway\OpenClawNet.Gateway.csproj" />
@@ -8,6 +8,7 @@
     <ProjectReference Include="..\OpenClawNet.Services.Browser\OpenClawNet.Services.Browser.csproj" />
     <ProjectReference Include="..\OpenClawNet.Services.Channels\OpenClawNet.Services.Channels.csproj" />
     <ProjectReference Include="..\OpenClawNet.Services.Memory\OpenClawNet.Services.Memory.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
   </ItemGroup>
 
   <ItemGroup>

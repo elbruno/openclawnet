@@ -14,9 +14,17 @@ builder.Services.AddSingleton<SchedulerRunState>();
 builder.Services.AddSingleton<CronExpressionEvaluator>();
 builder.Services.AddHostedService<SchedulerPollingService>();
 
+// Artifact storage and retention
+builder.Services.AddSingleton<ArtifactStorageService>();
+builder.Services.AddHostedService<ArtifactRetentionService>();
+builder.Services.Configure<ArtifactRetentionOptions>(builder.Configuration.GetSection("Channels:Retention"));
+
 builder.Services.AddHttpClient("gateway", c => c.BaseAddress = new Uri("https+http://gateway"));
-// Self-referential client for Blazor components to call local API
-builder.Services.AddHttpClient("scheduler-self", c => c.BaseAddress = new Uri("http://scheduler"));
+// Self-referential client for Blazor components to call local API.
+// Use Aspire service-discovery scheme so the resolver knows to look up the
+// "scheduler" resource endpoint at request time instead of treating
+// "scheduler" as a literal hostname (which would fail DNS).
+builder.Services.AddHttpClient("scheduler-self", c => c.BaseAddress = new Uri("https+http://scheduler"));
 
 // Blazor Server
 builder.Services.AddRazorComponents()

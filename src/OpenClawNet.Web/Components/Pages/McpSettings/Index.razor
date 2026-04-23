@@ -46,109 +46,138 @@ else if (_servers.Count == 0)
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm table-hover align-middle">
-            <thead class="table-light">
-                <tr>
-                    <th>Name</th>
-                    <th>Transport</th>
-                    <th>Status</th>
-                    <th>Tools</th>
-                    <th>Last error</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var s in _servers)
-                {
-                    <tr data-testid="mcp-row-@s.Name">
-                        <td>
-                            <code>@s.Name</code>
-                            @if (s.IsBuiltIn)
-                            {
-                                <span class="badge bg-secondary ms-2" title="Built-in MCP server">Built-in</span>
-                            }
-                        </td>
-                        <td><span class="badge bg-light text-dark border">@s.Transport</span></td>
-                        <td>
-                            @if (!s.Enabled)
-                            {
-                                <span class="badge bg-warning text-dark">🟡 Disabled</span>
-                            }
-                            else if (!string.IsNullOrEmpty(s.LastError))
-                            {
-                                <span class="badge bg-danger">🔴 Error</span>
-                            }
-                            else if (s.IsRunning)
-                            {
-                                <span class="badge bg-success">🟢 Running</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">⚪ Stopped</span>
-                            }
-                        </td>
-                        <td>@(s.ToolCount > 0 ? s.ToolCount.ToString() : "—")</td>
-                        <td>
-                            @if (!string.IsNullOrEmpty(s.LastError))
-                            {
-                                <span class="text-danger small" title="@s.LastError">
-                                    @(s.LastError!.Length > 40 ? s.LastError[..40] + "…" : s.LastError)
-                                </span>
-                            }
-                            else
-                            {
-                                <span class="text-muted">—</span>
-                            }
-                        </td>
-                        <td class="text-end">
-                            <button class="btn btn-outline-secondary btn-sm me-1"
-                                    @onclick="() => ToggleEnabledAsync(s)" disabled="@_busy">
-                                @(s.Enabled ? "Disable" : "Enable")
-                            </button>
-                            <button class="btn btn-outline-info btn-sm me-1" @onclick="() => TestAsync(s.Id)" disabled="@_busy">
-                                Test
-                            </button>
-                            @if (!s.IsBuiltIn)
-                            {
-                                <button class="btn btn-outline-primary btn-sm me-1"
-                                        @onclick="@(() => Nav.NavigateTo($"/settings/mcp/{s.Id}"))">
-                                    Edit
-                                </button>
-                                <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteAsync(s)" disabled="@_busy">
-                                    Delete
-                                </button>
-                            }
-                        </td>
-                    </tr>
-                    @if (_lastTest.TryGetValue(s.Id, out var t))
+    <MudDataGrid T="McpDtos.McpServerListItem"
+                 Items="_servers"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_servers.Count server(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name">
+                <CellTemplate>
+                    <code data-testid="mcp-row-@context.Item.Name">@context.Item.Name</code>
+                    @if (context.Item.IsBuiltIn)
                     {
-                        <tr>
-                            <td colspan="6">
-                                @if (t.Ok)
-                                {
-                                    <span class="badge bg-success">✅ @t.Tools.Length tool(s)</span>
-                                    <span class="ms-2 small text-muted">
-                                        @string.Join(", ", t.Tools.Take(8).Select(x => x.Name))
-                                        @(t.Tools.Length > 8 ? " …" : "")
-                                    </span>
-                                }
-                                else
-                                {
-                                    <span class="badge bg-danger">❌ @t.Error</span>
-                                }
-                            </td>
-                        </tr>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled" Class="ms-2" title="Built-in MCP server">Built-in</MudChip>
                     }
-                }
-            </tbody>
-        </table>
-    </div>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Transport" Title="Transport">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined">@context.Item.Transport</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Status" SortBy="x => x.Enabled ? (string.IsNullOrEmpty(x.LastError) ? (x.IsRunning ? 0 : 2) : 1) : 3">
+                <CellTemplate>
+                    @if (!context.Item.Enabled)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">🟡 Disabled</MudChip>
+                    }
+                    else if (!string.IsNullOrEmpty(context.Item.LastError))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">🔴 Error</MudChip>
+                    }
+                    else if (context.Item.IsRunning)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">🟢 Running</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">⚪ Stopped</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.ToolCount" Title="Tools">
+                <CellTemplate>
+                    @(context.Item.ToolCount > 0 ? context.Item.ToolCount.ToString() : "—")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.LastError" Title="Last error">
+                <CellTemplate>
+                    @if (!string.IsNullOrEmpty(context.Item.LastError))
+                    {
+                        <span class="text-danger small" title="@context.Item.LastError">
+                            @(context.Item.LastError!.Length > 40 ? context.Item.LastError[..40] + "…" : context.Item.LastError)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end">
+                <CellTemplate>
+                    <button class="btn btn-outline-secondary btn-sm me-1"
+                            @onclick="() => ToggleEnabledAsync(context.Item)" disabled="@_busy">
+                        @(context.Item.Enabled ? "Disable" : "Enable")
+                    </button>
+                    <button class="btn btn-outline-info btn-sm me-1" @onclick="() => TestAsync(context.Item.Id)" disabled="@_busy">
+                        Test
+                    </button>
+                    @if (!context.Item.IsBuiltIn)
+                    {
+                        <button class="btn btn-outline-primary btn-sm me-1"
+                                @onclick="@(() => Nav.NavigateTo($"/settings/mcp/{context.Item.Id}"))">
+                            Edit
+                        </button>
+                        <button class="btn btn-outline-danger btn-sm" @onclick="() => DeleteAsync(context.Item)" disabled="@_busy">
+                            Delete
+                        </button>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <ChildRowContent>
+            @if (_lastTest.TryGetValue(context.Item.Id, out var t))
+            {
+                <MudCard Elevation="0" Class="pa-2 mud-background-gray">
+                    @if (t.Ok)
+                    {
+                        <div>
+                            <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">✅ @t.Tools.Length tool(s)</MudChip>
+                            <span class="ms-2 small text-muted">
+                                @string.Join(", ", t.Tools.Take(8).Select(x => x.Name))
+                                @(t.Tools.Length > 8 ? " …" : "")
+                            </span>
+                        </div>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">❌ @t.Error</MudChip>
+                    }
+                </MudCard>
+            }
+            else
+            {
+                <MudText Typo="Typo.caption" Class="pa-2 text-muted">
+                    Click <strong>Test</strong> to probe this server and list its tools here.
+                </MudText>
+            }
+        </ChildRowContent>
+        <PagerContent>
+            <MudDataGridPager T="McpDtos.McpServerListItem" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @code {
     private bool _loading = true;
     private bool _busy;
+    private bool _dense = true;
     private string? _error;
     private List<McpDtos.McpServerListItem> _servers = new();
     private Dictionary<Guid, McpDtos.TestResult> _lastTest = new();

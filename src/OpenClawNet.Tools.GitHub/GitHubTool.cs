@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Octokit;
 using OpenClawNet.Storage;
@@ -13,12 +14,12 @@ public sealed class GitHubTool : ITool
     public const string TokenSecretName = "GITHUB_TOKEN";
     private const string ProductName = "OpenClawNet";
 
-    private readonly ISecretsStore _secrets;
+    private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<GitHubTool> _logger;
 
-    public GitHubTool(ISecretsStore secrets, ILogger<GitHubTool> logger)
+    public GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger)
     {
-        _secrets = secrets;
+        _scopeFactory = scopeFactory;
         _logger = logger;
     }
 
@@ -65,8 +66,13 @@ public sealed class GitHubTool : ITool
             var perPage = Math.Clamp(input.GetArgument<int?>("perPage") ?? 10, 1, 50);
 
             var client = new GitHubClient(new ProductHeaderValue(ProductName));
-            var token = await _secrets.GetAsync(TokenSecretName, cancellationToken)
-                        ?? Environment.GetEnvironmentVariable(TokenSecretName);
+            string? token;
+            using (var scope = _scopeFactory.CreateScope())
+            {
+                var secrets = scope.ServiceProvider.GetRequiredService<ISecretsStore>();
+                token = await secrets.GetAsync(TokenSecretName, cancellationToken);
+            }
+            token ??= Environment.GetEnvironmentVariable(TokenSecretName);
             if (!string.IsNullOrWhiteSpace(token))
                 client.Credentials = new Credentials(token);
 

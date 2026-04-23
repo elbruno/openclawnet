@@ -1,0 +1,9 @@
+sync(src): bring src and tests up to date with plan repo
+
+Mirrors source tree from openclawnet-plan main, including:
+- Scheduler service-discovery fix (https+http:// scheme) + JobDetail error surfacing
+- Channels webhook (:5023) friendly landing page
+- ChannelDetail / ChannelsList wrapped in MudContainer with overflow-safe styles
+- Web Home job cards open channel detail in new tab via JSRuntime
+
+Co-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>

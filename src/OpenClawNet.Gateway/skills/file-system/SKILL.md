@@ -1,3 +1,19 @@
+---
+name: file-system
+description: "Read, write, list, and manipulate files and directories on the local machine."
+category: system
+tags:
+  - files
+  - directories
+  - file-management
+  - io
+examples:
+  - "Read the content of config.json"
+  - "List all files in the current directory"
+  - "Create a new file with text content"
+enabled: true
+---
+
 # File System Skill
 
 You have access to file system tools that allow you to read, write, list, and manipulate files and directories on the local machine.

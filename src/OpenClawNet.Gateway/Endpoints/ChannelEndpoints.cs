@@ -12,16 +12,19 @@ public static class ChannelEndpoints
     /// </summary>
     public static IEndpointRouteBuilder MapChannelEndpoints(this IEndpointRouteBuilder app)
     {
-        app.MapGet("/api/channels", (IChannelRegistry registry) =>
+        // NOTE: Route is /api/channel-adapters (not /api/channels) to avoid collision
+        // with the Phase 1 Job Output Dashboard endpoints in ChannelsApiEndpoints, which
+        // own /api/channels for job artifact channels.
+        app.MapGet("/api/channel-adapters", (IChannelRegistry registry) =>
         {
             var channels = registry.GetAllChannels()
                 .Select(c => new { name = c.ChannelName, enabled = c.IsEnabled });
 
             return Results.Ok(channels);
         })
-        .WithTags("Channels")
-        .WithName("ListChannels")
-        .WithDescription("Returns all registered communication channels and their enabled state.");
+        .WithTags("ChannelAdapters")
+        .WithName("ListChannelAdapters")
+        .WithDescription("Returns all registered delivery channel adapters (Teams, Slack, etc.) and their enabled state.");
 
         return app;
     }

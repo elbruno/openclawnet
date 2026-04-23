@@ -202,6 +202,10 @@ builder.Services.AddSingleton<SmartScheduleParser>();
 builder.Services.AddScoped<JobExecutor>();
 builder.Services.AddSingleton<OpenClawNet.Gateway.Services.JobTemplates.JobTemplatesProvider>();
 
+// Artifact storage and retention
+builder.Services.AddSingleton<ArtifactStorageService>();
+builder.Services.Configure<ArtifactRetentionOptions>(builder.Configuration.GetSection("Channels:Retention"));
+
 // Agent runtime
 builder.Services.AddAgentRuntime();
 
@@ -304,6 +308,7 @@ app.MapWebhookEndpoints();
 app.MapSettingsEndpoints();
 app.MapChatDebugEndpoints();
 app.MapChannelEndpoints();
+app.MapChannelsApiEndpoints();
 app.MapDemoEndpoints();
 app.MapAgentProfileEndpoints();
 app.MapModelProviderEndpoints();

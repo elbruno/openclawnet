@@ -201,6 +201,7 @@ public sealed class SchedulerPollingService : BackgroundService
 
             using var scope = _scopeFactory.CreateScope();
             var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
+            var artifactStorage = scope.ServiceProvider.GetRequiredService<ArtifactStorageService>();
             await using var db = await dbFactory.CreateDbContextAsync(outerCt);
 
             var run = new JobRun { JobId = jobId, Status = "running" };
@@ -246,6 +247,16 @@ public sealed class SchedulerPollingService : BackgroundService
             }
 
             await db.SaveChangesAsync(outerCt);
+
+            // Auto-capture artifact after run completes
+            try
+            {
+                await artifactStorage.CreateArtifactFromJobRunAsync(run);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to create artifact for JobRun {RunId}", run.Id);
+            }
         }
         finally
         {

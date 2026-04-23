@@ -1,0 +1,251 @@
+@page "/"
+@using System.Text.Json
+@inject IConfiguration Configuration
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
+@rendermode InteractiveServer
+@implements IAsyncDisposable
+
+<PageTitle>OpenClawNet</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+    @* Hero Section *@
+    <MudPaper Elevation="0" Class="pa-6 mb-6 text-center">
+        <MudText Typo="Typo.h3" GutterBottom="true" Class="fw-bold">
+            🦞 OpenClawNet
+        </MudText>
+        <MudText Typo="Typo.h6" Color="Color.Secondary">
+            Intelligent automation agents who do things — scheduled jobs, chat sessions, and external integrations
+        </MudText>
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/chat" Class="mt-4">
+            Start Chatting
+        </MudButton>
+    </MudPaper>
+
+    @* Recent Job Output Widget *@
+    <MudText Typo="Typo.h5" GutterBottom="true" Class="mb-4">
+        📋 Recent Job Output
+    </MudText>
+
+    @if (_isLoading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 5; i++)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard>
+                        <MudCardContent>
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Height="30px" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Height="20px" Class="mt-2" />
+                            <MudSkeleton SkeletonType="SkeletonType.Text" Height="20px" />
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4">
+            @_error
+        </MudAlert>
+    }
+    else if (_recentJobs is null || _recentJobs.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info" Class="mb-4">
+            No job output yet — run a job to see results here.
+        </MudAlert>
+    }
+    else
+    {
+        <MudGrid>
+            @foreach (var job in _recentJobs)
+            {
+                <MudItem xs="12" sm="6" md="4">
+                    <MudCard Class="cursor-pointer hover-elevation" @onclick="() => OpenJobChannel(job.JobId)">
+                        <MudCardContent>
+                            <div class="d-flex justify-space-between align-center mb-2">
+                                <MudText Typo="Typo.subtitle1" Class="fw-bold text-truncate">
+                                    @job.JobName
+                                </MudText>
+                                <MudIcon Icon="@GetStatusIcon(job.Status)" Color="@GetStatusColor(job.Status)" Size="Size.Small" />
+                            </div>
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
+                                @GetRelativeTime(job.Timestamp)
+                            </MudText>
+                            <MudText Typo="Typo.body2" Class="text-truncate-multiline">
+                                @job.Summary
+                            </MudText>
+                        </MudCardContent>
+                    </MudCard>
+                </MudItem>
+            }
+        </MudGrid>
+
+        @if (!string.IsNullOrEmpty(_channelsBaseUrl))
+        {
+            <div class="text-center mt-4">
+                <MudLink Href="@($"{_channelsBaseUrl}/channels")" Target="_blank" Typo="Typo.body1">
+                    View all output channels →
+                </MudLink>
+            </div>
+        }
+    }
+</MudContainer>
+
+<style>
+    .cursor-pointer {
+        cursor: pointer;
+    }
+    
+    .hover-elevation {
+        transition: box-shadow 0.3s ease-in-out;
+    }
+    
+    .hover-elevation:hover {
+        box-shadow: 0 8px 16px rgba(0,0,0,0.2) !important;
+    }
+    
+    .text-truncate-multiline {
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+</style>
+
+@code {
+    private List<JobOutputItem>? _recentJobs;
+    private bool _isLoading = true;
+    private string? _error;
+    private string? _channelsBaseUrl;
+    private PeriodicTimer? _refreshTimer;
+    private CancellationTokenSource? _cts;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _channelsBaseUrl = Configuration["Channels:BaseUrl"];
+        _cts = new CancellationTokenSource();
+        
+        await LoadJobOutputAsync();
+        
+        // Start polling every 10 seconds
+        _refreshTimer = new PeriodicTimer(TimeSpan.FromSeconds(10));
+        _ = Task.Run(async () =>
+        {
+            while (await _refreshTimer.WaitForNextTickAsync(_cts.Token))
+            {
+                await InvokeAsync(async () =>
+                {
+                    await LoadJobOutputAsync();
+                    StateHasChanged();
+                });
+            }
+        });
+    }
+
+    private async Task LoadJobOutputAsync()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var response = await client.GetAsync("/api/channels");
+            
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _error = "Job output feature coming soon — endpoint not yet available.";
+                _recentJobs = null;
+            }
+            else if (response.IsSuccessStatusCode)
+            {
+                var json = await response.Content.ReadAsStringAsync();
+                var items = JsonSerializer.Deserialize<List<JobOutputItem>>(json, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                
+                _recentJobs = items?.Take(5).ToList();
+                _error = null;
+            }
+            else
+            {
+                _error = $"Failed to load job output (HTTP {(int)response.StatusCode}).";
+                _recentJobs = null;
+            }
+        }
+        catch (HttpRequestException)
+        {
+            _error = "Job output service unavailable — check that the Gateway is running.";
+            _recentJobs = null;
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error loading job output: {ex.Message}";
+            _recentJobs = null;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private async Task OpenJobChannel(Guid jobId)
+    {
+        if (!string.IsNullOrEmpty(_channelsBaseUrl))
+        {
+            // Open in a new tab instead of replacing the current page.
+            await JS.InvokeVoidAsync("open", $"{_channelsBaseUrl}/channels/{jobId}", "_blank", "noopener");
+        }
+    }
+
+    private string GetStatusIcon(string status) => status.ToLowerInvariant() switch
+    {
+        "success" or "completed" => Icons.Material.Filled.CheckCircle,
+        "error" or "failed" => Icons.Material.Filled.Error,
+        "running" or "in_progress" => Icons.Material.Filled.Pending,
+        _ => Icons.Material.Filled.Info
+    };
+
+    private Color GetStatusColor(string status) => status.ToLowerInvariant() switch
+    {
+        "success" or "completed" => Color.Success,
+        "error" or "failed" => Color.Error,
+        "running" or "in_progress" => Color.Warning,
+        _ => Color.Info
+    };
+
+    private string GetRelativeTime(DateTime timestamp)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - timestamp;
+
+        if (diff.TotalSeconds < 60)
+            return "just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes} min ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours != 1 ? "s" : "")} ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays} day{((int)diff.TotalDays != 1 ? "s" : "")} ago";
+        
+        return timestamp.ToLocalTime().ToString("MMM d, yyyy");
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        _cts?.Cancel();
+        _cts?.Dispose();
+        _refreshTimer?.Dispose();
+    }
+
+    private class JobOutputItem
+    {
+        public Guid JobId { get; set; }
+        public string JobName { get; set; } = string.Empty;
+        public DateTime Timestamp { get; set; }
+        public string Status { get; set; } = string.Empty;
+        public string Summary { get; set; } = string.Empty;
+    }
+}

@@ -51,16 +51,18 @@ public static class DemoEndpoints
     {
         await using var db = await dbFactory.CreateDbContextAsync();
 
-        // Check if a doc-pipeline demo job already exists and is active
+        // Check if a doc-pipeline demo job already exists in a non-terminal state
         var existing = await db.Jobs
-            .Where(j => j.Name == DocPipelineJobName && j.Status == JobStatus.Active)
+            .Where(j => j.Name == DocPipelineJobName
+                && j.Status != JobStatus.Cancelled
+                && j.Status != JobStatus.Completed)
             .FirstOrDefaultAsync();
 
         if (existing is not null)
         {
             return Results.Conflict(new
             {
-                error = "A document processing pipeline job is already active.",
+                error = "A document processing pipeline job already exists.",
                 jobId = existing.Id,
                 message = "Use GET /api/demos/doc-pipeline/status to check progress, or delete the existing job first via DELETE /api/jobs/{id}."
             });
@@ -88,8 +90,8 @@ public static class DemoEndpoints
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
-            Status = JobStatus.Active,
-            NextRunAt = now.AddSeconds(5),  // first run in 5 seconds
+            Status = JobStatus.Draft,
+            NextRunAt = now.AddSeconds(5),  // first run in 5 seconds (after user starts the job)
             StartAt = now,
             EndAt = now.AddMinutes(durationMinutes),
             AllowConcurrentRuns = false,
@@ -108,7 +110,7 @@ public static class DemoEndpoints
             StartsAt = now,
             EndsAt = now.AddMinutes(durationMinutes),
             IntervalSeconds = intervalSeconds,
-            Message = $"Document processing pipeline created. It will run every {intervalSeconds}s for {durationMinutes} minutes. Use GET /api/demos/doc-pipeline/status to monitor."
+            Message = $"Document processing pipeline created in Draft state. Start it from the Jobs list to run every {intervalSeconds}s for {durationMinutes} minutes."
         });
     }
 
@@ -127,14 +129,16 @@ public static class DemoEndpoints
         await using var db = await dbFactory.CreateDbContextAsync();
 
         var existing = await db.Jobs
-            .Where(j => j.Name == WebsiteWatcherJobName && j.Status == JobStatus.Active)
+            .Where(j => j.Name == WebsiteWatcherJobName
+                && j.Status != JobStatus.Cancelled
+                && j.Status != JobStatus.Completed)
             .FirstOrDefaultAsync();
 
         if (existing is not null)
         {
             return Results.Conflict(new
             {
-                error = "A website-watcher job is already active.",
+                error = "A website-watcher job already exists.",
                 jobId = existing.Id,
                 message = "Use GET /api/demos/website-watcher/status to check progress, or DELETE /api/jobs/{id} to remove it."
             });
@@ -162,7 +166,7 @@ public static class DemoEndpoints
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
-            Status = JobStatus.Active,
+            Status = JobStatus.Draft,
             NextRunAt = now.AddSeconds(10),
             StartAt = now,
             AllowConcurrentRuns = false,
@@ -180,7 +184,7 @@ public static class DemoEndpoints
             LogPath = logPath,
             CronExpression = cronExpression,
             StartsAt = now,
-            Message = $"Website watcher created. It will check {url} every 15 minutes and log changes to {logPath}."
+            Message = $"Website watcher created in Draft state. Start it from the Jobs list to check {url} every 15 minutes and log changes to {logPath}."
         });
     }
 
@@ -199,14 +203,16 @@ public static class DemoEndpoints
         await using var db = await dbFactory.CreateDbContextAsync();
 
         var existing = await db.Jobs
-            .Where(j => j.Name == FolderHealthJobName && j.Status == JobStatus.Active)
+            .Where(j => j.Name == FolderHealthJobName
+                && j.Status != JobStatus.Cancelled
+                && j.Status != JobStatus.Completed)
             .FirstOrDefaultAsync();
 
         if (existing is not null)
         {
             return Results.Conflict(new
             {
-                error = "A folder-health-report job is already active.",
+                error = "A folder-health-report job already exists.",
                 jobId = existing.Id,
                 message = "Use GET /api/demos/folder-health/status to check progress, or DELETE /api/jobs/{id} to remove it."
             });
@@ -234,7 +240,7 @@ public static class DemoEndpoints
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
-            Status = JobStatus.Active,
+            Status = JobStatus.Draft,
             NextRunAt = NextDailyNineUtc(now),
             StartAt = now,
             AllowConcurrentRuns = false,
@@ -251,7 +257,7 @@ public static class DemoEndpoints
             FolderPath = folder,
             CronExpression = cronExpression,
             StartsAt = now,
-            Message = $"Folder health report created. It will run daily at 09:00 UTC against {folder}."
+            Message = $"Folder health report created in Draft state. Start it from the Jobs list to run daily at 09:00 UTC against {folder}."
         });
     }
 

@@ -23,60 +23,78 @@ else if (_tools.Count == 0)
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm align-middle">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Category</th>
-                    <th>Description</th>
-                    <th>Approval</th>
-                    <th>Last test</th>
-                    <th class="text-end">Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var t in _tools.OrderBy(x => x.Category).ThenBy(x => x.Name))
-                {
-                    var rec = _results.GetValueOrDefault(t.Name);
-                    <tr>
-                        <td><code>@t.Name</code></td>
-                        <td><span class="badge bg-secondary">@t.Category</span></td>
-                        <td class="small">@t.Description</td>
-                        <td>
-                            @if (t.RequiresApproval)
-                            {
-                                <span class="badge bg-warning text-dark">requires approval</span>
-                            }
-                            else
-                            {
-                                <span class="text-muted small">auto</span>
-                            }
-                        </td>
-                        <td class="small">
-                            @if (rec is null || rec.LastTestedAt is null)
-                            {
-                                <span class="text-muted">never tested</span>
-                            }
-                            else if (rec.LastTestSucceeded == true)
-                            {
-                                <span class="badge bg-success">✓ @rec.LastTestMode</span>
-                                <div class="text-muted">@rec.LastTestedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger" title="@rec.LastTestError">✗ @rec.LastTestMode</span>
-                                <div class="text-muted">@rec.LastTestedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
-                            }
-                        </td>
-                        <td class="text-end">
-                            <button class="btn btn-sm btn-outline-primary" @onclick="() => OpenTest(t)">Test</button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <MudDataGrid T="ToolDto"
+                 Items="_tools.OrderBy(x => x.Category).ThenBy(x => x.Name)"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_tools.Count tool(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name">
+                <CellTemplate>
+                    <code>@context.Item.Name</code>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Category" Title="Category">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Category</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Description" Title="Description" />
+            <PropertyColumn Property="x => x.RequiresApproval" Title="Approval">
+                <CellTemplate>
+                    @if (context.Item.RequiresApproval)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled">requires approval</MudChip>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">auto</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Last test" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    @{ var rec = _results.GetValueOrDefault(context.Item.Name); }
+                    @if (rec is null || rec.LastTestedAt is null)
+                    {
+                        <span class="text-muted small">never tested</span>
+                    }
+                    else if (rec.LastTestSucceeded == true)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">✓ @rec.LastTestMode</MudChip>
+                        <div class="text-muted small">@rec.LastTestedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled" title="@rec.LastTestError">✗ @rec.LastTestMode</MudChip>
+                        <div class="text-muted small">@rec.LastTestedAt.Value.ToLocalTime().ToString("yyyy-MM-dd HH:mm")</div>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end">
+                <CellTemplate>
+                    <button class="btn btn-sm btn-outline-primary" @onclick="() => OpenTest(context.Item)">Test</button>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="ToolDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @if (_testTool is not null)
@@ -257,6 +275,7 @@ else
 
 @code {
     private bool _loading = true;
+    private bool _dense = true;
     private List<ToolDto> _tools = new();
     private Dictionary<string, ToolTestResultDto> _results = new(StringComparer.OrdinalIgnoreCase);
     private List<string> _testerProfiles = new();

@@ -1,3 +1,19 @@
+---
+name: memory
+description: "Store and retrieve information, facts, and user preferences across conversations and sessions."
+category: knowledge
+tags:
+  - memory
+  - storage
+  - retrieval
+  - persistence
+examples:
+  - "Remember that the user prefers Python for scripting"
+  - "Retrieve facts about the project structure"
+  - "Store the API endpoint for later use"
+enabled: true
+---
+
 # Memory Skill
 
 You have access to memory tools that allow you to store and retrieve information across conversations and sessions.

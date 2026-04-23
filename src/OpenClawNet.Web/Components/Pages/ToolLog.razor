@@ -17,69 +17,65 @@
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-sm table-striped">
-            <thead>
-                <tr>
-                    <th>Time</th>
-                    <th>Tool</th>
-                    <th>Status</th>
-                    <th>Duration</th>
-                    <th>Details</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var log in _logs.OrderByDescending(l => l.Timestamp))
-                {
-                    <tr>
-                        <td class="small">@log.Timestamp.ToString("HH:mm:ss")</td>
-                        <td>
-                            <span class="badge bg-info">@log.ToolName</span>
-                        </td>
-                        <td>
-                            @if (log.Success)
-                            {
-                                <span class="badge bg-success">✓ OK</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-danger">✗ Failed</span>
-                            }
-                        </td>
-                        <td class="small">@log.Duration.TotalMilliseconds.ToString("F0")ms</td>
-                        <td>
-                            <button class="btn btn-outline-secondary btn-sm" @onclick="() => ToggleDetails(log)">
-                                @(log.ShowDetails ? "Hide" : "Show")
-                            </button>
-                        </td>
-                    </tr>
-                    @if (log.ShowDetails)
+    <MudDataGrid T="ToolLogEntry"
+                 Items="_logs"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_logs.Count tool execution(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Timestamp" Title="Time" Format="HH:mm:ss"
+                            InitialDirection="SortDirection.Descending" />
+            <PropertyColumn Property="x => x.ToolName" Title="Tool">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@context.Item.ToolName</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Success" Title="Status">
+                <CellTemplate>
+                    @if (context.Item.Success)
                     {
-                        <tr>
-                            <td colspan="5">
-                                <div class="p-2 bg-light rounded">
-                                    <strong>Arguments:</strong>
-                                    <pre class="small mb-1">@log.Arguments</pre>
-                                    <strong>Output:</strong>
-                                    <pre class="small mb-0" style="max-height: 200px; overflow-y: auto;">@(log.Success ? log.Output : log.Error)</pre>
-                                </div>
-                            </td>
-                        </tr>
+                        <MudChip T="string" Size="Size.Small" Color="Color.Success" Variant="Variant.Filled">✓ OK</MudChip>
                     }
-                }
-            </tbody>
-        </table>
-    </div>
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Error" Variant="Variant.Filled">✗ Failed</MudChip>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Duration.TotalMilliseconds" Title="Duration (ms)" Format="F0" />
+        </Columns>
+        <ChildRowContent>
+            <MudCard Elevation="0" Class="pa-2 mud-background-gray">
+                <MudText Typo="Typo.subtitle2">Arguments</MudText>
+                <pre class="small mb-2">@context.Item.Arguments</pre>
+                <MudText Typo="Typo.subtitle2">@(context.Item.Success ? "Output" : "Error")</MudText>
+                <pre class="small mb-0" style="max-height: 200px; overflow-y: auto;">@(context.Item.Success ? context.Item.Output : context.Item.Error)</pre>
+            </MudCard>
+        </ChildRowContent>
+        <PagerContent>
+            <MudDataGridPager T="ToolLogEntry" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @code {
     private readonly List<ToolLogEntry> _logs = [];
-    
-    private void ToggleDetails(ToolLogEntry log)
-    {
-        log.ShowDetails = !log.ShowDetails;
-    }
-    
+    private bool _dense = true;
+
     private sealed class ToolLogEntry
     {
         public DateTime Timestamp { get; set; }
@@ -89,6 +85,6 @@ else
         public string Arguments { get; set; } = string.Empty;
         public string Output { get; set; } = string.Empty;
         public string? Error { get; set; }
-        public bool ShowDetails { get; set; }
     }
 }
+

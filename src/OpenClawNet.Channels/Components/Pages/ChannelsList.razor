@@ -1,0 +1,124 @@
+@page "/"
+@page "/channels"
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>Channels - OpenClaw</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+<MudText Typo="Typo.h4" Class="mb-4">Job Output Channels</MudText>
+
+@if (_loading && _channels == null)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    <MudText Typo="Typo.body1" Class="mt-2">Loading channels...</MudText>
+}
+else if (_error != null)
+{
+    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+}
+else if (_channels == null || !_channels.Any())
+{
+    <MudAlert Severity="Severity.Info">No channels found. Job outputs will appear here once jobs complete.</MudAlert>
+}
+else
+{
+    <MudTable Items="_channels" Hover="true" Breakpoint="Breakpoint.Sm" Dense="true">
+        <HeaderContent>
+            <MudTh>Channel (Job Name)</MudTh>
+            <MudTh>Last Activity</MudTh>
+            <MudTh>Total Artifacts</MudTh>
+            <MudTh>Actions</MudTh>
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="Channel">@context.JobName</MudTd>
+            <MudTd DataLabel="Last Activity">@FormatTimestamp(context.LastActivityUtc)</MudTd>
+            <MudTd DataLabel="Total Artifacts">@context.TotalArtifacts</MudTd>
+            <MudTd DataLabel="Actions">
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" 
+                           OnClick="@(() => OpenChannel(context.JobId))">
+                    Open
+                </MudButton>
+            </MudTd>
+        </RowTemplate>
+    </MudTable>
+}
+</MudContainer>
+
+@code {
+    private List<ChannelSummary>? _channels;
+    private bool _loading = true;
+    private string? _error;
+    private System.Threading.Timer? _pollTimer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadChannels();
+        
+        // Set up 10-second polling
+        _pollTimer = new System.Threading.Timer(async _ =>
+        {
+            await LoadChannels();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+    }
+
+    private async Task LoadChannels()
+    {
+        try
+        {
+            _loading = true;
+            var client = HttpClientFactory.CreateClient("gateway");
+            var response = await client.GetAsync("api/channels");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                _channels = await response.Content.ReadFromJsonAsync<List<ChannelSummary>>();
+                _error = null;
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                // Gateway endpoint not yet implemented - expected in Phase 1
+                _channels = new List<ChannelSummary>();
+                _error = "Gateway channels endpoint not yet available. Waiting for Irving's REST API implementation.";
+            }
+            else
+            {
+                _error = $"Error loading channels: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error loading channels: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void OpenChannel(Guid jobId)
+    {
+        Navigation.NavigateTo($"/channels/{jobId}");
+    }
+
+    private string FormatTimestamp(DateTime? timestamp)
+    {
+        if (timestamp == null) return "Never";
+        var elapsed = DateTime.UtcNow - timestamp.Value;
+        if (elapsed.TotalMinutes < 1) return "Just now";
+        if (elapsed.TotalHours < 1) return $"{(int)elapsed.TotalMinutes}m ago";
+        if (elapsed.TotalDays < 1) return $"{(int)elapsed.TotalHours}h ago";
+        if (elapsed.TotalDays < 30) return $"{(int)elapsed.TotalDays}d ago";
+        return timestamp.Value.ToString("yyyy-MM-dd");
+    }
+
+    public void Dispose()
+    {
+        _pollTimer?.Dispose();
+    }
+
+    // DTOs matching Gateway API contract (Phase 1)
+    private record ChannelSummary(Guid JobId, string JobName, DateTime? LastActivityUtc, int TotalArtifacts);
+}

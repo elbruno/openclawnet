@@ -47,6 +47,7 @@ public static class SchedulerJobsApiEndpoints
             Guid id,
             IDbContextFactory<OpenClawDbContext> dbFactory,
             IHttpClientFactory httpClientFactory,
+            ArtifactStorageService artifactStorage,
             ILogger<JobSummaryDto> logger) =>
         {
             await using var db = await dbFactory.CreateDbContextAsync();
@@ -65,13 +66,16 @@ public static class SchedulerJobsApiEndpoints
             // Fire-and-forget — don't block the HTTP response
             _ = Task.Run(async () =>
             {
+                using var timeoutCts = new CancellationTokenSource();
+                timeoutCts.CancelAfter(TimeSpan.FromSeconds(300)); // 5-minute timeout for chat invocation
+
                 try
                 {
                     var client = httpClientFactory.CreateClient("gateway");
                     var sessionId = Guid.NewGuid();
-                    var response = await client.PostAsJsonAsync("/api/chat/", new { sessionId, message = job.Prompt, agentProfileName = job.AgentProfileName });
+                    var response = await client.PostAsJsonAsync("/api/chat/", new { sessionId, message = job.Prompt, agentProfileName = job.AgentProfileName }, timeoutCts.Token);
                     response.EnsureSuccessStatusCode();
-                    var result = await response.Content.ReadFromJsonAsync<GatewayChatResponse>();
+                    var result = await response.Content.ReadFromJsonAsync<GatewayChatResponse>(timeoutCts.Token);
 
                     await using var db2 = await dbFactory.CreateDbContextAsync();
                     var run2 = await db2.JobRuns.FindAsync(run.Id);
@@ -81,7 +85,44 @@ public static class SchedulerJobsApiEndpoints
                         run2.Result = result?.Content;
                         run2.CompletedAt = DateTime.UtcNow;
                         await db2.SaveChangesAsync();
+
+                        // Auto-capture artifact
+                        try
+                        {
+                            await artifactStorage.CreateArtifactFromJobRunAsync(run2);
+                        }
+                        catch (Exception ex)
+                        {
+                            logger.LogError(ex, "Failed to create artifact for JobRun {RunId}", run2.Id);
+                        }
                     }
+                }
+                catch (OperationCanceledException)
+                {
+                    logger.LogWarning("Manual trigger timed out after 300s for job: {Name}", job.Name);
+                    try
+                    {
+                        await using var db2 = await dbFactory.CreateDbContextAsync();
+                        var run2 = await db2.JobRuns.FindAsync(run.Id);
+                        if (run2 is not null)
+                        {
+                            run2.Status = "failed";
+                            run2.Error = "Job execution timed out after 300 seconds";
+                            run2.CompletedAt = DateTime.UtcNow;
+                            await db2.SaveChangesAsync();
+
+                            // Auto-capture error artifact
+                            try
+                            {
+                                await artifactStorage.CreateArtifactFromJobRunAsync(run2);
+                            }
+                            catch (Exception ex)
+                            {
+                                logger.LogError(ex, "Failed to create error artifact for JobRun {RunId}", run2.Id);
+                            }
+                        }
+                    }
+                    catch { }
                 }
                 catch (Exception ex)
                 {
@@ -96,6 +137,16 @@ public static class SchedulerJobsApiEndpoints
                             run2.Error = ex.Message;
                             run2.CompletedAt = DateTime.UtcNow;
                             await db2.SaveChangesAsync();
+
+                            // Auto-capture error artifact
+                            try
+                            {
+                                await artifactStorage.CreateArtifactFromJobRunAsync(run2);
+                            }
+                            catch (Exception ex2)
+                            {
+                                logger.LogError(ex2, "Failed to create error artifact for JobRun {RunId}", run2.Id);
+                            }
                         }
                     }
                     catch { }
@@ -110,7 +161,8 @@ public static class SchedulerJobsApiEndpoints
 
         group.MapPost("/{id:guid}/start", async (Guid id, IDbContextFactory<OpenClawDbContext> dbFactory) =>
         {
-            return await TransitionJobAsync(id, JobStatus.Active, dbFactory, recalculateNextRun: false);
+            // Recalculate NextRunAt so a Draft job (e.g. one created from a template) starts on its real schedule.
+            return await TransitionJobAsync(id, JobStatus.Active, dbFactory, recalculateNextRun: true);
         })
         .WithName("StartJob")
         .WithDescription("Transition a Draft job to Active so the scheduler polls it.");

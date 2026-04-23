@@ -212,6 +212,30 @@ public static class SchemaMigrator
             "IX_JobRunEvents_JobRunId_Sequence",
             "CREATE INDEX IX_JobRunEvents_JobRunId_Sequence ON JobRunEvents(JobRunId, Sequence)");
 
+        // JobRunArtifacts table — Phase 1 job output dashboard
+        await CreateTableIfMissingAsync(db, "JobRunArtifacts",
+            """
+            CREATE TABLE JobRunArtifacts (
+                Id TEXT NOT NULL PRIMARY KEY,
+                JobRunId TEXT NOT NULL,
+                JobId TEXT NOT NULL,
+                Sequence INTEGER NOT NULL DEFAULT 0,
+                ArtifactType TEXT NOT NULL DEFAULT 'text',
+                Title TEXT,
+                ContentInline TEXT,
+                ContentPath TEXT,
+                ContentSizeBytes INTEGER NOT NULL DEFAULT 0,
+                MimeType TEXT,
+                CreatedAt TEXT NOT NULL,
+                Metadata TEXT,
+                FOREIGN KEY (JobRunId) REFERENCES JobRuns(Id) ON DELETE CASCADE
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_JobRunArtifacts_JobId_CreatedAt",
+            "CREATE INDEX IX_JobRunArtifacts_JobId_CreatedAt ON JobRunArtifacts(JobId, CreatedAt DESC)");
+        await CreateIndexIfMissingAsync(db, "IX_JobRunArtifacts_JobRunId_Sequence",
+            "CREATE INDEX IX_JobRunArtifacts_JobRunId_Sequence ON JobRunArtifacts(JobRunId, Sequence)");
+
         // PR-F: drop the legacy AgentProfiles.Model column. The agent now references a
         // ModelProviderDefinition whose own Model field is authoritative — see Bruno's
         // directive on the agent-UI redesign. Idempotent via the SchemaVersions marker.

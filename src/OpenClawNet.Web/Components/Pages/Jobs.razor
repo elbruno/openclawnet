@@ -73,11 +73,11 @@
                                     @if (_demoLaunching)
                                     {
                                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Launching…</span>
+                                        <span>Creating…</span>
                                     }
                                     else
                                     {
-                                        <span>🚀 Launch Demo</span>
+                                        <span>➕ Create Demo Job</span>
                                     }
                                 </button>
                                 <span class="small text-muted">30s interval · 5 min duration</span>
@@ -128,11 +128,11 @@
                                     @if (_watcherLaunching)
                                     {
                                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Launching…</span>
+                                        <span>Creating…</span>
                                     }
                                     else
                                     {
-                                        <span>🚀 Launch Demo</span>
+                                        <span>➕ Create Demo Job</span>
                                     }
                                 </button>
                                 <span class="small text-muted">Every 15 min</span>
@@ -183,11 +183,11 @@
                                     @if (_folderLaunching)
                                     {
                                         <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Launching…</span>
+                                        <span>Creating…</span>
                                     }
                                     else
                                     {
-                                        <span>🚀 Launch Demo</span>
+                                        <span>➕ Create Demo Job</span>
                                     }
                                 </button>
                                 <span class="small text-muted">Daily at 09:00 UTC</span>
@@ -236,79 +236,104 @@ else if (_jobs.Count == 0)
 }
 else
 {
-    <div class="table-responsive">
-        <table class="table table-hover">
-            <thead>
-                <tr>
-                    <th>Name</th>
-                    <th>Status</th>
-                    <th>Type</th>
-                    <th>Next Run</th>
-                    <th>Last Run</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var job in _jobs)
-                {
-                    <tr>
-                        <td>
-                            <a href="/jobs/@job.Id" class="text-decoration-none">
-                                <strong>@job.Name</strong>
-                            </a>
-                            <div class="small text-muted">@TruncatePrompt(job.Prompt)</div>
-                        </td>
-                        <td>
-                            <span class="badge @GetStatusBadgeClass(job.Status)">@job.Status</span>
-                        </td>
-                        <td>
-                            @if (job.IsRecurring)
-                            {
-                                <span class="badge bg-info">🔄 Recurring</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-secondary">One-time</span>
-                            }
-                        </td>
-                        <td class="small">@(job.NextRunAt?.ToLocalTime().ToString("g") ?? "—")</td>
-                        <td class="small">@(job.LastRunAt?.ToLocalTime().ToString("g") ?? "Never")</td>
-                        <td>
-                            @switch (job.Status?.ToLowerInvariant())
-                            {
-                                case "draft":
-                                    <button class="btn btn-sm btn-success me-1" @onclick="() => StartJob(job.Id)" title="Start">▶ Start</button>
-                                    <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️ Edit</a>
-                                    <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
-                                    break;
-                                case "active":
-                                    <button class="btn btn-sm btn-warning me-1" @onclick="() => PauseJob(job.Id)" title="Pause">⏸ Pause</button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
-                                    break;
-                                case "paused":
-                                    <button class="btn btn-sm btn-success me-1" @onclick="() => ResumeJob(job.Id)" title="Resume">▶ Resume</button>
-                                    <button class="btn btn-sm btn-danger me-1" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
-                                    <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary" title="Edit">✏️ Edit</a>
-                                    break;
-                                case "cancelled":
-                                case "completed":
-                                    <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
-                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
-                                    break;
-                            }
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
+    <MudDataGrid T="JobInfo"
+                 Items="_jobs"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_jobs.Count job(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name">
+                <CellTemplate>
+                    @{ var job = context.Item; }
+                    <a href="/jobs/@job.Id" class="text-decoration-none" data-testid="job-row-@job.Id">
+                        <strong>@job.Name</strong>
+                    </a>
+                    <div class="small text-muted">@TruncatePrompt(job.Prompt)</div>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Status" Title="Status">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@StatusChipColor(context.Item.Status)"
+                             Variant="Variant.Filled">@context.Item.Status</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Type" SortBy="x => x.IsRecurring ? 0 : 1">
+                <CellTemplate>
+                    @if (context.Item.IsRecurring)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">🔄 Recurring</MudChip>
+                    }
+                    else
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">One-time</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.NextRunAt" Title="Next Run">
+                <CellTemplate>
+                    <small>@(context.Item.NextRunAt?.ToLocalTime().ToString("g") ?? "—")</small>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.LastRunAt" Title="Last Run">
+                <CellTemplate>
+                    <small>@(context.Item.LastRunAt?.ToLocalTime().ToString("g") ?? "Never")</small>
+                </CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    @{ var job = context.Item; }
+                    @switch (job.Status?.ToLowerInvariant())
+                    {
+                        case "draft":
+                            <button class="btn btn-sm btn-success me-1" @onclick="() => StartJob(job.Id)" title="Start">▶ Start</button>
+                            <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️ Edit</a>
+                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
+                            break;
+                        case "active":
+                            <button class="btn btn-sm btn-warning me-1" @onclick="() => PauseJob(job.Id)" title="Pause">⏸ Pause</button>
+                            <button class="btn btn-sm btn-danger" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
+                            break;
+                        case "paused":
+                            <button class="btn btn-sm btn-success me-1" @onclick="() => ResumeJob(job.Id)" title="Resume">▶ Resume</button>
+                            <button class="btn btn-sm btn-danger me-1" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
+                            <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary" title="Edit">✏️ Edit</a>
+                            break;
+                        case "cancelled":
+                        case "completed":
+                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
+                            break;
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="JobInfo" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @code {
     // ── State ──
     private List<JobInfo> _jobs = [];
     private bool _loading = true;
+    private bool _dense = true;
     private string? _loadError;
     private string? _actionError;
 
@@ -446,6 +471,16 @@ else
         "cancelled" => "bg-danger",
         "completed" => "bg-info",
         _ => "bg-light"
+    };
+
+    private static Color StatusChipColor(string? status) => status?.ToLowerInvariant() switch
+    {
+        "draft"     => Color.Secondary,
+        "active"    => Color.Success,
+        "paused"    => Color.Warning,
+        "cancelled" => Color.Error,
+        "completed" => Color.Info,
+        _           => Color.Default,
     };
 
     // ── DTOs ──

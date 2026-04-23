@@ -53,6 +53,16 @@ var web = builder.AddProject<Projects.OpenClawNet_Web>("web")
     .WaitFor(gateway)
     .WaitFor(scheduler);
 
+// NEW: Channels website — job output dashboard (Blazor Server)
+var channelsWebsite = builder.AddProject<Projects.OpenClawNet_Channels>("channels-website")
+    .WithExternalHttpEndpoints()
+    .WithHttpHealthCheck("/health")
+    .WithReference(gateway)
+    .WaitFor(gateway);
+
+// Pass Channels website URL to Web so it can deep-link to /channels/{jobId}
+web.WithEnvironment("Services__channels-website__https__0", channelsWebsite.GetEndpoint("https"));
+
 // External Channels service — Teams Bot Framework webhook, forwards to Gateway
 builder.AddProject<Projects.OpenClawNet_Services_Channels>("channels")
     .WithExternalHttpEndpoints()

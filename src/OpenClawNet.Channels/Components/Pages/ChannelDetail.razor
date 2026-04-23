@@ -1,0 +1,231 @@
+@page "/channels/{JobId:guid}"
+@inject IHttpClientFactory HttpClientFactory
+@inject NavigationManager Navigation
+@rendermode InteractiveServer
+
+<PageTitle>@(_channelName ?? "Channel") - OpenClaw</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Large" Class="py-4">
+<MudBreadcrumbs Items="_breadcrumbs" Class="mb-4"></MudBreadcrumbs>
+
+<MudText Typo="Typo.h4" Class="mb-4">@(_channelName ?? "Loading...")</MudText>
+
+@if (_loading && _artifacts == null)
+{
+    <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
+    <MudText Typo="Typo.body1" Class="mt-2">Loading channel...</MudText>
+}
+else if (_error != null)
+{
+    <MudAlert Severity="Severity.Error">@_error</MudAlert>
+}
+else if (_artifacts == null || !_artifacts.Any())
+{
+    <MudAlert Severity="Severity.Info">No artifacts found for this channel.</MudAlert>
+}
+else
+{
+    @* Slack-style stream: newest at top, reverse chronological *@
+    <MudPaper Class="pa-4" Elevation="0">
+        @foreach (var artifact in _artifacts)
+        {
+            <MudCard Class="mb-4" Elevation="2">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Class="text-break">@(artifact.Title ?? $"Run {artifact.RunId}")</MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            @FormatTimestamp(artifact.CreatedAtUtc) · @artifact.ArtifactType · @FormatSize(artifact.ContentSizeBytes)
+                        </MudText>
+                    </CardHeaderContent>
+                    <CardHeaderActions>
+                        <MudChip T="string" Size="Size.Small" Color="@GetArtifactTypeColor(artifact.ArtifactType)">
+                            @artifact.ArtifactType
+                        </MudChip>
+                    </CardHeaderActions>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (artifact.ArtifactType == "markdown" && !string.IsNullOrEmpty(artifact.ContentInline))
+                    {
+                        @* Render Markdown with Markdig *@
+                        <div class="markdown-content">
+                            @((MarkupString)Markdig.Markdown.ToHtml(artifact.ContentInline))
+                        </div>
+                    }
+                    else if (artifact.ArtifactType == "json" && !string.IsNullOrEmpty(artifact.ContentInline))
+                    {
+                        @* Syntax-highlighted JSON *@
+                        <div class="code-block">
+                            <MudCodeHighlight Language="Language.Json" Code="@artifact.ContentInline" />
+                        </div>
+                    }
+                    else if (artifact.ArtifactType == "error" && !string.IsNullOrEmpty(artifact.ContentInline))
+                    {
+                        <MudAlert Severity="Severity.Error">
+                            <pre class="artifact-pre">@artifact.ContentInline</pre>
+                        </MudAlert>
+                    }
+                    else if (!string.IsNullOrEmpty(artifact.ContentInline))
+                    {
+                        @* Plain text *@
+                        <pre class="artifact-pre">@artifact.ContentInline</pre>
+                    }
+                    else if (!string.IsNullOrEmpty(artifact.ContentPath))
+                    {
+                        @* File artifact - show download link *@
+                        <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
+                                   Href="@($"/api/artifacts/{artifact.Id}/download")" Target="_blank">
+                            Download (@artifact.MimeType)
+                        </MudButton>
+                    }
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudPaper>
+}
+</MudContainer>
+
+<style>
+    .artifact-pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+        max-width: 100%;
+        margin: 0;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.875rem;
+    }
+    .markdown-content {
+        max-width: 100%;
+        overflow-x: auto;
+    }
+    .markdown-content img, .markdown-content table {
+        max-width: 100%;
+        height: auto;
+    }
+    .markdown-content pre {
+        white-space: pre-wrap;
+        word-wrap: break-word;
+        overflow-wrap: anywhere;
+    }
+    .code-block {
+        overflow-x: auto;
+        max-width: 100%;
+    }
+    .text-break {
+        word-break: break-word;
+        overflow-wrap: anywhere;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public Guid JobId { get; set; }
+
+    private string? _channelName;
+    private List<ArtifactDto>? _artifacts;
+    private bool _loading = true;
+    private string? _error;
+    private System.Threading.Timer? _pollTimer;
+    private List<BreadcrumbItem> _breadcrumbs = new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        _breadcrumbs = new List<BreadcrumbItem>
+        {
+            new BreadcrumbItem("Channels", href: "/channels"),
+            new BreadcrumbItem("Channel", href: null, disabled: true)
+        };
+
+        await LoadChannel();
+        
+        // Set up 10-second polling
+        _pollTimer = new System.Threading.Timer(async _ =>
+        {
+            await LoadChannel();
+            await InvokeAsync(StateHasChanged);
+        }, null, TimeSpan.FromSeconds(10), TimeSpan.FromSeconds(10));
+    }
+
+    private async Task LoadChannel()
+    {
+        try
+        {
+            _loading = true;
+            var client = HttpClientFactory.CreateClient("gateway");
+            var response = await client.GetAsync($"api/channels/{JobId}");
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var channelDetail = await response.Content.ReadFromJsonAsync<ChannelDetailDto>();
+                if (channelDetail != null)
+                {
+                    _channelName = channelDetail.JobName;
+                    _artifacts = channelDetail.Artifacts.OrderByDescending(a => a.CreatedAtUtc).ToList();
+                    _error = null;
+                }
+            }
+            else if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+            {
+                _error = "Gateway channels endpoint not yet available. Waiting for Irving's REST API implementation.";
+            }
+            else
+            {
+                _error = $"Error loading channel: {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            _error = $"Error loading channel: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private string FormatTimestamp(DateTime timestamp)
+    {
+        var elapsed = DateTime.UtcNow - timestamp;
+        if (elapsed.TotalMinutes < 1) return "Just now";
+        if (elapsed.TotalHours < 1) return $"{(int)elapsed.TotalMinutes}m ago";
+        if (elapsed.TotalDays < 1) return $"{(int)elapsed.TotalHours}h ago";
+        if (elapsed.TotalDays < 30) return $"{(int)elapsed.TotalDays}d ago";
+        return timestamp.ToString("yyyy-MM-dd HH:mm");
+    }
+
+    private string FormatSize(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024} KB";
+        return $"{bytes / (1024 * 1024)} MB";
+    }
+
+    private Color GetArtifactTypeColor(string type) => type switch
+    {
+        "markdown" => Color.Primary,
+        "json" => Color.Info,
+        "error" => Color.Error,
+        "file" => Color.Secondary,
+        _ => Color.Default
+    };
+
+    public void Dispose()
+    {
+        _pollTimer?.Dispose();
+    }
+
+    // DTOs matching Gateway API contract (Phase 1)
+    private record ChannelDetailDto(Guid JobId, string JobName, List<ArtifactDto> Artifacts);
+    
+    private record ArtifactDto(
+        Guid Id,
+        Guid RunId,
+        string ArtifactType,
+        string? Title,
+        string? ContentInline,
+        string? ContentPath,
+        long ContentSizeBytes,
+        string? MimeType,
+        DateTime CreatedAtUtc
+    );
+}

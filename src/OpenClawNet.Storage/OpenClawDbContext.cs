@@ -23,6 +23,7 @@ public class OpenClawDbContext : DbContext
     public DbSet<SchemaVersionEntity> SchemaVersions => Set<SchemaVersionEntity>();
     public DbSet<ToolTestRecord> ToolTestRecords => Set<ToolTestRecord>();
     public DbSet<SecretEntity> Secrets => Set<SecretEntity>();
+    public DbSet<JobRunArtifact> JobRunArtifacts => Set<JobRunArtifact>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -135,6 +136,23 @@ public class OpenClawDbContext : DbContext
         {
             e.ToTable("Secrets");
             e.HasKey(x => x.Name);
+        });
+
+        modelBuilder.Entity<JobRunArtifact>(e =>
+        {
+            e.ToTable("JobRunArtifacts");
+            e.HasKey(a => a.Id);
+            e.Property(a => a.ArtifactType)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<JobRunArtifactKind>(v, ignoreCase: true))
+                .HasDefaultValue(JobRunArtifactKind.Text);
+            e.HasOne(a => a.Run)
+                .WithMany()
+                .HasForeignKey(a => a.JobRunId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(a => new { a.JobId, a.CreatedAt }).IsDescending(false, true);
+            e.HasIndex(a => new { a.JobRunId, a.Sequence });
         });
     }
 }

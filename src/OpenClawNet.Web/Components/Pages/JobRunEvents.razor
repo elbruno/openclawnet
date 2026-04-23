@@ -25,52 +25,80 @@ else if (_events.Count == 0)
 }
 else
 {
-    <table class="table table-sm align-top">
-        <thead>
-            <tr>
-                <th style="width:50px">#</th>
-                <th style="width:180px">When</th>
-                <th style="width:140px">Kind</th>
-                <th style="width:160px">Tool</th>
-                <th>Details</th>
-                <th style="width:100px;text-align:right">Duration</th>
-                <th style="width:90px;text-align:right">Tokens</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var e in _events)
-            {
-                <tr class="@KindRowClass(e.Kind)">
-                    <td>@e.Sequence</td>
-                    <td><small>@e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</small></td>
-                    <td><span class="badge @KindBadgeClass(e.Kind)">@e.Kind</span></td>
-                    <td>@(e.ToolName ?? "—")</td>
-                    <td>
-                        @if (!string.IsNullOrEmpty(e.Message))
-                        {
-                            <div class="small">@e.Message</div>
-                        }
-                        @if (!string.IsNullOrEmpty(e.ArgumentsJson))
-                        {
-                            <details class="small">
-                                <summary>args</summary>
-                                <pre class="bg-light p-2 mb-1" style="white-space:pre-wrap;max-height:200px;overflow:auto;">@e.ArgumentsJson</pre>
-                            </details>
-                        }
-                        @if (!string.IsNullOrEmpty(e.ResultJson))
-                        {
-                            <details class="small">
-                                <summary>result</summary>
-                                <pre class="bg-light p-2 mb-0" style="white-space:pre-wrap;max-height:200px;overflow:auto;">@e.ResultJson</pre>
-                            </details>
-                        }
-                    </td>
-                    <td class="text-end small">@(e.DurationMs.HasValue ? $"{e.DurationMs} ms" : "—")</td>
-                    <td class="text-end small">@(e.TokensUsed.HasValue ? e.TokensUsed.ToString() : "—")</td>
-                </tr>
-            }
-        </tbody>
-    </table>
+    <MudDataGrid T="JobRunEventDto"
+                 ServerData="LoadGridDataAsync"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_events.Count event(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Sequence" Title="#" />
+            <PropertyColumn Property="x => x.Timestamp" Title="When">
+                <CellTemplate>
+                    <small data-testid="run-event-row-@context.Item.Sequence">@context.Item.Timestamp.ToString("yyyy-MM-dd HH:mm:ss")</small>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Kind" Title="Kind">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@KindChipColor(context.Item.Kind)"
+                             Variant="Variant.Filled">@context.Item.Kind</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ToolName" Title="Tool">
+                <CellTemplate>@(context.Item.ToolName ?? "—")</CellTemplate>
+            </PropertyColumn>
+            <TemplateColumn Title="Details" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    @{ var e = context.Item; }
+                    @if (!string.IsNullOrEmpty(e.Message))
+                    {
+                        <div class="small">@e.Message</div>
+                    }
+                    @if (!string.IsNullOrEmpty(e.ArgumentsJson))
+                    {
+                        <details class="small">
+                            <summary>args</summary>
+                            <pre class="bg-light p-2 mb-1" style="white-space:pre-wrap;max-height:200px;overflow:auto;">@e.ArgumentsJson</pre>
+                        </details>
+                    }
+                    @if (!string.IsNullOrEmpty(e.ResultJson))
+                    {
+                        <details class="small">
+                            <summary>result</summary>
+                            <pre class="bg-light p-2 mb-0" style="white-space:pre-wrap;max-height:200px;overflow:auto;">@e.ResultJson</pre>
+                        </details>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <PropertyColumn Property="x => x.DurationMs" Title="Duration" CellClass="text-end">
+                <CellTemplate>
+                    <small>@(context.Item.DurationMs.HasValue ? $"{context.Item.DurationMs} ms" : "—")</small>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.TokensUsed" Title="Tokens" CellClass="text-end">
+                <CellTemplate>
+                    <small>@(context.Item.TokensUsed.HasValue ? context.Item.TokensUsed.ToString() : "—")</small>
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+        <PagerContent>
+            <MudDataGridPager T="JobRunEventDto" PageSizeOptions="new[] { 25, 50, 100, 250 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
 @code {
@@ -79,6 +107,7 @@ else
 
     private List<JobRunEventDto> _events = [];
     private bool _loading = true;
+    private bool _dense = true;
     private string? _error;
 
     protected override async Task OnInitializedAsync()
@@ -97,19 +126,42 @@ else
         }
     }
 
-    private static string KindBadgeClass(string kind) => kind switch
+    // ServerData callback — paging/sort/filter from grid state, applied over the in-memory list
+    private Task<GridData<JobRunEventDto>> LoadGridDataAsync(GridState<JobRunEventDto> state, CancellationToken ct)
     {
-        "agent_started"   => "bg-info text-dark",
-        "tool_call"       => "bg-primary",
-        "agent_completed" => "bg-success",
-        "agent_failed"    => "bg-danger",
-        "profile_refused" => "bg-warning text-dark",
-        _                 => "bg-secondary"
-    };
+        IEnumerable<JobRunEventDto> q = _events;
 
-    private static string KindRowClass(string kind) => kind switch
+        foreach (var fd in state.FilterDefinitions)
+        {
+            var func = fd.GenerateFilterFunction();
+            q = q.Where(func);
+        }
+
+        foreach (var sd in state.SortDefinitions)
+        {
+            q = sd.Descending
+                ? q.OrderByDescending(x => sd.SortFunc(x))
+                : q.OrderBy(x => sd.SortFunc(x));
+        }
+
+        var list = q.ToList();
+        var total = list.Count;
+        var page = list.Skip(state.Page * state.PageSize).Take(state.PageSize).ToList();
+
+        return Task.FromResult(new GridData<JobRunEventDto>
+        {
+            Items = page,
+            TotalItems = total,
+        });
+    }
+
+    private static Color KindChipColor(string kind) => kind switch
     {
-        "agent_failed" => "table-danger",
-        _              => string.Empty
+        "agent_started"   => Color.Info,
+        "tool_call"       => Color.Primary,
+        "agent_completed" => Color.Success,
+        "agent_failed"    => Color.Error,
+        "profile_refused" => Color.Warning,
+        _                 => Color.Secondary,
     };
 }

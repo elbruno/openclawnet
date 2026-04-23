@@ -27,93 +27,104 @@ else if (_templates.Count == 0)
 }
 else
 {
-    <div class="row g-3">
-        @foreach (var t in _templates)
-        {
-            <div class="col-md-6">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <div class="d-flex justify-content-between align-items-start mb-2">
-                            <h5 class="card-title mb-0">@t.Name</h5>
-                            @if (!string.IsNullOrEmpty(t.Category))
+    <MudDataGrid T="JobTemplateDto"
+                 Items="_templates"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="70vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_templates.Count template(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.Name" Title="Name" />
+            <PropertyColumn Property="x => x.Category" Title="Category">
+                <CellTemplate>
+                    @if (!string.IsNullOrEmpty(context.Item.Category))
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Secondary" Variant="Variant.Filled">@context.Item.Category</MudChip>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Description" Title="Description" />
+            <TemplateColumn Title="Schedule" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    @if (!string.IsNullOrEmpty(context.Item.DefaultJob.CronExpression))
+                    {
+                        <code class="small">@context.Item.DefaultJob.CronExpression</code>
+                    }
+                    else
+                    {
+                        <span class="text-muted small">—</span>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Tools" Sortable="false" Filterable="false">
+                <CellTemplate>
+                    @foreach (var tool in context.Item.RequiredTools)
+                    {
+                        <MudChip T="string" Size="Size.Small" Color="Color.Default" Variant="Variant.Outlined" Class="me-1">@tool</MudChip>
+                    }
+                </CellTemplate>
+            </TemplateColumn>
+            <TemplateColumn Title="Actions" Sortable="false" Filterable="false" CellClass="text-end">
+                <CellTemplate>
+                    <button class="btn btn-primary btn-sm" @onclick="() => UseTemplate(context.Item)">
+                        Use this template →
+                    </button>
+                </CellTemplate>
+            </TemplateColumn>
+        </Columns>
+        <ChildRowContent>
+            <MudCard Elevation="0" Class="pa-3 mud-background-gray">
+                @if (context.Item.RequiredSecrets.Count > 0)
+                {
+                    <div class="small mb-2">
+                        <strong>Secrets:</strong>
+                        @foreach (var s in context.Item.RequiredSecrets)
+                        {
+                            <MudChip T="string" Size="Size.Small" Color="Color.Warning" Variant="Variant.Filled" Class="me-1">@s</MudChip>
+                        }
+                    </div>
+                }
+                @if (context.Item.Prerequisites.Count > 0)
+                {
+                    <div class="small mb-2">
+                        <strong>Prerequisites:</strong>
+                        <ul class="mb-0 mt-1">
+                            @foreach (var p in context.Item.Prerequisites)
                             {
-                                <span class="badge bg-secondary">@t.Category</span>
+                                <li>@p</li>
                             }
-                        </div>
-                        <p class="card-text small text-muted">@t.Description</p>
-
-                        @if (t.RequiredTools.Count > 0)
-                        {
-                            <div class="small mb-2">
-                                <strong>Tools:</strong>
-                                @foreach (var tool in t.RequiredTools)
-                                {
-                                    <span class="badge bg-light text-dark border me-1">@tool</span>
-                                }
-                            </div>
-                        }
-
-                        @if (t.RequiredSecrets.Count > 0)
-                        {
-                            <div class="small mb-2">
-                                <strong>Secrets:</strong>
-                                @foreach (var s in t.RequiredSecrets)
-                                {
-                                    <span class="badge bg-warning text-dark me-1">@s</span>
-                                }
-                            </div>
-                        }
-
-                        @if (t.Prerequisites.Count > 0)
-                        {
-                            <details class="small mb-2">
-                                <summary>Prerequisites (@t.Prerequisites.Count)</summary>
-                                <ul class="mb-0 mt-1">
-                                    @foreach (var p in t.Prerequisites)
-                                    {
-                                        <li>@p</li>
-                                    }
-                                </ul>
-                            </details>
-                        }
-
-                        @if (!string.IsNullOrEmpty(t.DefaultJob.CronExpression))
-                        {
-                            <p class="small mb-2"><strong>Schedule:</strong> <code>@t.DefaultJob.CronExpression</code></p>
-                        }
-
-                        <details class="small mb-3">
-                            <summary>Prompt preview</summary>
-                            <pre class="bg-light p-2 rounded mt-1" style="white-space:pre-wrap;font-size:0.85em;">@t.DefaultJob.Prompt</pre>
-                        </details>
+                        </ul>
                     </div>
-                    <div class="card-footer d-flex justify-content-between align-items-center">
-                        @if (!string.IsNullOrEmpty(t.DocsUrl))
-                        {
-                            <a href="@t.DocsUrl" target="_blank" class="small">📖 Read the demo</a>
-                        }
-                        else
-                        {
-                            <span></span>
-                        }
-                        <button class="btn btn-primary btn-sm" @onclick="() => UseTemplate(t)">
-                            Use this template →
-                        </button>
-                    </div>
+                }
+                <div class="small mb-2">
+                    <strong>Prompt:</strong>
+                    <pre class="bg-light p-2 rounded mt-1" style="white-space:pre-wrap;font-size:0.85em;">@context.Item.DefaultJob.Prompt</pre>
                 </div>
-            </div>
-        }
-    </div>
+                @if (!string.IsNullOrEmpty(context.Item.DocsUrl))
+                {
+                    <a href="@context.Item.DocsUrl" target="_blank" class="small">📖 Read the demo</a>
+                }
+            </MudCard>
+        </ChildRowContent>
+        <PagerContent>
+            <MudDataGridPager T="JobTemplateDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+        </PagerContent>
+    </MudDataGrid>
 }
 
-@if (_lastCreatedJob is not null)
-{
-    <div class="alert alert-success mt-4">
-        Created job <strong>@_lastCreatedJob.Name</strong>
-        (id <code>@_lastCreatedJob.Id</code>, status <code>@_lastCreatedJob.Status</code>).
-        <a href="/jobs">Open the Jobs page →</a>
-    </div>
-}
 @if (_lastError is not null)
 {
     <div class="alert alert-danger mt-4">@_lastError</div>
@@ -122,8 +133,8 @@ else
 @code {
     private List<JobTemplateDto> _templates = [];
     private bool _loading = true;
+    private bool _dense = true;
     private string? _error;
-    private JobDto? _lastCreatedJob;
     private string? _lastError;
 
     protected override async Task OnInitializedAsync()
@@ -145,10 +156,10 @@ else
     private async Task UseTemplate(JobTemplateDto template)
     {
         _lastError = null;
-        _lastCreatedJob = null;
         try
         {
-            _lastCreatedJob = await JobsClient.CreateAsync(template.DefaultJob);
+            var created = await JobsClient.CreateAsync(template.DefaultJob);
+            Navigation.NavigateTo($"/jobs/{created.Id}");
         }
         catch (Exception ex)
         {

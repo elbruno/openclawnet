@@ -1,3 +1,19 @@
+---
+name: web-search
+description: "Search the internet for up-to-date information and retrieve content from specific URLs."
+category: information
+tags:
+  - web
+  - search
+  - internet
+  - research
+examples:
+  - "Search for the latest .NET 10 release notes"
+  - "Find documentation on Blazor Server authentication"
+  - "Look up current best practices for Entity Framework Core"
+enabled: true
+---
+
 # Web Search Skill
 
 You have access to web search tools that allow you to search the internet for up-to-date information.
