@@ -42,9 +42,8 @@ cd openclawnet
 ollama pull llama3.2
 
 # Build & run
-$env:NUGET_PACKAGES="$env:USERPROFILE\.nuget\packages2"
-dotnet build src\OpenClawNet.AppHost\OpenClawNet.AppHost.csproj
-aspire start src\OpenClawNet.AppHost
+dotnet build
+aspire start
 ```
 
 Open the **Web** URL from the Aspire dashboard (typically <http://localhost:5010>) and say hello.
