@@ -1,0 +1,818 @@
+﻿<html xmlns:tp="http://schemas.datacontract.org/2004/07/Microsoft.VisualStudio.TestPlatform.Extensions.HtmlLogger.ObjectModel" xmlns:a="http://schemas.microsoft.com/2003/10/Serialization/Arrays" xmlns:msxsl="urn:schemas-microsoft-com:xslt">
+  <body>
+    <h1>Test run details</h1>
+    <div class="summary">
+      <div class="block"><span>Total tests</span><div class="total-tests">73</div><br></div>
+      <div class="block"><span>Passed  : </span><span class="passedTests">58</span><br><span>Failed  : </span><span class="failedTests">15</span><br><span>Skipped : </span><span class="skippedTests">0</span><br></div>
+      <div class="block"><span>Pass percentage</span><div class="pass-percentage">79 %</div><br></div>
+      <div class="block"><span>Run duration</span><div class="test-run-time">9m 40s</div><br></div><br></div>
+    <h2>Failed Results</h2><details open=""><summary>C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\bin\Debug\net10.0\OpenClawNet.PlaywrightTests.dll</summary><div class="inner-row" Id="1127803702-failedResult">
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_PausesOnToolCall​</span><div class="duration"><span>30s 793ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_PausesOnToolCall&gt;b__5_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 101
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_PausesOnToolCall() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 88
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(expectedTool: "web_fetch", prompt: "Issue a single HTTP GET to https://example.com and"···)​</span><div class="duration"><span>30s 749ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;&gt;c__DisplayClass12_0.&lt;&lt;BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 309
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(String expectedTool, String prompt) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 298
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(expectedTool: "browser", prompt: "Drive a headless browser to https://example.com an"···)​</span><div class="duration"><span>30s 732ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;&gt;c__DisplayClass12_0.&lt;&lt;BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 309
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(String expectedTool, String prompt) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 298
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserApproves_ContinuesExecution​</span><div class="duration"><span>30s 735ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_UserApproves_ContinuesExecution&gt;b__7_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 138
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserApproves_ContinuesExecution() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 129
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserDenies_StopsCleanly​</span><div class="duration"><span>30s 739ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_UserDenies_StopsCleanly&gt;b__8_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 176
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserDenies_StopsCleanly() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 167
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_False_AutoApproves​</span><div class="duration"><span>30s 748ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_False_AutoApproves&gt;b__9_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 208
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_False_AutoApproves() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 197
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.ScheduleTool_Exempt_NoApprovalEvenWhenRequired​</span><div class="duration"><span>30s 719ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;ScheduleTool_Exempt_NoApprovalEvenWhenRequired&gt;b__11_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 276
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.ScheduleTool_Exempt_NoApprovalEvenWhenRequired() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 263
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.RememberForSession_SuppressesSubsequentPrompts​</span><div class="duration"><span>30s 720ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;RememberForSession_SuppressesSubsequentPrompts&gt;b__10_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 236
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.RememberForSession_SuppressesSubsequentPrompts() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 225
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.ModelProvidersPage_Loads_ShowsProviderTable​</span><div class="duration"><span>10s 792ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 10000ms
+  - waiting for Locator("table, .provider-card, [class*='provider']").First
+    14 × locator resolved to &lt;style class="mud-theme-provider"&gt;↵:root{↵--mud-palette-black: rgba(39,44,52,1);↵--…&lt;/style&gt;
+       - unexpected value "hidden"</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.&lt;ModelProvidersPage_Loads_ShowsProviderTable&gt;b__5_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\SettingsAndSkillsTests.cs:line 141
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.ModelProvidersPage_Loads_ShowsProviderTable() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\SettingsAndSkillsTests.cs:line 122
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_NewChatAndSendMessage_ShowsStreamingResponse​</span><div class="duration"><span>10s 737ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 10000ms
+  - waiting for Locator("textarea, input[type='text']").Last</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.&lt;Chat_NewChatAndSendMessage_ShowsStreamingResponse&gt;b__1_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 41
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_NewChatAndSendMessage_ShowsStreamingResponse() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 23
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_AfterSendingMessage_SessionAppearsInSessionsPanel​</span><div class="duration"><span>15s 759ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 15000ms
+  - waiting for Locator(".list-group-item:has-text('Sessions Panel Test')").First</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.&lt;Chat_AfterSendingMessage_SessionAppearsInSessionsPanel&gt;b__2_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 101
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_AfterSendingMessage_SessionAppearsInSessionsPanel() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 84
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Tools", expectedPath: "/tools")​</span><div class="duration"><span>741ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Error: strict mode violation: Locator("nav.nav").Locator("a.nav-link:has-text('Tools')") resolved to 2 elements:
+    1) &lt;a href="tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "Tools", Exact = true })
+    2) &lt;a href="mcp-tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "MCP Tools" })
+
+Call log:
+  - waiting for Locator("nav.nav").Locator("a.nav-link:has-text('Tools')")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;&gt;c__DisplayClass4_0.&lt;&lt;ClickNavLink_NavigatesToCorrectPage&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 121
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(String menuLabel, String expectedPath) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 109
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.WebApp_AllNavMenuItems_AreVisible​</span><div class="duration"><span>744ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Error: strict mode violation: Locator("nav.nav").Locator("a.nav-link:has-text('Tools')") resolved to 2 elements:
+    1) &lt;a href="tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "Tools", Exact = true })
+    2) &lt;a href="mcp-tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "MCP Tools" })
+
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 5000ms
+  - waiting for Locator("nav.nav").Locator("a.nav-link:has-text('Tools')")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at Microsoft.Playwright.Core.Frame.ExpectAsync(String selector, String expression, FrameExpectOptions options) in /_/src/Playwright/Core/Frame.cs:line 890
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 78
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;WebApp_AllNavMenuItems_AreVisible&gt;b__2_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 54
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.WebApp_AllNavMenuItems_AreVisible() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 37
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/", expectedTitleFragment: "Chat")​</span><div class="duration"><span>10s 730ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Page title expected to be 'Chat'
+But was: 'OpenClawNet' 
+Call log:
+  - PageAssertions.ToHaveTitleAsync with timeout 10000ms
+  - waiting for Locator(":root")
+    14 × locator resolved to &lt;html lang="en"&gt;…&lt;/html&gt;
+       - unexpected value "OpenClawNet"</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 87
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue textValue, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;&gt;c__DisplayClass3_0.&lt;&lt;NavigateTo_Page_RendersWithoutError&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 86
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(String path, String expectedTitleFragment) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 72
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.AspireDashboardTests.WebUI_AfterChatInteraction_SessionsListUpdates​</span><div class="duration"><span>15s 726ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 15000ms
+  - waiting for Locator(".list-group-item:has-text('Dashboard Verify Session')").First</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.AspireDashboardTests.&lt;WebUI_AfterChatInteraction_SessionsListUpdates&gt;b__3_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\AspireDashboardTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.AspireDashboardTests.WebUI_AfterChatInteraction_SessionsListUpdates() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\AspireDashboardTests.cs:line 56
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+      </div></details><h2>All Results</h2><details><summary>C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\bin\Debug\net10.0\OpenClawNet.PlaywrightTests.dll</summary><div class="inner-row" Id="1127803702">
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.WebsiteWatcherE2ETests.FullFlow_CreateFromTemplate_RunGetTitle_VisibleEverywhere​</span><div class="duration"><span>12s 521ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.ToolsScreenshotsTest.CaptureToolsScreenshots​</span><div class="duration"><span>8s 553ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_PausesOnToolCall​</span><div class="duration"><span>30s 793ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_PausesOnToolCall&gt;b__5_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 101
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_PausesOnToolCall() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 88
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(expectedTool: "web_fetch", prompt: "Issue a single HTTP GET to https://example.com and"···)​</span><div class="duration"><span>30s 749ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;&gt;c__DisplayClass12_0.&lt;&lt;BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 309
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(String expectedTool, String prompt) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 298
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(expectedTool: "browser", prompt: "Drive a headless browser to https://example.com an"···)​</span><div class="duration"><span>30s 732ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;&gt;c__DisplayClass12_0.&lt;&lt;BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 309
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.BrowserAndWebFetch_AlwaysRequireApproval_OnRequiringProfile(String expectedTool, String prompt) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 298
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserApproves_ContinuesExecution​</span><div class="duration"><span>30s 735ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_UserApproves_ContinuesExecution&gt;b__7_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 138
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserApproves_ContinuesExecution() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 129
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserDenies_StopsCleanly​</span><div class="duration"><span>30s 739ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_True_UserDenies_StopsCleanly&gt;b__8_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 176
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_True_UserDenies_StopsCleanly() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 167
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_False_AutoApproves​</span><div class="duration"><span>30s 748ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;Profile_RequireApproval_False_AutoApproves&gt;b__9_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 208
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.Profile_RequireApproval_False_AutoApproves() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 197
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.ScheduleTool_Exempt_NoApprovalEvenWhenRequired​</span><div class="duration"><span>30s 719ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;ScheduleTool_Exempt_NoApprovalEvenWhenRequired&gt;b__11_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 276
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.ScheduleTool_Exempt_NoApprovalEvenWhenRequired() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 263
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.RememberForSession_SuppressesSubsequentPrompts​</span><div class="duration"><span>30s 720ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>System.TimeoutException : Timeout 30000ms exceeded.
+Call log:
+  - waiting for GetByTestId("chat-input")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.SendChatMessageAsync(String text) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.&lt;RememberForSession_SuppressesSubsequentPrompts&gt;b__10_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 236
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ToolApprovalFlowTests.RememberForSession_SuppressesSubsequentPrompts() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ToolApprovalFlowTests.cs:line 225
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsScreenshotsTest.CaptureSettingsScreenshots​</span><div class="duration"><span>15s 742ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.SkillsPage_Loads_ShowsSkillsList​</span><div class="duration"><span>658ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.SettingsPage_Loads_ShowsSchedulerSettings​</span><div class="duration"><span>634ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.ModelProvidersPage_Loads_ShowsProviderTable​</span><div class="duration"><span>10s 792ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 10000ms
+  - waiting for Locator("table, .provider-card, [class*='provider']").First
+    14 × locator resolved to &lt;style class="mud-theme-provider"&gt;↵:root{↵--mud-palette-black: rgba(39,44,52,1);↵--…&lt;/style&gt;
+       - unexpected value "hidden"</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.&lt;ModelProvidersPage_Loads_ShowsProviderTable&gt;b__5_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\SettingsAndSkillsTests.cs:line 141
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.ModelProvidersPage_Loads_ShowsProviderTable() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\SettingsAndSkillsTests.cs:line 122
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.SettingsPage_GatewaySettingsApi_ReturnsCurrentSettings​</span><div class="duration"><span>13ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.AgentProfilesPage_Loads_ShowsProfilesList​</span><div class="duration"><span>680ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.ModelProvidersPage_GatewayApi_ReturnsProviders​</span><div class="duration"><span>12ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.SettingsAndSkillsTests.SkillsPage_ShowsSkillDetails_WhenExpanded​</span><div class="duration"><span>634ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.ProviderSwitchTests.Settings_GetCurrentSettings_ReturnsProviderInfo​</span><div class="duration"><span>7ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.ProviderSwitchTests.Settings_PutSettings_UpdatesProvider​</span><div class="duration"><span>14ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.JobsScreenshotsTest.CaptureJobsScreenshots​</span><div class="duration"><span>16s 412ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.HelloWorldScreenshotsTest.CaptureHelloWorldTutorialScreenshots​</span><div class="duration"><span>22s 872ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayOnlyDemoTests.Gateway_HealthEndpoint_ReturnsDetailedStatus​</span><div class="duration"><span>10ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayOnlyDemoTests.Gateway_ParallelSessions_AreIsolated​</span><div class="duration"><span>17s 271ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.MultiTurn_CreateChatRenameDelete_FullLifecycle​</span><div class="duration"><span>7s 816ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Sessions_CreateSession_ReturnsCreated​</span><div class="duration"><span>14ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Webhooks_GitPushPayload_CreatesSession​</span><div class="duration"><span>15s 535ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Tools_GetList_ReturnsRegisteredTools​</span><div class="duration"><span>10ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.SignalR_ChatHub_EndpointIsReachable​</span><div class="duration"><span>9ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.ChatStream_PostEndpoint_ReturnsNdjsonResponse​</span><div class="duration"><span>1s 835ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.OpenApi_GetSpec_ReturnsValidJson​</span><div class="duration"><span>175ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Settings_UpdateProvider_ChangesRuntime​</span><div class="duration"><span>10ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Sessions_GetById_ReturnsFullSession​</span><div class="duration"><span>30ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Skills_GetList_ReturnsSkills​</span><div class="duration"><span>6ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Skills_Reload_ReturnsSuccess​</span><div class="duration"><span>9ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Version_GetEndpoint_ReturnsVersionInfo​</span><div class="duration"><span>7ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Chat_FileQuestion_TriggersToolUse​</span><div class="duration"><span>21s 46ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Webhooks_PostEvent_CreatesSession​</span><div class="duration"><span>10s 966ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Sessions_GetMessages_ReturnsHistory​</span><div class="duration"><span>7s 87ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Webhooks_CodeReviewPayload_CreatesSession​</span><div class="duration"><span>13s 61ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Health_GetEndpoint_ReturnsHealthy​</span><div class="duration"><span>9ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Webhooks_GetList_ReturnsWebhookSessions​</span><div class="duration"><span>6s 106ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.ModelProviders_GetList_ReturnsArray​</span><div class="duration"><span>12ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Sessions_ListSessions_ReturnsArray​</span><div class="duration"><span>12ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Skills_EnableDisable_TogglesState​</span><div class="duration"><span>6ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.GatewayApiTests.Chat_SendMessage_ReturnsResponseWithContent​</span><div class="duration"><span>24s 212ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_NewChatAndSendMessage_ShowsStreamingResponse​</span><div class="duration"><span>10s 737ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 10000ms
+  - waiting for Locator("textarea, input[type='text']").Last</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.&lt;Chat_NewChatAndSendMessage_ShowsStreamingResponse&gt;b__1_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 41
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_NewChatAndSendMessage_ShowsStreamingResponse() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 23
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_AfterSendingMessage_SessionAppearsInSessionsPanel​</span><div class="duration"><span>15s 759ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 15000ms
+  - waiting for Locator(".list-group-item:has-text('Sessions Panel Test')").First</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.&lt;Chat_AfterSendingMessage_SessionAppearsInSessionsPanel&gt;b__2_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 101
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.ChatFlowTests.Chat_AfterSendingMessage_SessionAppearsInSessionsPanel() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\ChatFlowTests.cs:line 84
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Agent Profiles", expectedPath: "/agent-profiles")​</span><div class="duration"><span>667ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Skills", expectedPath: "/skills")​</span><div class="duration"><span>670ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Jobs", expectedPath: "/jobs")​</span><div class="duration"><span>669ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Tool Log", expectedPath: "/tool-log")​</span><div class="duration"><span>685ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Sessions", expectedPath: "/sessions")​</span><div class="duration"><span>677ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "General", expectedPath: "/settings")​</span><div class="duration"><span>676ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Chat", expectedPath: "/")​</span><div class="duration"><span>677ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Tools", expectedPath: "/tools")​</span><div class="duration"><span>741ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Error: strict mode violation: Locator("nav.nav").Locator("a.nav-link:has-text('Tools')") resolved to 2 elements:
+    1) &lt;a href="tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "Tools", Exact = true })
+    2) &lt;a href="mcp-tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "MCP Tools" })
+
+Call log:
+  - waiting for Locator("nav.nav").Locator("a.nav-link:has-text('Tools')")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;&gt;c__DisplayClass4_0.&lt;&lt;ClickNavLink_NavigatesToCorrectPage&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 121
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(String menuLabel, String expectedPath) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 109
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Health", expectedPath: "/health")​</span><div class="duration"><span>684ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.ClickNavLink_NavigatesToCorrectPage(menuLabel: "Model Providers", expectedPath: "/model-providers")​</span><div class="duration"><span>671ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.WebApp_AllNavMenuItems_AreVisible​</span><div class="duration"><span>744ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Error: strict mode violation: Locator("nav.nav").Locator("a.nav-link:has-text('Tools')") resolved to 2 elements:
+    1) &lt;a href="tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "Tools", Exact = true })
+    2) &lt;a href="mcp-tools" class="nav-link"&gt;…&lt;/a&gt; aka GetByRole(AriaRole.Link, new() { Name = "MCP Tools" })
+
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 5000ms
+  - waiting for Locator("nav.nav").Locator("a.nav-link:has-text('Tools')")</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Transport.Connection.InnerSendMessageToServerAsync[T](ChannelOwner object, String method, Dictionary`2 dictionary, Boolean keepNulls) in /_/src/Playwright/Transport/Connection.cs:line 206
+   at Microsoft.Playwright.Transport.Connection.WrapApiCallAsync[T](Func`1 action, Boolean isInternal) in /_/src/Playwright/Transport/Connection.cs:line 535
+   at Microsoft.Playwright.Core.Frame.ExpectAsync(String selector, String expression, FrameExpectOptions options) in /_/src/Playwright/Core/Frame.cs:line 890
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 78
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;WebApp_AllNavMenuItems_AreVisible&gt;b__2_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 54
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.WebApp_AllNavMenuItems_AreVisible() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 37
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/tools", expectedTitleFragment: "Tools")​</span><div class="duration"><span>676ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/tool-log", expectedTitleFragment: "Tool Execution Log")​</span><div class="duration"><span>617ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/model-providers", expectedTitleFragment: "Model Providers")​</span><div class="duration"><span>661ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/skills", expectedTitleFragment: "Skills")​</span><div class="duration"><span>637ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/agent-profiles", expectedTitleFragment: "Agent Profiles")​</span><div class="duration"><span>659ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/settings", expectedTitleFragment: "Settings")​</span><div class="duration"><span>637ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/health", expectedTitleFragment: "Health")​</span><div class="duration"><span>2s 672ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/jobs", expectedTitleFragment: "Jobs")​</span><div class="duration"><span>689ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/", expectedTitleFragment: "Chat")​</span><div class="duration"><span>10s 730ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Page title expected to be 'Chat'
+But was: 'OpenClawNet' 
+Call log:
+  - PageAssertions.ToHaveTitleAsync with timeout 10000ms
+  - waiting for Locator(":root")
+    14 × locator resolved to &lt;html lang="en"&gt;…&lt;/html&gt;
+       - unexpected value "OpenClawNet"</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 87
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue textValue, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.&lt;&gt;c__DisplayClass3_0.&lt;&lt;NavigateTo_Page_RendersWithoutError&gt;b__0&gt;d.MoveNext() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 86
+--- End of stack trace from previous location ---
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(String path, String expectedTitleFragment) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\BlazorNavigationTests.cs:line 72
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.NavigateTo_Page_RendersWithoutError(path: "/sessions", expectedTitleFragment: "Sessions")​</span><div class="duration"><span>643ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.BlazorNavigationTests.WebApp_HomePage_LoadsSuccessfully​</span><div class="duration"><span>636ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="fail">✘</span><span> OpenClawNet.PlaywrightTests.AspireDashboardTests.WebUI_AfterChatInteraction_SessionsListUpdates​</span><div class="duration"><span>15s 726ms</span><br></div>
+          </div>
+          <div class="error-info">
+    Error: <span class="error-message"><pre>Microsoft.Playwright.PlaywrightException : Locator expected to be visible 
+Call log:
+  - LocatorAssertions.ToBeVisibleAsync with timeout 15000ms
+  - waiting for Locator(".list-group-item:has-text('Dashboard Verify Session')").First</pre></span><br>
+    Stack trace: <span class="error-stack-trace"><pre>   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, FrameExpectOptions expectOptions, Object expected, String message) in /_/src/Playwright/Core/AssertionsBase.cs:line 85
+   at Microsoft.Playwright.Core.AssertionsBase.ExpectImplAsync(String expression, ExpectedTextValue[] expectedText, Object expected, String message, FrameExpectOptions options) in /_/src/Playwright/Core/AssertionsBase.cs:line 65
+   at OpenClawNet.PlaywrightTests.AspireDashboardTests.&lt;WebUI_AfterChatInteraction_SessionsListUpdates&gt;b__3_0() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\AspireDashboardTests.cs:line 75
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 57
+   at OpenClawNet.PlaywrightTests.PlaywrightTestBase.WithScreenshotOnFailure(Func`1 testAction, String testMethodName) in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\PlaywrightTestBase.cs:line 62
+   at OpenClawNet.PlaywrightTests.AspireDashboardTests.WebUI_AfterChatInteraction_SessionsListUpdates() in C:\src\openclawnet-plan\tests\OpenClawNet.PlaywrightTests\AspireDashboardTests.cs:line 56
+--- End of stack trace from previous location ---</pre></span><br></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.AspireDashboardTests.Dashboard_GatewayHealth_IsAccessibleFromWeb​</span><div class="duration"><span>12ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+        <div class="leaf-division">
+          <div><span class="pass">✔</span><span> OpenClawNet.PlaywrightTests.AspireDashboardTests.Dashboard_WebAppHomePage_IsReachable​</span><div class="duration"><span>627ms</span><br></div>
+          </div>
+          <div class="error-info"></div>
+        </div>
+      </div></details><div>
+      <h2>Informational messages</h2><span>[xUnit.net 00:00:00.00] xUnit.net VSTest Adapter v3.1.5+1b188a7b0a (64-bit .NET 10.0.6)</span><br><span>[xUnit.net 00:00:00.11]   Discovering: OpenClawNet.PlaywrightTests</span><br><span>[xUnit.net 00:00:00.18]   Discovered:  OpenClawNet.PlaywrightTests</span><br><span>[xUnit.net 00:00:00.22]   Starting:    OpenClawNet.PlaywrightTests</span><br><span>info: Aspire.Hosting.DistributedApplication[0]</span><br><span>      Aspire version: 13.2.3+0838645cc4f7fc27e46200ac14cbe5c751637593</span><br><span>info: Aspire.Hosting.DistributedApplication[0]</span><br><span>      Distributed application starting.</span><br><span>info: Aspire.Hosting.DistributedApplication[0]</span><br><span>      Application host directory is: C:\src\openclawnet-plan\src\OpenClawNet.AppHost</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      1: 2026-04-24T02:08:58.6060502Z Waiting for resource 'gateway' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      1: 2026-04-24T02:08:58.6060440Z Waiting for resource 'gateway' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      1: 2026-04-24T02:08:58.6060109Z Waiting for resource 'gateway' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      1: 2026-04-24T02:08:58.6060263Z Waiting for resource 'gateway' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      1: 2026-04-24T02:08:58.6059883Z Waiting for resource 'shell-service' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.openclawnet-db-sqliteweb[0]</span><br><span>      1: 2026-04-24T02:08:58.6123041Z Waiting for resource 'openclawnet-db' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.openclawnet-db-sqliteweb[0]</span><br><span>      2: 2026-04-24T02:08:58.6172745Z Waiting for resource ready to execute for 'openclawnet-db'.</span><br><span>info: OpenClawNet.AppHost.Resources.openclawnet-db-sqliteweb[0]</span><br><span>      3: 2026-04-24T02:08:58.6181391Z Finished waiting for resource 'openclawnet-db'.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      2: 2026-04-24T02:08:58.6197902Z Waiting for resource 'browser-service' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      2: 2026-04-24T02:08:58.6198332Z Waiting for resource 'scheduler' to enter the 'Running' state.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      3: 2026-04-24T02:08:58.9629283Z Waiting for resource 'browser-service' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      4: 2026-04-24T02:08:58.9650178Z Waiting for resource 'shell-service' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.openclawnet-db-sqliteweb[0]</span><br><span>      4: 2026-04-24T02:08:58.9010000Z 53c473116f4a242ea7b5ed413649be71d3b74fd1812cb6c71c90d883a741f05d</span><br><span>fail: Microsoft.Extensions.Diagnostics.HealthChecks.DefaultHealthCheckService[103]</span><br><span>      Health check openclawnet-db-sqliteweb_http_/_200_check with status Unhealthy completed after 159.5172ms with message '(null)'</span><br><span>      System.Net.Http.HttpRequestException: An error occurred while sending the request.</span><br><span>       ---&gt; System.Net.Http.HttpIOException: The response ended prematurely. (ResponseEnded)</span><br><span>         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)</span><br><span>         --- End of inner exception stack trace ---</span><br><span>         at System.Net.Http.HttpConnection.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.SocketsHttpHandler.&lt;SendAsync&gt;g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)</span><br><span>         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)</span><br><span>         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)</span><br><span>         at HealthChecks.Uris.UriHealthCheck.CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) in /home/runner/work/AspNetCore.Diagnostics.HealthChecks/AspNetCore.Diagnostics.HealthChecks/src/HealthChecks.Uris/UriHealthCheck.cs:line 54</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      1: 2026-04-24T02:09:04.7840000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      2: 2026-04-24T02:09:04.7840000Z       Now listening on: http://localhost:52972</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      3: 2026-04-24T02:09:04.7890000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      1: 2026-04-24T02:09:04.8460000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      4: 2026-04-24T02:09:04.7890000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      5: 2026-04-24T02:09:04.7910000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      6: 2026-04-24T02:09:04.7910000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      7: 2026-04-24T02:09:04.7910000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      8: 2026-04-24T02:09:04.7910000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Services.Shell</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      2: 2026-04-24T02:09:04.8460000Z       Now listening on: http://localhost:52971</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      3: 2026-04-24T02:09:04.8520000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      4: 2026-04-24T02:09:04.8520000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      5: 2026-04-24T02:09:04.8530000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      6: 2026-04-24T02:09:04.8530000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      7: 2026-04-24T02:09:04.8530000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      8: 2026-04-24T02:09:04.8530000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Services.Browser</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      1: 2026-04-24T02:09:04.7930000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      2: 2026-04-24T02:09:04.7930000Z       Now listening on: http://localhost:52970</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      3: 2026-04-24T02:09:04.7980000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      4: 2026-04-24T02:09:04.7980000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      5: 2026-04-24T02:09:04.7990000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      6: 2026-04-24T02:09:04.7990000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      7: 2026-04-24T02:09:04.7990000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      8: 2026-04-24T02:09:04.7990000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Services.Memory</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      9: 2026-04-24T02:09:06.4740000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[1]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      10: 2026-04-24T02:09:06.4740000Z       Request starting HTTP/1.1 GET http://localhost:52964/health - - -</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      11: 2026-04-24T02:09:06.5410000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      12: 2026-04-24T02:09:06.5410000Z       Executing endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      13: 2026-04-24T02:09:06.5490000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      14: 2026-04-24T02:09:06.5490000Z       Setting HTTP status code 200.</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      15: 2026-04-24T02:09:06.5550000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      16: 2026-04-24T02:09:06.5550000Z       Writing value of type '&lt;&gt;f__AnonymousType0`2' as Json.</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      17: 2026-04-24T02:09:06.5590000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      18: 2026-04-24T02:09:06.5590000Z       Executed endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      19: 2026-04-24T02:09:06.5610000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[2]</span><br><span>info: OpenClawNet.AppHost.Resources.memory-service[0]</span><br><span>      20: 2026-04-24T02:09:06.5610000Z       Request finished HTTP/1.1 GET http://localhost:52964/health - 200 - application/json;+charset=utf-8 93.2435ms</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      9: 2026-04-24T02:09:06.7320000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[1]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      10: 2026-04-24T02:09:06.7320000Z       Request starting HTTP/1.1 GET http://localhost:52966/health - - -</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      5: 2026-04-24T02:09:06.8164472Z Waiting for resource ready to execute for 'browser-service'.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      6: 2026-04-24T02:09:06.8165335Z Finished waiting for resource 'browser-service'.</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      11: 2026-04-24T02:09:06.7940000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      12: 2026-04-24T02:09:06.7940000Z       Executing endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      13: 2026-04-24T02:09:06.8030000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      14: 2026-04-24T02:09:06.8030000Z       Setting HTTP status code 200.</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      15: 2026-04-24T02:09:06.8090000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      16: 2026-04-24T02:09:06.8090000Z       Writing value of type '&lt;&gt;f__AnonymousType0`2' as Json.</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      17: 2026-04-24T02:09:06.8140000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      18: 2026-04-24T02:09:06.8140000Z       Executed endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      19: 2026-04-24T02:09:06.8150000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[2]</span><br><span>info: OpenClawNet.AppHost.Resources.browser-service[0]</span><br><span>      20: 2026-04-24T02:09:06.8150000Z       Request finished HTTP/1.1 GET http://localhost:52966/health - 200 - application/json;+charset=utf-8 90.1103ms</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      7: 2026-04-24T02:09:07.8868721Z Waiting for resource ready to execute for 'shell-service'.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      8: 2026-04-24T02:09:07.8869313Z Finished waiting for resource 'shell-service'.</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      9: 2026-04-24T02:09:07.8040000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[1]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      10: 2026-04-24T02:09:07.8040000Z       Request starting HTTP/1.1 GET http://localhost:52967/health - - -</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      11: 2026-04-24T02:09:07.8650000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      12: 2026-04-24T02:09:07.8650000Z       Executing endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      13: 2026-04-24T02:09:07.8730000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      14: 2026-04-24T02:09:07.8730000Z       Setting HTTP status code 200.</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      15: 2026-04-24T02:09:07.8800000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      16: 2026-04-24T02:09:07.8800000Z       Writing value of type '&lt;&gt;f__AnonymousType0`2' as Json.</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      17: 2026-04-24T02:09:07.8850000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      18: 2026-04-24T02:09:07.8850000Z       Executed endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      19: 2026-04-24T02:09:07.8860000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[2]</span><br><span>info: OpenClawNet.AppHost.Resources.shell-service[0]</span><br><span>      20: 2026-04-24T02:09:07.8860000Z       Request finished HTTP/1.1 GET http://localhost:52967/health - 200 - application/json;+charset=utf-8 90.2316ms</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      3: 2026-04-24T02:09:08.0052579Z Waiting for resource 'gateway' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      2: 2026-04-24T02:09:08.0052601Z Waiting for resource 'gateway' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      2: 2026-04-24T02:09:08.0052688Z Waiting for resource 'gateway' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      2: 2026-04-24T02:09:08.0052688Z Waiting for resource 'gateway' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      9: 2026-04-24T02:09:14.1010000Z warn: Microsoft.EntityFrameworkCore.Model.Validation[20601]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      10: 2026-04-24T02:09:14.1010000Z       The 'JobRunArtifactKind' property 'ArtifactType' on entity type 'ChatSessionArtifact' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Text', since this is the CLR default for the 'JobRunArtifactKind' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      11: 2026-04-24T02:09:14.1080000Z warn: Microsoft.EntityFrameworkCore.Model.Validation[20601]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      12: 2026-04-24T02:09:14.1080000Z       The 'JobRunArtifactKind' property 'ArtifactType' on entity type 'JobRunArtifact' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Text', since this is the CLR default for the 'JobRunArtifactKind' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      13: 2026-04-24T02:09:14.7060000Z info: OpenClawNet.Tools.FileSystem.FileSystemTool[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      14: 2026-04-24T02:09:14.7060000Z       FileSystem workspace root: C:\src\openclawnet-plan</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      15: 2026-04-24T02:09:14.8000000Z dbug: Microsoft.AspNetCore.SignalR.Internal.DefaultHubProtocolResolver[1]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      16: 2026-04-24T02:09:14.8000000Z       Registered SignalR Protocol: json, implemented by Microsoft.AspNetCore.SignalR.Protocol.JsonHubProtocol.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      17: 2026-04-24T02:09:15.2330000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      18: 2026-04-24T02:09:15.2330000Z       Server (web 1.0.0) method 'initialize' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      19: 2026-04-24T02:09:15.2470000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      20: 2026-04-24T02:09:15.2470000Z       Server (web 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'initialize' request handler completed in 8.7759ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      21: 2026-04-24T02:09:15.2490000Z info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      22: 2026-04-24T02:09:15.2490000Z       Started in-process MCP server 'web' (8f7d1c80-1111-4a11-8001-77627e620001).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      23: 2026-04-24T02:09:15.2490000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      24: 2026-04-24T02:09:15.2490000Z       Server (shell 1.0.0) method 'initialize' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      25: 2026-04-24T02:09:15.2500000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      26: 2026-04-24T02:09:15.2500000Z       Server (shell 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'initialize' request handler completed in 0.0862ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      27: 2026-04-24T02:09:15.2500000Z info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      28: 2026-04-24T02:09:15.2500000Z       Started in-process MCP server 'shell' (8f7d1c80-1111-4a11-8001-77627e620002).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      29: 2026-04-24T02:09:15.2500000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      30: 2026-04-24T02:09:15.2500000Z       Server (browser 1.0.0) method 'initialize' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      31: 2026-04-24T02:09:15.2500000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      32: 2026-04-24T02:09:15.2500000Z       Server (browser 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'initialize' request handler completed in 0.0756ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      33: 2026-04-24T02:09:15.2500000Z info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      34: 2026-04-24T02:09:15.2500000Z       Started in-process MCP server 'browser' (8f7d1c80-1111-4a11-8001-77627e620003).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      35: 2026-04-24T02:09:15.2500000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      36: 2026-04-24T02:09:15.2500000Z       Server (filesystem 1.0.0) method 'initialize' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      37: 2026-04-24T02:09:15.2500000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      38: 2026-04-24T02:09:15.2500000Z       Server (filesystem 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'initialize' request handler completed in 0.0401ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      39: 2026-04-24T02:09:15.2500000Z info: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      40: 2026-04-24T02:09:15.2500000Z       Started in-process MCP server 'filesystem' (8f7d1c80-1111-4a11-8001-77627e620004).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      41: 2026-04-24T02:09:15.2790000Z dbug: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      42: 2026-04-24T02:09:15.2790000Z       In-process MCP server web already running.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      43: 2026-04-24T02:09:15.2810000Z info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      44: 2026-04-24T02:09:15.2810000Z       Started bundled MCP server 'web' with 1 tool(s).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      45: 2026-04-24T02:09:15.2810000Z dbug: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      46: 2026-04-24T02:09:15.2810000Z       In-process MCP server shell already running.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      47: 2026-04-24T02:09:15.2810000Z info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      48: 2026-04-24T02:09:15.2810000Z       Started bundled MCP server 'shell' with 1 tool(s).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      49: 2026-04-24T02:09:15.2820000Z dbug: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      50: 2026-04-24T02:09:15.2820000Z       In-process MCP server browser already running.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      51: 2026-04-24T02:09:15.2820000Z info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      52: 2026-04-24T02:09:15.2820000Z       Started bundled MCP server 'browser' with 5 tool(s).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      53: 2026-04-24T02:09:15.2830000Z dbug: OpenClawNet.Mcp.Core.InProcessMcpHost[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      54: 2026-04-24T02:09:15.2830000Z       In-process MCP server filesystem already running.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      55: 2026-04-24T02:09:15.2830000Z info: OpenClawNet.Mcp.Core.BundledMcpStartupService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      56: 2026-04-24T02:09:15.2830000Z       Started bundled MCP server 'filesystem' with 4 tool(s).</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      57: 2026-04-24T02:09:15.5280000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      58: 2026-04-24T02:09:15.5280000Z       Now listening on: https://localhost:63543</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      59: 2026-04-24T02:09:15.5300000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      60: 2026-04-24T02:09:15.5300000Z       Now listening on: http://localhost:63544</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      61: 2026-04-24T02:09:15.5310000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      62: 2026-04-24T02:09:15.5310000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      63: 2026-04-24T02:09:15.5310000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      64: 2026-04-24T02:09:15.5310000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      65: 2026-04-24T02:09:15.5310000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      66: 2026-04-24T02:09:15.5310000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Gateway</span><br><span>fail: Microsoft.Extensions.Diagnostics.HealthChecks.DefaultHealthCheckService[103]</span><br><span>      Health check gateway_https_/health_200_check with status Unhealthy completed after 10006.0515ms with message '(null)'</span><br><span>      System.Threading.Tasks.TaskCanceledException: A task was canceled.</span><br><span>       ---&gt; System.Threading.Tasks.TaskCanceledException: A task was canceled.</span><br><span>         at System.Threading.Tasks.TaskCompletionSourceWithCancellation`1.WaitWithCancellationAsync(CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.HttpConnectionPool.SendWithVersionDetectionAndRetryAsync(HttpRequestMessage request, Boolean async, Boolean doRequestAuth, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.RedirectHandler.SendAsync(HttpRequestMessage request, Boolean async, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.SocketsHttpHandler.&lt;SendAsync&gt;g__CreateHandlerAndSendAsync|115_0(HttpRequestMessage request, CancellationToken cancellationToken)</span><br><span>         at Microsoft.Extensions.Http.Logging.LoggingHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)</span><br><span>         at Microsoft.Extensions.Http.Logging.LoggingScopeHttpMessageHandler.&lt;SendCoreAsync&gt;g__Core|4_0(HttpRequestMessage request, Boolean useAsync, CancellationToken cancellationToken)</span><br><span>         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)</span><br><span>         --- End of inner exception stack trace ---</span><br><span>         at System.Net.Http.HttpClient.HandleFailure(Exception e, Boolean telemetryStarted, HttpResponseMessage response, CancellationTokenSource cts, CancellationToken cancellationToken, CancellationTokenSource pendingRequestsCts)</span><br><span>         at System.Net.Http.HttpClient.&lt;SendAsync&gt;g__Core|83_0(HttpRequestMessage request, HttpCompletionOption completionOption, CancellationTokenSource cts, Boolean disposeCts, CancellationTokenSource pendingRequestsCts, CancellationToken originalCancellationToken)</span><br><span>         at HealthChecks.Uris.UriHealthCheck.CheckHealthAsync(HealthCheckContext context, CancellationToken cancellationToken) in /home/runner/work/AspNetCore.Diagnostics.HealthChecks/AspNetCore.Diagnostics.HealthChecks/src/HealthChecks.Uris/UriHealthCheck.cs:line 54</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      3: 2026-04-24T02:09:19.2152918Z Waiting for resource ready to execute for 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      3: 2026-04-24T02:09:19.2152985Z Waiting for resource ready to execute for 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      4: 2026-04-24T02:09:19.2152952Z Waiting for resource ready to execute for 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      3: 2026-04-24T02:09:19.2152999Z Waiting for resource ready to execute for 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      4: 2026-04-24T02:09:19.2153275Z Finished waiting for resource 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      5: 2026-04-24T02:09:19.2153329Z Finished waiting for resource 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      4: 2026-04-24T02:09:19.2153300Z Finished waiting for resource 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      4: 2026-04-24T02:09:19.2153527Z Finished waiting for resource 'gateway'.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      6: 2026-04-24T02:09:19.4890040Z Waiting for resource 'scheduler' to become healthy.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      5: 2026-04-24T02:09:25.1250000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      6: 2026-04-24T02:09:25.1250000Z       Now listening on: http://localhost:63587</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      7: 2026-04-24T02:09:25.1300000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      8: 2026-04-24T02:09:25.1300000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      9: 2026-04-24T02:09:25.1310000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      10: 2026-04-24T02:09:25.1310000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      11: 2026-04-24T02:09:25.1310000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      12: 2026-04-24T02:09:25.1310000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Services.Channels</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      5: 2026-04-24T02:09:25.2560000Z info: OpenClawNet.Services.Scheduler.Services.SchedulerSettingsService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      6: 2026-04-24T02:09:25.2560000Z       SchedulerSettings loaded: MaxConcurrent=3, Timeout=300s, PollInterval=30s</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      5: 2026-04-24T02:09:25.3710000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      6: 2026-04-24T02:09:25.3710000Z       Now listening on: https://localhost:63585</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      7: 2026-04-24T02:09:25.3750000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      8: 2026-04-24T02:09:25.3750000Z       Now listening on: http://localhost:63586</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      9: 2026-04-24T02:09:25.3770000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      10: 2026-04-24T02:09:25.3770000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      11: 2026-04-24T02:09:25.3790000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      12: 2026-04-24T02:09:25.3790000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      13: 2026-04-24T02:09:25.3790000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels-website[0]</span><br><span>      14: 2026-04-24T02:09:25.3790000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Channels</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      7: 2026-04-24T02:09:25.3820000Z info: OpenClawNet.Services.Scheduler.SchedulerPollingService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      8: 2026-04-24T02:09:25.3820000Z       Scheduler started - poll=30s, maxConcurrent=3, timeout=300s</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      9: 2026-04-24T02:09:25.3820000Z info: OpenClawNet.Storage.ArtifactRetentionService[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      10: 2026-04-24T02:09:25.3820000Z       Artifact retention service started - maxRuns=100, maxAge=30d, interval=24h</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      11: 2026-04-24T02:09:25.5690000Z info: Microsoft.Hosting.Lifetime[14]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      12: 2026-04-24T02:09:25.5690000Z       Now listening on: http://localhost:63588</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      13: 2026-04-24T02:09:25.5720000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      14: 2026-04-24T02:09:25.5720000Z       Application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      15: 2026-04-24T02:09:25.5730000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      16: 2026-04-24T02:09:25.5730000Z       Hosting environment: Development</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      17: 2026-04-24T02:09:25.5730000Z info: Microsoft.Hosting.Lifetime[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      18: 2026-04-24T02:09:25.5730000Z       Content root path: C:\src\openclawnet-plan\src\OpenClawNet.Services.Scheduler</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      19: 2026-04-24T02:09:25.9340000Z warn: Microsoft.EntityFrameworkCore.Model.Validation[20601]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      20: 2026-04-24T02:09:25.9340000Z       The 'JobRunArtifactKind' property 'ArtifactType' on entity type 'ChatSessionArtifact' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Text', since this is the CLR default for the 'JobRunArtifactKind' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      21: 2026-04-24T02:09:25.9400000Z warn: Microsoft.EntityFrameworkCore.Model.Validation[20601]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      22: 2026-04-24T02:09:25.9400000Z       The 'JobRunArtifactKind' property 'ArtifactType' on entity type 'JobRunArtifact' is configured with a database-generated default, but has no configured sentinel value. The database-generated default will always be used for inserts when the property has the value 'Text', since this is the CLR default for the 'JobRunArtifactKind' type. Consider using a nullable type, using a nullable backing field, or setting the sentinel value for the property to ensure the database default is used when, and only when, appropriate. See https://aka.ms/efcore-docs-default-values for more information.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      7: 2026-04-24T02:09:26.3382162Z Waiting for resource ready to execute for 'scheduler'.</span><br><span>info: OpenClawNet.AppHost.Resources.web[0]</span><br><span>      8: 2026-04-24T02:09:26.3382634Z Finished waiting for resource 'scheduler'.</span><br><span>info: Aspire.Hosting.DistributedApplication[0]</span><br><span>      Distributed application started. Press Ctrl+C to shut down.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      13: 2026-04-24T02:09:26.4060000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[1]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      14: 2026-04-24T02:09:26.4060000Z       Request starting HTTP/1.1 GET http://localhost:52960/health - - -</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      15: 2026-04-24T02:09:26.4510000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[0]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      16: 2026-04-24T02:09:26.4510000Z       Executing endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      17: 2026-04-24T02:09:26.4600000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[1]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      18: 2026-04-24T02:09:26.4600000Z       Setting HTTP status code 200.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      19: 2026-04-24T02:09:26.4800000Z info: Microsoft.AspNetCore.Http.Result.OkObjectResult[3]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      20: 2026-04-24T02:09:26.4800000Z       Writing value of type '&lt;&gt;f__AnonymousType0`2' as Json.</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      21: 2026-04-24T02:09:26.4900000Z info: Microsoft.AspNetCore.Routing.EndpointMiddleware[1]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      22: 2026-04-24T02:09:26.4900000Z       Executed endpoint 'HTTP: GET /health'</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      23: 2026-04-24T02:09:26.4920000Z info: Microsoft.AspNetCore.Hosting.Diagnostics[2]</span><br><span>info: OpenClawNet.AppHost.Resources.channels[0]</span><br><span>      24: 2026-04-24T02:09:26.4920000Z       Request finished HTTP/1.1 GET http://localhost:52960/health - 200 - application/json;+charset=utf-8 93.1966ms</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      23: 2026-04-24T02:09:26.3140000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      24: 2026-04-24T02:09:26.3140000Z       Executed DbCommand (9ms) [Parameters=[], CommandType='Text', CommandTimeout='30']</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      25: 2026-04-24T02:09:26.3140000Z       SELECT "j"."Id", "j"."CompletedAt", "j"."Error", "j"."ExecutedByAgentProfile", "j"."InputSnapshotJson", "j"."JobId", "j"."Result", "j"."StartedAt", "j"."Status", "j"."TokensUsed"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      26: 2026-04-24T02:09:26.3140000Z       FROM "JobRuns" AS "j"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      27: 2026-04-24T02:09:26.3140000Z       WHERE "j"."Status" = 'running'</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      28: 2026-04-24T02:09:26.4360000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      29: 2026-04-24T02:09:26.4360000Z       Executed DbCommand (4ms) [Parameters=[@now='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      30: 2026-04-24T02:09:26.4360000Z       SELECT "j"."Id", "j"."AgentProfileName", "j"."AllowConcurrentRuns", "j"."CreatedAt", "j"."CronExpression", "j"."EndAt", "j"."InputParametersJson", "j"."IsRecurring", "j"."LastOutputJson", "j"."LastRunAt", "j"."Name", "j"."NaturalLanguageSchedule", "j"."NextRunAt", "j"."Prompt", "j"."SourceTemplateName", "j"."StartAt", "j"."Status", "j"."TimeZone", "j"."TriggerType", "j"."WebhookEndpoint"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      31: 2026-04-24T02:09:26.4360000Z       FROM "Jobs" AS "j"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      32: 2026-04-24T02:09:26.4360000Z       WHERE "j"."Status" = 'active' AND "j"."TriggerType" = 'cron' AND "j"."NextRunAt" &lt;= @now</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      33: 2026-04-24T02:09:27.7320000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      34: 2026-04-24T02:09:27.7320000Z       Executed DbCommand (0ms) [Parameters=[@p='?' (DbType = Guid)], CommandType='Text', CommandTimeout='30']</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      35: 2026-04-24T02:09:27.7320000Z       SELECT "j"."Id", "j"."AgentProfileName", "j"."AllowConcurrentRuns", "j"."CreatedAt", "j"."CronExpression", "j"."EndAt", "j"."InputParametersJson", "j"."IsRecurring", "j"."LastOutputJson", "j"."LastRunAt", "j"."Name", "j"."NaturalLanguageSchedule", "j"."NextRunAt", "j"."Prompt", "j"."SourceTemplateName", "j"."StartAt", "j"."Status", "j"."TimeZone", "j"."TriggerType", "j"."WebhookEndpoint"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      36: 2026-04-24T02:09:27.7330000Z       FROM "Jobs" AS "j"</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      37: 2026-04-24T02:09:27.7330000Z       WHERE "j"."Id" = @p</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      38: 2026-04-24T02:09:27.7330000Z       LIMIT 1</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      39: 2026-04-24T02:09:27.8180000Z info: OpenClawNet.Services.Scheduler.Endpoints.JobSummaryDto[0]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      40: 2026-04-24T02:09:27.8180000Z       Manual trigger for job: Website Watcher (2) (72530159-ce64-4644-a782-e4a25006f267)</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      41: 2026-04-24T02:09:27.9750000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      42: 2026-04-24T02:09:27.9750000Z       Executed DbCommand (1ms) [Parameters=[@p0='?' (DbType = Guid), @p1='?' (DbType = DateTime), @p2='?', @p3='?', @p4='?', @p5='?' (DbType = Guid), @p6='?', @p7='?' (DbType = DateTime), @p8='?' (Size = 7), @p9='?' (DbType = Int32)], CommandType='Text', CommandTimeout='30']</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      43: 2026-04-24T02:09:27.9750000Z       INSERT INTO "JobRuns" ("Id", "CompletedAt", "Error", "ExecutedByAgentProfile", "InputSnapshotJson", "JobId", "Result", "StartedAt", "Status", "TokensUsed")</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      44: 2026-04-24T02:09:27.9750000Z       VALUES (@p0, @p1, @p2, @p3, @p4, @p5, @p6, @p7, @p8, @p9);</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      45: 2026-04-24T02:09:27.9790000Z info: Microsoft.EntityFrameworkCore.Database.Command[20101]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      46: 2026-04-24T02:09:27.9790000Z       Executed DbCommand (0ms) [Parameters=[@p1='?' (DbType = Guid), @p0='?' (DbType = DateTime)], CommandType='Text', CommandTimeout='30']</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      47: 2026-04-24T02:09:27.9790000Z       UPDATE "Jobs" SET "LastRunAt" = @p0</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      48: 2026-04-24T02:09:27.9790000Z       WHERE "Id" = @p1</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      49: 2026-04-24T02:09:27.9790000Z       RETURNING 1;</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      50: 2026-04-24T02:09:28.0410000Z info: System.Net.Http.HttpClient.gateway.LogicalHandler[100]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      51: 2026-04-24T02:09:28.0410000Z       Start processing HTTP request POST https+http://gateway/api/chat/</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      52: 2026-04-24T02:09:28.0860000Z info: System.Net.Http.HttpClient.gateway.ClientHandler[100]</span><br><span>info: OpenClawNet.AppHost.Resources.scheduler[0]</span><br><span>      53: 2026-04-24T02:09:28.0860000Z       Sending HTTP request POST https://localhost:52968/api/chat/</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      67: 2026-04-24T02:09:28.1640000Z dbug: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      68: 2026-04-24T02:09:28.1640000Z       Loaded persisted model settings from C:\src\openclawnet-plan\src\OpenClawNet.Gateway\model-settings.json</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      69: 2026-04-24T02:09:28.1650000Z info: OpenClawNet.Gateway.Services.RuntimeModelSettings[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      70: 2026-04-24T02:09:28.1650000Z       RuntimeModelSettings initialised: Provider=azure-openai, Model=(default)</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      71: 2026-04-24T02:09:28.1890000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      72: 2026-04-24T02:09:28.1890000Z       Server (web 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      73: 2026-04-24T02:09:28.1950000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      74: 2026-04-24T02:09:28.1950000Z       Server (web 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler completed in 5.0625ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      75: 2026-04-24T02:09:28.1970000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      76: 2026-04-24T02:09:28.1970000Z       Server (shell 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      77: 2026-04-24T02:09:28.1970000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      78: 2026-04-24T02:09:28.1970000Z       Server (shell 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler completed in 0.0766ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      79: 2026-04-24T02:09:28.1980000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      80: 2026-04-24T02:09:28.1980000Z       Server (browser 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      81: 2026-04-24T02:09:28.1980000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      82: 2026-04-24T02:09:28.1980000Z       Server (browser 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler completed in 0.0633ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      83: 2026-04-24T02:09:28.1980000Z info: ModelContextProtocol.Server.McpServer[570385771]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      84: 2026-04-24T02:09:28.1980000Z       Server (filesystem 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler called.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      85: 2026-04-24T02:09:28.1980000Z info: ModelContextProtocol.Server.McpServer[1867955179]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      86: 2026-04-24T02:09:28.1980000Z       Server (filesystem 1.0.0), Client (OpenClawNet.Gateway 1.0.0.0) method 'tools/list' request handler completed in 0.0395ms.</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>      87: 2026-04-24T02:09:28.2360000Z info: OpenClawNet.Gateway.Services.ProviderResolver[0]</span><br><span>info: OpenClawNet.AppHost.Resources.gateway[0]</span><br><span>
