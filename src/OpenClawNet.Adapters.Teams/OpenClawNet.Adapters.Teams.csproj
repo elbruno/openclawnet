@@ -7,6 +7,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Agent\OpenClawNet.Agent.csproj" />
     <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
   </ItemGroup>
 
   <ItemGroup>

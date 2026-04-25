@@ -38,6 +38,8 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Adapters.Teams\OpenClawNet.Adapters.Teams.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Services.Scheduler\OpenClawNet.Services.Scheduler.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Gateway\OpenClawNet.Gateway.csproj" />
