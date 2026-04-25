@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.DataProtection;
 using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Gateway.Hubs;
 using OpenClawNet.Gateway.Services;
+using OpenClawNet.Gateway.Configuration;
 using OpenClawNet.Mcp.Core;
 using OpenClawNet.Memory;
 using OpenClawNet.Models.Abstractions;
@@ -58,9 +59,19 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
+// OpenClawNet options (StorageDir, StorageRetention, etc.)
+builder.Services.Configure<OpenClawNet.Gateway.Configuration.OpenClawNetOptions>(
+    builder.Configuration.GetSection("OpenClawNet"));
+
 // Storage (SQLite via Aspire integration)
 builder.AddSqliteConnection("openclawnet-db");
 builder.Services.AddOpenClawStorage();
+
+// Storage directory provider — manages agent output paths and directory creation
+// Registered with a factory to ensure it's instantiated after all infrastructure is ready.
+builder.Services.AddSingleton<IStorageDirectoryProvider>(sp =>
+    ActivatorUtilities.CreateInstance<StorageDirectoryProvider>(sp)
+);
 
 // DataProtection — needed to encrypt the Secrets table at rest. Persist keys
 // to the storage root so they survive container/host restarts; without this,

@@ -503,6 +503,9 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                             yield break;
                         }
 
+                        _logger.LogInformation("Tool approval decision received: ToolName={ToolName}, RequestId={RequestId}, Approved={Approved}, RememberForSession={RememberForSession}",
+                            toolCall.Name, requestId, decision.Approved, decision.RememberForSession);
+
                         if (!decision.Approved)
                         {
                             deniedSyntheticMessage = $"The tool '{toolCall.Name}' was denied by the user. The requested action was not executed.";

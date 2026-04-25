@@ -259,11 +259,24 @@
                 approved,
                 rememberForSession
             };
-            await client.PostAsJsonAsync("api/chat/tool-approval", payload);
+            var response = await client.PostAsJsonAsync("api/chat/tool-approval", payload);
+            
+            if (!response.IsSuccessStatusCode)
+            {
+                var errorContent = await response.Content.ReadAsStringAsync();
+                _connectionError = $"Failed to submit tool decision (HTTP {(int)response.StatusCode}): {errorContent}";
+                _consolePanel?.AddError($"Tool approval submission failed: {errorContent}");
+            }
+            else
+            {
+                _consolePanel?.AddLog("SUCCESS", $"✓ Tool {(approved ? "approved" : "denied")}");
+            }
+            await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
             _connectionError = $"Failed to submit tool decision: {ex.Message}";
+            _consolePanel?.AddError($"Tool approval error: {ex.Message}");
             await InvokeAsync(StateHasChanged);
         }
     }

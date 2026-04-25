@@ -68,15 +68,27 @@
     {
         if (_busy) return;
         _busy = true;
-        try { await OnApprove.InvokeAsync(_rememberForSession); }
-        finally { _busy = false; }
+        try
+        {
+            await OnApprove.InvokeAsync(_rememberForSession);
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 
     private async Task HandleDeny()
     {
         if (_busy) return;
         _busy = true;
-        try { await OnDeny.InvokeAsync(); }
-        finally { _busy = false; }
+        try
+        {
+            await OnDeny.InvokeAsync();
+        }
+        finally
+        {
+            _busy = false;
+        }
     }
 }
