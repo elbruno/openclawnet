@@ -374,7 +374,13 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         {
             var shouldBreak = false;
             var contentBuffer = string.Empty;
-            var streamedToolCalls = new List<ModelToolCall>();
+            // Coalesce streaming FunctionCallContent deltas: Microsoft.Extensions.AI emits
+            // the same logical call across multiple updates. Keying by CallId (last-write-wins
+            // on Name/Arguments) ensures one approval prompt per real tool call — not one per
+            // delta. Without this, the UI receives N tool_approval events with N distinct
+            // RequestIds and the user's "Approve" click ends up posting a Guid the runtime
+            // is no longer awaiting.
+            var streamedToolCallsById = new Dictionary<string, ModelToolCall>(StringComparer.Ordinal);
             AgentStreamEvent? streamError = null;
 
             // Yield content deltas immediately as they arrive from the model.
@@ -424,12 +430,13 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                     }
                     foreach (var fcc in update.Contents.OfType<FunctionCallContent>())
                     {
-                        streamedToolCalls.Add(new ModelToolCall
+                        var callKey = fcc.CallId ?? $"__anon_{streamedToolCallsById.Count}";
+                        streamedToolCallsById[callKey] = new ModelToolCall
                         {
-                            Id = fcc.CallId ?? Guid.NewGuid().ToString("N"),
+                            Id = callKey,
                             Name = fcc.Name,
                             Arguments = JsonSerializer.Serialize(fcc.Arguments)
-                        });
+                        };
                     }
                 }
             }
@@ -449,8 +456,9 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
             var deniedSyntheticMessage = (string?)null;
             var execFailed = false;
 
-            if (streamedToolCalls.Count > 0)
+            if (streamedToolCallsById.Count > 0)
             {
+                var streamedToolCalls = streamedToolCallsById.Values.ToList();
                 currentMessages.Add(new OpenClawChatMessage
                 {
                     Role = ChatMessageRole.Assistant,

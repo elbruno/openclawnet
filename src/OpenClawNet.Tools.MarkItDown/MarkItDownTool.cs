@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text;
 using System.Text.Json;
 using ElBruno.MarkItDotNet;
 using Microsoft.Extensions.Logging;
@@ -11,28 +12,38 @@ namespace OpenClawNet.Tools.MarkItDown;
 /// the ElBruno.MarkItDotNet library. Strips navigation/scripts/styles and
 /// extracts the page title so agents can reason over readable content
 /// instead of raw HTML.
+///
+/// Optionally persists the result to the OpenClawNet storage directory when
+/// the caller passes <c>save_to_file</c>: true. The saved file path is
+/// returned as part of the tool output so the agent can reference it.
 /// </summary>
 public sealed class MarkItDownTool : ITool
 {
     private readonly MarkdownService _markdown;
     private readonly IHttpClientFactory _httpFactory;
     private readonly ILogger<MarkItDownTool> _logger;
+    private readonly IToolStorageProvider? _storage;
 
     public MarkItDownTool(
         MarkdownService markdown,
         IHttpClientFactory httpFactory,
-        ILogger<MarkItDownTool> logger)
+        ILogger<MarkItDownTool> logger,
+        IToolStorageProvider? storage = null)
     {
         _markdown = markdown;
         _httpFactory = httpFactory;
         _logger = logger;
+        _storage = storage;
     }
 
     public string Name => "markdown_convert";
 
     public string Description =>
-        "Convert a URL into clean Markdown (HTML stripped of navigation, scripts, and styles). " +
-        "Use this instead of web_fetch when the agent needs readable content for summarization or RAG.";
+        "Convert a URL into clean Markdown (HTML stripped of navigation, scripts, and styles), " +
+        "and optionally save the result to a file under the OpenClawNet storage directory. " +
+        "Pass save_to_file=true (with optional filename) when the user asks to 'save', 'write to a file', " +
+        "'download as markdown', or persist the result. Use this instead of web_fetch or browser when " +
+        "the agent needs readable content for summarization, RAG, or to keep on disk.";
 
     public ToolMetadata Metadata => new()
     {
@@ -42,14 +53,16 @@ public sealed class MarkItDownTool : ITool
         {
             "type": "object",
             "properties": {
-                "url": { "type": "string", "description": "Absolute http/https URL to fetch and convert to Markdown" }
+                "url": { "type": "string", "description": "Absolute http/https URL to fetch and convert to Markdown" },
+                "save_to_file": { "type": "boolean", "description": "When true, write the markdown to OpenClawNet storage and return the file path. Defaults to false." },
+                "filename": { "type": "string", "description": "Optional filename (without directory). Defaults to a slug derived from the URL host plus a timestamp. The .md extension is added automatically." }
             },
             "required": ["url"]
         }
         """),
         RequiresApproval = false,
         Category = "web",
-        Tags = ["markdown", "web", "convert", "rag", "summarize"]
+        Tags = ["markdown", "web", "convert", "rag", "summarize", "save", "file"]
     };
 
     public async Task<ToolResult> ExecuteAsync(ToolInput input, CancellationToken cancellationToken = default)
@@ -85,8 +98,45 @@ public sealed class MarkItDownTool : ITool
             if (!result.Success)
                 return ToolResult.Fail(Name, $"MarkItDotNet failed: {result.ErrorMessage ?? "unknown error"}", sw.Elapsed);
 
-            var output = $"# Source: {url}\n# Format: {result.SourceFormat}\n\n{result.Markdown}";
-            return ToolResult.Ok(Name, output, sw.Elapsed);
+            var markdown = $"# Source: {url}\n# Format: {result.SourceFormat}\n\n{result.Markdown}";
+
+            // Optional persistence
+            var saveToFile = input.GetBoolArgument("save_to_file");
+            if (saveToFile)
+            {
+                if (_storage is null)
+                {
+                    _logger.LogWarning("save_to_file=true was requested but no IToolStorageProvider is registered.");
+                    return ToolResult.Ok(Name,
+                        markdown + "\n\n⚠️ Storage provider unavailable — markdown was NOT persisted to disk.",
+                        sw.Elapsed);
+                }
+
+                try
+                {
+                    var dir = _storage.GetToolStorageDirectory(Name);
+                    var requestedName = input.GetStringArgument("filename");
+                    var fileName = BuildFileName(requestedName, uri);
+                    var fullPath = Path.Combine(dir, fileName);
+                    await File.WriteAllTextAsync(fullPath, markdown, Encoding.UTF8, cancellationToken);
+                    _logger.LogInformation("Saved markdown ({Bytes} bytes) to {Path}", markdown.Length, fullPath);
+
+                    var summary =
+                        $"# Source: {url}\n# Format: {result.SourceFormat}\n# Saved: {fullPath}\n# Bytes: {markdown.Length}\n\n" +
+                        $"Markdown saved successfully to `{fullPath}`.\n\n" +
+                        $"--- Preview (first 500 chars) ---\n{Truncate(result.Markdown, 500)}";
+                    return ToolResult.Ok(Name, summary, sw.Elapsed);
+                }
+                catch (Exception ioEx)
+                {
+                    _logger.LogError(ioEx, "Failed to persist markdown to storage");
+                    return ToolResult.Ok(Name,
+                        markdown + $"\n\n⚠️ Failed to save to disk: {ioEx.Message}",
+                        sw.Elapsed);
+                }
+            }
+
+            return ToolResult.Ok(Name, markdown, sw.Elapsed);
         }
         catch (TaskCanceledException)
         {
@@ -98,6 +148,39 @@ public sealed class MarkItDownTool : ITool
             return ToolResult.Fail(Name, ex.Message, sw.Elapsed);
         }
     }
+
+    private static string BuildFileName(string? requested, Uri uri)
+    {
+        string baseName;
+        if (!string.IsNullOrWhiteSpace(requested))
+        {
+            baseName = SanitizeForFilesystem(Path.GetFileNameWithoutExtension(requested))
+                       ?? "markdown";
+        }
+        else
+        {
+            var hostSlug = SanitizeForFilesystem(uri.Host) ?? "page";
+            var timestamp = DateTime.UtcNow.ToString("yyyyMMdd-HHmmss");
+            baseName = $"{hostSlug}-{timestamp}";
+        }
+        return baseName + ".md";
+    }
+
+    private static string? SanitizeForFilesystem(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return null;
+        var invalid = Path.GetInvalidFileNameChars();
+        var sb = new StringBuilder(input.Length);
+        foreach (var ch in input)
+        {
+            if (Array.IndexOf(invalid, ch) >= 0 || ch == ' ') sb.Append('-');
+            else sb.Append(ch);
+        }
+        return sb.ToString().Trim('-', '.');
+    }
+
+    private static string Truncate(string s, int max) =>
+        string.IsNullOrEmpty(s) || s.Length <= max ? s : s[..max] + "…";
 
     private static string ResolveExtension(string? mediaType, Uri uri)
     {

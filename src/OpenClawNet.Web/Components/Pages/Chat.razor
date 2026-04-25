@@ -494,9 +494,15 @@
             using var stream = await response.Content.ReadAsStreamAsync(_streamCts.Token);
             using var reader = new StreamReader(stream);
 
-            while (!reader.EndOfStream && !_streamCts.Token.IsCancellationRequested)
+            // ⚠️ Do NOT use `reader.EndOfStream` here. It triggers a *synchronous*
+            // Stream.Read() on the HTTP body and, while the NDJSON producer is paused
+            // (e.g. agent waiting for tool approval), it BLOCKS the Blazor circuit's
+            // dispatcher thread — making every @onclick on the page completely dead
+            // until the next byte arrives. Use the async ReadLineAsync loop instead.
+            string? line;
+            while (!_streamCts.Token.IsCancellationRequested
+                   && (line = await reader.ReadLineAsync(_streamCts.Token)) is not null)
             {
-                var line = await reader.ReadLineAsync(_streamCts.Token);
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
                 ChatStreamEvent? evt;

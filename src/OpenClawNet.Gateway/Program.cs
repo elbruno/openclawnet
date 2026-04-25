@@ -73,6 +73,10 @@ builder.Services.AddSingleton<IStorageDirectoryProvider>(sp =>
     ActivatorUtilities.CreateInstance<StorageDirectoryProvider>(sp)
 );
 
+// Tools-facing adapter so tools (which can't reference Gateway types) can persist
+// artifacts under the same storage root the rest of the app uses.
+builder.Services.AddSingleton<OpenClawNet.Tools.Abstractions.IToolStorageProvider, ToolStorageProviderAdapter>();
+
 // DataProtection — needed to encrypt the Secrets table at rest. Persist keys
 // to the storage root so they survive container/host restarts; without this,
 // every restart rotates the key and existing ciphertexts become unreadable.
