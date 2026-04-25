@@ -170,6 +170,9 @@
             }
         </div>
 
+        @* Agent Console Panel *@
+        <AgentConsolePanel @ref="_consolePanel" />
+
         @* Input *@
         <div class="d-flex gap-2">
             <textarea class="form-control" rows="2" placeholder="Type your message…"
@@ -205,6 +208,8 @@
     private string _streamingContent = string.Empty;
     private string _currentToolName = string.Empty;
     private string _pendingApprovalTool = string.Empty;
+    
+    private AgentConsolePanel? _consolePanel;
 
     // Wave 5 PR-B (Vasquez): hidden sentinels Playwright can WaitForAsync on.
     // _toolCompleteCount is bumped on every "tool_complete" NDJSON event.
@@ -523,16 +528,19 @@
                     case "tool_start":
                         _pendingApprovalTool = string.Empty;
                         _currentToolName = evt.Content ?? evt.ToolName ?? string.Empty;
+                        _consolePanel?.AddLog("TOOL", $"→ {_currentToolName}");
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "tool_complete":
                         _currentToolName = string.Empty;
                         _toolCompleteCount++;
+                        _consolePanel?.AddLog("SUCCESS", $"✓ Tool completed");
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "error":
                         if (string.IsNullOrEmpty(_streamingContent))
                             _streamingContent = $"⚠️ {evt.Content}";
+                        _consolePanel?.AddError(evt.Content ?? "Unknown error");
                         goto doneStreaming;
                     case "complete":
                         goto doneStreaming;
