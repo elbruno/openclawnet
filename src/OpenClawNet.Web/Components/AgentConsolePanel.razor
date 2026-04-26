@@ -1,53 +1,61 @@
 @using System.Collections.Generic
 @using System.Diagnostics
+@inject IJSRuntime JS
+@implements IAsyncDisposable
 
-@if (IsVisible)
-{
-    <div class="agent-console-panel border-top bg-dark text-light mt-3" style="max-height: 300px; overflow-y: auto;">
-        <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-secondary">
-            <strong>Agent Console</strong>
-            <div class="gap-2 d-flex">
-                <button class="btn btn-sm btn-outline-light" @onclick="ClearLogs" title="Clear">Clear</button>
-                <button class="btn btn-sm btn-outline-light" @onclick="TogglePanel" title="Collapse/Expand">
-                    @(IsExpanded ? "▼" : "▶")
-                </button>
-            </div>
+<div class="agent-console-panel border-top bg-dark text-light mt-3" style="max-height: 300px; overflow-y: auto;"
+     data-testid="agent-activity-panel">
+    <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-secondary">
+        <strong>Agent Activity</strong>
+        <div class="gap-2 d-flex">
+            <button class="btn btn-sm btn-outline-light" @onclick="ClearLogs" title="Clear">Clear</button>
+            <button class="btn btn-sm btn-outline-light" @onclick="TogglePanel" title="Collapse/Expand"
+                    data-testid="agent-activity-toggle">
+                @(IsExpanded ? "▼" : "▶")
+            </button>
         </div>
-
-        @if (IsExpanded)
-        {
-            <div class="logs-container p-2" style="font-family: 'Courier New', monospace; font-size: 0.9rem; white-space: pre-wrap; word-break: break-word;">
-                @foreach (var entry in _logEntries.TakeLast(100))
-                {
-                    <div class="log-entry mb-1" style="@GetLogStyle(entry.Level)">
-                        <span class="timestamp">[<small>@entry.Timestamp.ToString("HH:mm:ss.fff")</small>]</span>
-                        <span class="level" style="display: inline-block; width: 60px; font-weight: bold;">@entry.Level</span>
-                        <span class="message">@entry.Message</span>
-                    </div>
-                }
-            </div>
-        }
     </div>
-}
+
+    @if (IsExpanded)
+    {
+        <div class="logs-container p-2" id="agent-activity-log" data-testid="agent-activity-log"
+             style="font-family: 'Courier New', monospace; font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto;">
+            @if (_logEntries.Count == 0)
+            {
+                <div class="text-muted small">Waiting for agent activity…</div>
+            }
+            @foreach (var entry in _logEntries.TakeLast(100))
+            {
+                <div class="log-entry mb-1" style="@GetLogStyle(entry.Level)">
+                    <span class="timestamp">[<small>@entry.Timestamp.ToString("HH:mm:ss.fff")</small>]</span>
+                    <span class="level" style="display: inline-block; width: 60px; font-weight: bold;">@entry.Level</span>
+                    <span class="message">@entry.Message</span>
+                </div>
+            }
+        </div>
+    }
+</div>
 
 @code {
+    private const string LogElementId = "agent-activity-log";
     private List<LogEntry> _logEntries = new();
     private bool IsExpanded = true;
-    private bool IsVisible = false;
+    private bool _attached;
 
     public void AddLog(string level, string message)
     {
-        IsVisible = true;
-        _logEntries.Add(new LogEntry 
-        { 
-            Level = level, 
-            Message = message, 
-            Timestamp = DateTime.Now 
+        _logEntries.Add(new LogEntry
+        {
+            Level = level,
+            Message = message,
+            Timestamp = DateTime.Now
         });
-        
+
         // Keep only last 100 entries
         if (_logEntries.Count > 100)
             _logEntries.RemoveAt(0);
+
+        InvokeAsync(StateHasChanged);
     }
 
     public void AddToolCall(string toolName, Dictionary<string, object> parameters)
@@ -69,12 +77,35 @@
     private void ClearLogs()
     {
         _logEntries.Clear();
-        IsVisible = false;
     }
 
     private void TogglePanel()
     {
         IsExpanded = !IsExpanded;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!IsExpanded) return;
+        try
+        {
+            if (!_attached)
+            {
+                await JS.InvokeVoidAsync("activityTail.attach", LogElementId);
+                _attached = true;
+            }
+            await JS.InvokeVoidAsync("activityTail.scrollToBottom", LogElementId);
+        }
+        catch
+        {
+            // JS interop unavailable during prerender — retry next render.
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        try { await JS.InvokeVoidAsync("activityTail.detach", LogElementId); }
+        catch { }
     }
 
     private string GetLogStyle(string level) => level switch

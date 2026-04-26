@@ -105,13 +105,58 @@
 
             @foreach (var msg in _messages)
             {
-                <div class="mb-3 @(msg.Role == "user" ? "text-end" : "")">
-                    <div class="d-inline-block p-2 rounded @(msg.Role == "user" ? "bg-primary text-white" : "bg-white border")"
-                         style="max-width:80%;word-wrap:break-word;white-space:pre-wrap;">
-                        @msg.Content
+                @if (msg.Tool is { } tool)
+                {
+                    <div class="mb-2" data-testid="tool-history-entry">
+                        <div class="card border-0 shadow-sm tool-history-card @(tool.Approved ? "border-start border-success border-3" : "border-start border-danger border-3")"
+                             style="max-width:80%;background:#f8f9fa;">
+                            <div class="card-body py-2 px-3">
+                                <div class="d-flex align-items-center gap-2 flex-wrap">
+                                    <span aria-hidden="true">@(tool.Approved ? "✅" : "❌")</span>
+                                    <strong class="small">@(tool.Approved ? "Approved" : "Denied")</strong>
+                                    <span class="badge bg-secondary">@tool.ToolName</span>
+                                    @if (tool.Completed == true)
+                                    {
+                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
+                                            done@(tool.DurationMs is { } d ? $" · {d} ms" : "")
+                                        </span>
+                                    }
+                                    else if (tool.Completed == false)
+                                    {
+                                        <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">error</span>
+                                    }
+                                    else if (tool.Approved)
+                                    {
+                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">running…</span>
+                                    }
+                                    <span class="small text-muted ms-auto">@tool.DecidedAt.ToString("HH:mm:ss")</span>
+                                </div>
+                                @if (!string.IsNullOrWhiteSpace(tool.ArgsPreview))
+                                {
+                                    <details class="mt-1">
+                                        <summary class="small text-muted">arguments</summary>
+                                        <pre class="bg-white border rounded p-2 small mb-0 mt-1"
+                                             style="white-space:pre-wrap;word-break:break-word;max-height:160px;overflow:auto;">@tool.ArgsPreview</pre>
+                                    </details>
+                                }
+                                @if (!string.IsNullOrWhiteSpace(tool.Outcome))
+                                {
+                                    <div class="small text-muted mt-1">@tool.Outcome</div>
+                                }
+                            </div>
+                        </div>
                     </div>
-                    <div class="small text-muted mt-1">@msg.Role · @msg.Timestamp.ToString("HH:mm")</div>
-                </div>
+                }
+                else
+                {
+                    <div class="mb-3 @(msg.Role == "user" ? "text-end" : "")">
+                        <div class="d-inline-block p-2 rounded @(msg.Role == "user" ? "bg-primary text-white" : "bg-white border")"
+                             style="max-width:80%;word-wrap:break-word;white-space:pre-wrap;">
+                            @msg.Content
+                        </div>
+                        <div class="small text-muted mt-1">@msg.Role · @msg.Timestamp.ToString("HH:mm")</div>
+                    </div>
+                }
             }
 
             @* Wave 4 PR-1 (Lambert): inline approval card render slot.
@@ -224,6 +269,14 @@
     // a request id. Stays null in PR-1 — Dallas wires the producer side in PR-2.
     private PendingApprovalRequest? PendingApproval;
 
+    // Tool history (audit trail) — populated by SubmitToolDecisionAsync,
+    // updated by the tool_complete branch of the NDJSON loop. The queue
+    // gives us FIFO matching for tool_complete events that don't carry a
+    // request id; the dictionary covers the case where they do.
+    private readonly Queue<ToolHistoryEntry> _pendingToolHistory = new();
+    private readonly Dictionary<Guid, ToolHistoryEntry> _toolHistoryByRequest = new();
+    private readonly Dictionary<Guid, long> _toolHistoryStartTicks = new();
+
     private sealed record PendingApprovalRequest(
         Guid RequestId,
         string ToolName,
@@ -252,6 +305,32 @@
         var pending = PendingApproval;
         Logger.LogInformation("[APPROVE-FLOW] SubmitToolDecisionAsync ENTER approved={Approved} pending={Pending}",
             approved, pending?.RequestId.ToString() ?? "<null>");
+
+        // Persist the decision in the chat history BEFORE clearing the
+        // floating approval slot so Bruno keeps an audit trail of every
+        // approved/denied tool — even when subsequent approvals stack.
+        ToolHistoryEntry? historyEntry = null;
+        if (pending is not null)
+        {
+            historyEntry = new ToolHistoryEntry
+            {
+                RequestId = pending.RequestId,
+                ToolName = pending.ToolName,
+                ArgsPreview = pending.ToolArgsJson,
+                Approved = approved,
+                DecidedAt = DateTime.Now,
+                Completed = approved ? null : false,
+                Outcome = approved ? null : "Denied by user — tool was not executed."
+            };
+            _messages.Add(new ChatDisplayMessage("tool", string.Empty, historyEntry.DecidedAt, historyEntry));
+            if (approved)
+            {
+                _pendingToolHistory.Enqueue(historyEntry);
+                _toolHistoryByRequest[pending.RequestId] = historyEntry;
+                _toolHistoryStartTicks[pending.RequestId] = Environment.TickCount64;
+            }
+        }
+
         PendingApproval = null;
         _pendingApprovalTool = string.Empty;
         await InvokeAsync(StateHasChanged);
@@ -568,6 +647,37 @@
                     case "tool_complete":
                         _currentToolName = string.Empty;
                         _toolCompleteCount++;
+                        // Match this completion to a pending tool-history entry
+                        // so the audit-trail card flips from "running…" to "done".
+                        ToolHistoryEntry? completed = null;
+                        if (evt.RequestId is { } rid && rid != Guid.Empty
+                            && _toolHistoryByRequest.TryGetValue(rid, out var byId))
+                        {
+                            completed = byId;
+                            _toolHistoryByRequest.Remove(rid);
+                        }
+                        else if (_pendingToolHistory.Count > 0)
+                        {
+                            completed = _pendingToolHistory.Dequeue();
+                            _toolHistoryByRequest.Remove(completed.RequestId);
+                        }
+                        if (completed is not null)
+                        {
+                            completed.Completed = true;
+                            if (_toolHistoryStartTicks.Remove(completed.RequestId, out var startTick))
+                            {
+                                completed.DurationMs = Environment.TickCount64 - startTick;
+                            }
+                            var summary = evt.Content;
+                            if (!string.IsNullOrWhiteSpace(summary))
+                            {
+                                completed.Outcome = summary.Length > 240 ? summary[..240] + "…" : summary;
+                            }
+                            else
+                            {
+                                completed.Outcome = "Completed successfully.";
+                            }
+                        }
                         _consolePanel?.AddLog("SUCCESS", $"✓ Tool completed");
                         await InvokeAsync(StateHasChanged);
                         break;
@@ -645,7 +755,37 @@
     }
 
     // ── Local records ──────────────────────────────────────────────────────
-    private sealed record ChatDisplayMessage(string Role, string Content, DateTime Timestamp);
+    private sealed class ChatDisplayMessage
+    {
+        public string Role { get; init; }
+        public string Content { get; set; }
+        public DateTime Timestamp { get; init; }
+        // When non-null, this entry renders as a persistent tool decision card
+        // (audit trail) instead of a regular chat bubble.
+        public ToolHistoryEntry? Tool { get; init; }
+
+        public ChatDisplayMessage(string role, string content, DateTime timestamp, ToolHistoryEntry? tool = null)
+        {
+            Role = role;
+            Content = content;
+            Timestamp = timestamp;
+            Tool = tool;
+        }
+    }
+
+    private sealed class ToolHistoryEntry
+    {
+        public Guid RequestId { get; init; }
+        public string ToolName { get; init; } = string.Empty;
+        public string? ArgsPreview { get; init; }
+        public bool Approved { get; init; }
+        public DateTime DecidedAt { get; init; }
+        // null = pending outcome, true = success, false = error
+        public bool? Completed { get; set; }
+        public string? Outcome { get; set; }
+        public long? DurationMs { get; set; }
+    }
+
     private sealed record SessionDto(Guid Id, string Title, DateTime CreatedAt, DateTime UpdatedAt);
     private sealed record AgentProfileDto(string Name, string? DisplayName, string? Provider, bool IsDefault);
     private sealed record ProviderInfoDto(string Name, string ProviderType, string? DisplayName, string? Model, string? DeploymentName);
