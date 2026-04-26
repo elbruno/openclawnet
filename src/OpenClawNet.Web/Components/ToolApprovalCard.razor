@@ -31,15 +31,22 @@
         </div>
 
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success btn-sm" @onclick="HandleApprove" disabled="@_busy">
+            <button type="button" class="btn btn-success btn-sm"
+                    data-testid="tool-approve-btn"
+                    @onclick="HandleApprove" disabled="@_busy">
                 <span aria-hidden="true">✓</span> Approve
             </button>
-            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="HandleDeny" disabled="@_busy">
+            <button type="button" class="btn btn-outline-danger btn-sm"
+                    data-testid="tool-deny-btn"
+                    @onclick="HandleDeny" disabled="@_busy">
                 <span aria-hidden="true">✗</span> Deny
             </button>
         </div>
     </div>
 </div>
+
+@inject IJSRuntime JS
+@inject ILogger<ToolApprovalCard> Logger
 
 @code {
     private readonly string _rememberId = $"remember-{Guid.NewGuid():N}";
@@ -66,11 +73,27 @@
 
     private async Task HandleApprove()
     {
-        if (_busy) return;
+        Logger.LogInformation("[APPROVE-CLICK] HandleApprove ENTERED. Tool={Tool} Busy={Busy} HasCallback={HasCb}",
+            ToolName, _busy, OnApprove.HasDelegate);
+        try { await JS.InvokeVoidAsync("console.log", "[APPROVE-CLICK] Blazor HandleApprove fired for tool: " + ToolName); }
+        catch (Exception jsEx) { Logger.LogWarning(jsEx, "[APPROVE-CLICK] JS interop failed"); }
+
+        if (_busy)
+        {
+            Logger.LogInformation("[APPROVE-CLICK] Returning early — _busy was already true");
+            return;
+        }
         _busy = true;
         try
         {
+            Logger.LogInformation("[APPROVE-CLICK] About to invoke OnApprove callback (remember={Remember})", _rememberForSession);
             await OnApprove.InvokeAsync(_rememberForSession);
+            Logger.LogInformation("[APPROVE-CLICK] OnApprove callback returned");
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "[APPROVE-CLICK] OnApprove callback threw");
+            throw;
         }
         finally
         {
@@ -80,6 +103,9 @@
 
     private async Task HandleDeny()
     {
+        Logger.LogInformation("[DENY-CLICK] HandleDeny ENTERED. Tool={Tool}", ToolName);
+        try { await JS.InvokeVoidAsync("console.log", "[DENY-CLICK] Blazor HandleDeny fired"); } catch { }
+
         if (_busy) return;
         _busy = true;
         try

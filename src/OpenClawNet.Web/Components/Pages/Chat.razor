@@ -4,6 +4,7 @@
 @using OpenClawNet.Web.Components
 @inject IConfiguration Configuration
 @inject IHttpClientFactory HttpClientFactory
+@inject ILogger<Chat> Logger
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 
@@ -230,10 +231,18 @@
         string? ToolArgsJson);
 
     private Task HandleToolApprove(bool rememberForSession)
-        => SubmitToolDecisionAsync(approved: true, rememberForSession: rememberForSession);
+    {
+        Logger.LogInformation("[APPROVE-FLOW] HandleToolApprove invoked on Chat page. Pending={Pending} Remember={Remember}",
+            PendingApproval?.RequestId.ToString() ?? "<null>", rememberForSession);
+        return SubmitToolDecisionAsync(approved: true, rememberForSession: rememberForSession);
+    }
 
     private Task HandleToolDeny()
-        => SubmitToolDecisionAsync(approved: false, rememberForSession: false);
+    {
+        Logger.LogInformation("[APPROVE-FLOW] HandleToolDeny invoked on Chat page. Pending={Pending}",
+            PendingApproval?.RequestId.ToString() ?? "<null>");
+        return SubmitToolDecisionAsync(approved: false, rememberForSession: false);
+    }
 
     // Wave 4 PR-2 (Dallas) contract:
     //   POST /api/chat/tool-approval
@@ -241,12 +250,15 @@
     private async Task SubmitToolDecisionAsync(bool approved, bool rememberForSession)
     {
         var pending = PendingApproval;
+        Logger.LogInformation("[APPROVE-FLOW] SubmitToolDecisionAsync ENTER approved={Approved} pending={Pending}",
+            approved, pending?.RequestId.ToString() ?? "<null>");
         PendingApproval = null;
         _pendingApprovalTool = string.Empty;
         await InvokeAsync(StateHasChanged);
 
         if (pending is null || pending.RequestId == Guid.Empty)
         {
+            Logger.LogInformation("[APPROVE-FLOW] No pending approval — bail out");
             return;
         }
 
@@ -259,7 +271,10 @@
                 approved,
                 rememberForSession
             };
+            Logger.LogInformation("[APPROVE-FLOW] POSTing to api/chat/tool-approval base={Base} reqId={ReqId}",
+                client.BaseAddress, pending.RequestId);
             var response = await client.PostAsJsonAsync("api/chat/tool-approval", payload);
+            Logger.LogInformation("[APPROVE-FLOW] POST returned status={Status}", (int)response.StatusCode);
             
             if (!response.IsSuccessStatusCode)
             {
