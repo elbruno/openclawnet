@@ -48,7 +48,7 @@ public static class SkillEndpoints
 
         group.MapPost("/import", ImportSkillsAsync)
             .WithName("ImportSkills")
-            .Accepts("multipart/form-data");
+            .DisableAntiforgery();
 
         // ── Marketplace ──────────────────────────────────────────────────────────────
 
@@ -122,7 +122,7 @@ public static class SkillEndpoints
             return Results.BadRequest(new { success = false, error = "Content-Type must be multipart/form-data" });
 
         var form = await request.ReadFormAsync();
-        var file = form.Files.FirstOrDefault("file");
+        var file = form.Files.FirstOrDefault();
         if (file == null || file.Length == 0)
             return Results.BadRequest(new { success = false, error = "No file provided" });
 
@@ -170,7 +170,10 @@ public static class SkillEndpoints
         catch (Exception ex)
         {
             logger.LogError(ex, "Unexpected error during skill import");
-            return Results.StatusCode(500, new { success = false, error = "An unexpected error occurred during skill import" });
+            return Results.Problem(
+                detail: "An unexpected error occurred during skill import",
+                statusCode: 500,
+                instance: "/api/skills/import");
         }
     }
 
