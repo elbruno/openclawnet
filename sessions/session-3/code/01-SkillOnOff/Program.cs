@@ -6,7 +6,7 @@ using System.Text.Json.Serialization;
 // ---- Inputs ---------------------------------------------------------------
 string prompt    = args.Length > 0 ? args[0] : "Write a short bio for a senior developer.";
 string skillName = args.Length > 1 ? args[1] : "concise-tone";
-string model     = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.2:3b";
+string model     = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.2";
 
 string skillPath = Path.Combine(AppContext.BaseDirectory, "skills", $"{skillName}.skill.md");
 if (!File.Exists(skillPath))

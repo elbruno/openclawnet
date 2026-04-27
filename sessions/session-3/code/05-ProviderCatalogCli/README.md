@@ -16,7 +16,7 @@ one is one-shot subcommands because the lesson is *configuration storage*.
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - (No Ollama, no network — pure local SQLite.)
 
 ## Run
@@ -26,7 +26,7 @@ dotnet run -- seed
 dotnet run -- list
 dotnet run -- show local-llama
 dotnet run -- add my-claude --kind anthropic --endpoint https://api.anthropic.com --model claude-3-5-sonnet --key-env ANTHROPIC_API_KEY
-dotnet run -- update local-llama --model llama3.2:1b
+dotnet run -- update local-llama --model llama3.2
 dotnet run -- set-default openai-gpt4
 dotnet run -- remove my-claude
 ```
@@ -47,7 +47,7 @@ After `seed`, then `list`:
 NAME         KIND          MODEL         ENDPOINT                                DEFAULT
 -----------  ------------  ------------  --------------------------------------  -------
 azure-prod   azure-openai  gpt-4o        https://my-resource.openai.azure.com
-local-llama  ollama        llama3.2:3b   http://localhost:11434                  ✓
+local-llama  ollama        llama3.2   http://localhost:11434                  ✓
 openai-gpt4  openai        gpt-4o-mini   https://api.openai.com/v1
 ```
 
@@ -57,7 +57,7 @@ openai-gpt4  openai        gpt-4o-mini   https://api.openai.com/v1
 name:        local-llama
 kind:        ollama
 endpoint:    http://localhost:11434
-model:       llama3.2:3b
+model:       llama3.2
 api_key_env: (none)
 is_default:  yes
 created_at:  2026-04-27T14:02:11.4421137Z
@@ -96,7 +96,7 @@ Exit codes: `0` success, `1` user error (missing flag, name not found, duplicate
   both inside a SQLite transaction so the table is never in a two-defaults
   state.
 - **Partial updates**: `update` builds the `SET` clause dynamically from the
-  flags that were actually supplied, so `--model llama3.2:1b` won't clobber
+  flags that were actually supplied, so `--model llama3.2` won't clobber
   `endpoint` or `kind`.
 - **Manual flag parser** (`ParseFlags`) — ~10 lines, no CLI library. Long-form
   flags only (`--kind`, `--endpoint`, `--model`, `--key-env`).

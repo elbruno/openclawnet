@@ -22,10 +22,10 @@ read end-to-end in a few minutes.
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - For `SkillOnOff`, `AgentProfileSwitcher`, `MemoryStub`: a running local
   [Ollama](https://ollama.com/) with a small model pulled, e.g.
-  `ollama pull llama3.2:3b`
+  `ollama pull llama3.2`
 - The Storage demos use SQLite via `Microsoft.Data.Sqlite` — no external service
 
 ## Running a demo

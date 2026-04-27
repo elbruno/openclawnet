@@ -6,9 +6,9 @@ A "profile" â€” what most agent frameworks call a persona, role, or character â€
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - [Ollama](https://ollama.com) running locally (`ollama serve`)
-- `ollama pull llama3.2:3b`
+- `ollama pull llama3.2`
 
 ## Run
 

@@ -111,7 +111,7 @@ static void InitSchema(SqliteConnection db)
         CREATE TABLE IF NOT EXISTS profiles (
           name TEXT PRIMARY KEY,
           instructions TEXT NOT NULL,
-          model TEXT NOT NULL DEFAULT 'llama3.2:3b'
+          model TEXT NOT NULL DEFAULT 'llama3.2'
         );
         CREATE TABLE IF NOT EXISTS state (
           key TEXT PRIMARY KEY,
@@ -134,8 +134,8 @@ static void SeedProfiles(SqliteConnection db)
         "and use nautical metaphors (charts, rigging, fair winds). " +
         "Stay genuinely helpful — give correct, useful answers, just dressed in pirate voice.";
 
-    Insert(db, "code-reviewer", codeReviewer, "llama3.2:3b");
-    Insert(db, "pirate",        pirate,        "llama3.2:3b");
+    Insert(db, "code-reviewer", codeReviewer, "llama3.2");
+    Insert(db, "pirate",        pirate,        "llama3.2");
 
     using var seedActive = db.CreateCommand();
     seedActive.CommandText = "INSERT OR IGNORE INTO state(key, value) VALUES('active_profile', 'code-reviewer');";
@@ -166,7 +166,7 @@ static (string Instructions, string Model) LoadActive(SqliteConnection db)
     cmd.CommandText = "SELECT instructions, model FROM profiles WHERE name = $n;";
     cmd.Parameters.AddWithValue("$n", name);
     using var r = cmd.ExecuteReader();
-    if (!r.Read()) return ("You are a helpful assistant.", "llama3.2:3b");
+    if (!r.Read()) return ("You are a helpful assistant.", "llama3.2");
     return (r.GetString(0), r.GetString(1));
 }
 
@@ -239,9 +239,9 @@ static void AddProfile(SqliteConnection db, string name)
     string instructions = string.Join('\n', lines).Trim();
     if (instructions.Length == 0) { Console.WriteLine("❌ no instructions provided; aborted"); return; }
 
-    Console.Write("Model (blank for llama3.2:3b): ");
+    Console.Write("Model (blank for llama3.2): ");
     string model = (Console.ReadLine() ?? "").Trim();
-    if (model.Length == 0) model = "llama3.2:3b";
+    if (model.Length == 0) model = "llama3.2";
 
     using var cmd = db.CreateCommand();
     cmd.CommandText = "INSERT INTO profiles(name, instructions, model) VALUES($n, $i, $m);";

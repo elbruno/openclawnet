@@ -6,11 +6,11 @@ The smallest possible "skill" demo: send the **same prompt** to a local Ollama m
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
 - [Ollama](https://ollama.com) installed and running (`ollama serve`)
 - A model pulled locally:
   ```powershell
-  ollama pull llama3.2:3b
+  ollama pull llama3.2
   ```
 - Optional: override the model with `$env:OLLAMA_MODEL = "qwen2.5:3b"`.
 
@@ -33,7 +33,7 @@ dotnet run -- "Explain garbage collection in one paragraph." pirate-voice
 ## Sample output
 
 ```
-Model:  llama3.2:3b
+Model:  llama3.2
 Skill:  concise-tone
 Prompt: Write a short bio for a senior developer.
 

@@ -4,7 +4,7 @@ using Microsoft.Data.Sqlite;
 
 // ---- Config ---------------------------------------------------------------
 int windowSize = int.TryParse(Environment.GetEnvironmentVariable("MEMORY_WINDOW"), out var w) && w > 0 ? w : 6;
-string model   = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.2:3b";
+string model   = Environment.GetEnvironmentVariable("OLLAMA_MODEL") ?? "llama3.2";
 string sessionId = Guid.NewGuid().ToString("N")[..8];
 
 // ---- Storage --------------------------------------------------------------

@@ -6,9 +6,9 @@ A REPL chat with **two layers of memory**, backed by a single SQLite table — n
 
 ## Prerequisites
 
-- .NET 9 SDK
+- .NET 10 SDK
 - [Ollama](https://ollama.com) running locally (`ollama serve`)
-- A model pulled: `ollama pull llama3.2:3b`
+- A model pulled: `ollama pull llama3.2`
 
 ## Run
 
@@ -21,7 +21,7 @@ Environment overrides:
 | Variable        | Default        | Meaning                                 |
 | --------------- | -------------- | --------------------------------------- |
 | `MEMORY_WINDOW` | `6`            | Number of recent messages kept in-context |
-| `OLLAMA_MODEL`  | `llama3.2:3b`  | Model name passed to Ollama             |
+| `OLLAMA_MODEL`  | `llama3.2`  | Model name passed to Ollama             |
 
 The DB lives next to the binary at `bin/Debug/net10.0/memory.db`.
 
@@ -30,7 +30,7 @@ The DB lives next to the binary at `bin/Debug/net10.0/memory.db`.
 **Run #1** — talking through a side project:
 
 ```
-Session: a1b2c3d4  |  Memory window: last 6 turns + 1 recall  |  Model: llama3.2:3b
+Session: a1b2c3d4  |  Memory window: last 6 turns + 1 recall  |  Model: llama3.2
 > I'm building a tide-prediction CLI in Rust for sailors on the Pacific coast.
 assistant> Nice — what data source are you pulling from? NOAA's CO-OPS API is the obvious starting point...
 
@@ -43,7 +43,7 @@ assistant> SQLite is a good fit for that — small, file-based, no daemon...
 **Run #2** — new session, tangentially related question:
 
 ```
-Session: 9f8e7d6c  |  Memory window: last 6 turns + 1 recall  |  Model: llama3.2:3b
+Session: 9f8e7d6c  |  Memory window: last 6 turns + 1 recall  |  Model: llama3.2
 > how should I handle errors in a small Rust CLI?
    [recalled from session a1b2c3d4]
 assistant> For a small CLI like your tide-prediction tool, the idiomatic path is `anyhow` at the

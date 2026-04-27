@@ -6,7 +6,7 @@ Skill selection inside an agent is **not magic** — it's deterministic retrieva
 
 ## Prerequisites
 
-- [.NET 9 SDK](https://dotnet.microsoft.com/download)
+- [.NET 10 SDK](https://dotnet.microsoft.com/download)
 
 That's it. No Ollama, no models, no third-party packages.
 

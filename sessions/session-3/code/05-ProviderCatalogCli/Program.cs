@@ -230,7 +230,7 @@ static int CmdSeed(SqliteConnection db)
     string now = DateTime.UtcNow.ToString("o");
     var seeds = new (string n, string k, string e, string m, string? a, int d)[]
     {
-        ("local-llama",  "ollama",       "http://localhost:11434",                 "llama3.2:3b",            null,                  1),
+        ("local-llama",  "ollama",       "http://localhost:11434",                 "llama3.2",            null,                  1),
         ("openai-gpt4",  "openai",       "https://api.openai.com/v1",              "gpt-4o-mini",            "OPENAI_API_KEY",      0),
         ("azure-prod",   "azure-openai", "https://my-resource.openai.azure.com",   "gpt-4o",                 "AZURE_OPENAI_KEY",    0),
     };
@@ -308,7 +308,7 @@ static void PrintHelp()
     Console.WriteLine("  add <name> --kind <k> --endpoint <u> --model <m> [--key-env <V>]");
     Console.WriteLine("    e.g. dotnet run -- add my-claude --kind anthropic --endpoint https://api.anthropic.com --model claude-3-5-sonnet --key-env ANTHROPIC_API_KEY");
     Console.WriteLine("  update <name> [--kind <k>] [--endpoint <u>] [--model <m>] [--key-env <V>]");
-    Console.WriteLine("    e.g. dotnet run -- update local-llama --model llama3.2:1b");
+    Console.WriteLine("    e.g. dotnet run -- update local-llama --model llama3.2");
     Console.WriteLine("  remove <name>                                           delete one provider");
     Console.WriteLine("    e.g. dotnet run -- remove my-claude");
     Console.WriteLine("  set-default <name>                                      mark provider as the default");
