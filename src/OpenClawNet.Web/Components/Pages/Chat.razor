@@ -5,6 +5,8 @@
 @inject IConfiguration Configuration
 @inject IHttpClientFactory HttpClientFactory
 @inject ILogger<Chat> Logger
+@inject NavigationManager Navigation
+@inject IJSRuntime JS
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 
@@ -52,6 +54,7 @@
                 {
                     <span class="fw-semibold">@_currentSession.Title</span>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="StartRename" title="Rename session">✏️</button>
+                    <button class="btn btn-sm btn-outline-secondary py-0" @onclick="ShareSession" title="Copy shareable link">🔗</button>
                 }
             </div>
         }
@@ -547,6 +550,21 @@
         }
         catch { /* ignore */ }
         CancelRename();
+    }
+
+    private async Task ShareSession()
+    {
+        if (_currentSession is null) return;
+        try
+        {
+            var uri = Navigation.ToAbsoluteUri($"/chat?sessionId={_currentSession.Id}");
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", uri.ToString());
+            Logger.LogInformation("Session link copied to clipboard: {Url}", uri);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to copy session link to clipboard");
+        }
     }
 
     // ── Chat (HTTP NDJSON streaming) ──────────────────────────────────────

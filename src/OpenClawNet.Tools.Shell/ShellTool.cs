@@ -18,7 +18,7 @@ public sealed class ShellTool : ITool
     }
 
     public string Name => "shell";
-    public string Description => "Execute safe shell commands. Results are processed by an isolated shell service.";
+    public string Description => "Execute system shell commands (bash/PowerShell). Use this for all command-line operations, file manipulation, package management, script execution, and system queries. RequiresApproval=true.";
 
     public ToolMetadata Metadata => new()
     {
