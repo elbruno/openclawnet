@@ -18,7 +18,7 @@ public sealed class ShellTool : ITool
     }
 
     public string Name => "shell";
-    public string Description => "Execute safe shell commands. Results are processed by an isolated shell service.";
+    public string Description => "Run shell commands (e.g., echo, ls, curl, dotnet). Executes arbitrary commands in an isolated shell service and returns stdout, stderr, and exit codes.";
 
     public ToolMetadata Metadata => new()
     {
