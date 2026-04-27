@@ -245,7 +245,7 @@
 
 These PowerShell blocks launch real Playwright tests with **Chromium visible** and a **configurable slow-mo** between every step, so you can narrate the flow live (or capture clean screen-recordings for the deck).
 
-> **How it works:** `AppHostFixture` checks `$env:PLAYWRIGHT_HEADED`. When set to `true`, it launches Chromium with `Headless = false` and a slow-mo delay between actions. The delay defaults to **1500ms** but can be overridden with `$env:PLAYWRIGHT_SLOWMO` (milliseconds, e.g. `"800"` for snappier, `"2500"` for more breathing room). No code changes needed — flip the env vars, run any Playwright test.
+> **Session-fit only:** This script lists ONLY the demos that **attach to an already-running Aspire instance**. Cold-boot variants (which spin Aspire up in-process and take ~60s) live in the test suite for CI/feature-check use, but they're too slow for a live talk and have been removed from this script. The attached variants start in 2-3s and keep the Aspire dashboard visible to the audience throughout.
 
 > **Tuning for your pitch:**
 > - `$env:PLAYWRIGHT_SLOWMO = "800"` — fast, energetic ~5min run
@@ -253,43 +253,16 @@ These PowerShell blocks launch real Playwright tests with **Chromium visible** a
 > - `$env:PLAYWRIGHT_SLOWMO = "2500"` — slow, room for deep voice-over commentary
 > - `$env:PLAYWRIGHT_SLOWMO = "0"` — disables slow-mo even in headed mode (chrome visible, full speed)
 
-> **Pre-flight:** Make sure Aspire is **NOT** already running (the test harness owns the AppHost lifecycle). If it is, run `aspire stop` first. The first run takes ~60s to build + start the app; subsequent runs are faster.
+> **Pre-flight (one-time per session):** Start Aspire in a dedicated terminal and leave it running for the whole talk:
+> ```powershell
+> aspire start src\OpenClawNet.AppHost
+> # Wait for green health checks + dashboard (http://localhost:15178)
+> ```
+> All demo commands below assume this is already up.
 
 ### Demo 1 — Add a Skill, Use It (Pirate persona)
 
 **What it shows:** Toggle the `pirate` skill ON in Skills page → open chat → send message → agent replies in pirate voice. Proves "Markdown file → behavior change, no restart."
-
-```powershell
-$env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
-$env:PLAYWRIGHT_HEADED = "true"
-$env:PLAYWRIGHT_SLOWMO = "1500"   # tune to your pitch: 800=fast, 1500=default, 2500=slow
-
-dotnet test tests\OpenClawNet.PlaywrightTests `
-  --filter "FullyQualifiedName~SkillsPirateJourneyE2ETests" `
-  --logger "console;verbosity=normal"
-```
-
-**Voice-over beats** (synced to slow-mo pacing):
-1. *"Watch the skill toggle flip — that's a single API call, no rebuild."*
-2. *"Now we open a fresh chat — the prompt composer just inlined the pirate skill into the system prompt."*
-3. *"The reply comes back in character. Same model, same code — different Markdown file."*
-
----
-
-### Demo 1b — Add a Skill, Use It (Aspire already running)
-
-**What it shows:** Same pirate skill journey as Demo 1, but ATTACHES to an already-running Aspire instance. The Aspire dashboard stays visible to the audience throughout. Perfect for stage demos where you want the dashboard in frame.
-
-**When to use this:** Live conference demos, voice-over recording, or any scenario where you've already spun up Aspire and want the dashboard visible behind the browser. For automated CI/regression coverage, use Demo 1 instead (in-process Aspire boot).
-
-**Terminal 1 (start Aspire first):**
-
-```powershell
-aspire start src\OpenClawNet.AppHost
-# Wait for green health checks + dashboard (http://localhost:15178)
-```
-
-**Terminal 2 (run the test):**
 
 ```powershell
 $env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
@@ -305,7 +278,7 @@ dotnet test tests\OpenClawNet.PlaywrightTests `
   --logger "console;verbosity=normal"
 ```
 
-**Voice-over beats** (same as Demo 1):
+**Voice-over beats** (synced to slow-mo pacing):
 1. *"Watch the skill toggle flip — that's a single API call, no rebuild."*
 2. *"Now we open a fresh chat — the prompt composer just inlined the pirate skill into the system prompt."*
 3. *"The reply comes back in character. Same model, same code — different Markdown file."*
@@ -313,50 +286,7 @@ dotnet test tests\OpenClawNet.PlaywrightTests `
 
 ---
 
-### Demo 2 — Tool Approval Flow (security gate live)
-
-**What it shows:** Agent calls a tool that requires approval → UI pauses, shows the approval card → user clicks **Approve** → execution resumes. The "human in the loop" guardrail in action.
-
-```powershell
-$env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
-$env:PLAYWRIGHT_HEADED = "true"
-$env:PLAYWRIGHT_SLOWMO = "1500"
-
-dotnet test tests\OpenClawNet.PlaywrightTests `
-  --filter "FullyQualifiedName~ToolApprovalFlowTests.Profile_RequireApproval_True_UserApproves_ContinuesExecution" `
-  --logger "console;verbosity=normal"
-```
-
-**Voice-over beats:**
-1. *"The agent decides it needs to read a file — but the profile requires approval."*
-2. *"Streaming pauses. The UI surfaces the exact tool call and arguments — no surprises."*
-3. *"User clicks Approve. The button disables to prevent double-submit, then streaming resumes from where it stopped."*
-
-> **Tip:** For a denial demo instead, swap the filter to `~ToolApprovalFlowTests.Profile_RequireApproval_True_UserDenies_StopsCleanly`.
-
----
-
-### Demo 3 — Second Skill (Emoji Teacher)
-
-**What it shows:** Different skill, same mechanism — proves the skill system is a real abstraction, not a one-off pirate hack.
-
-```powershell
-$env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
-$env:PLAYWRIGHT_HEADED = "true"
-$env:PLAYWRIGHT_SLOWMO = "1500"
-
-dotnet test tests\OpenClawNet.PlaywrightTests `
-  --filter "FullyQualifiedName~SkillsEmojiTeacherJourneyE2ETests" `
-  --logger "console;verbosity=normal"
-```
-
-**Voice-over beats:**
-1. *"Same Skills page, different toggle. Watch the persona shift end-to-end."*
-2. *"Replies come back with emoji-prefixed teaching format — defined entirely in `emoji-teacher/SKILL.md`."*
-
----
-
-### Demo 4 — Awesome-Copilot Skill Import (manual walkthrough)
+### Demo 2 — Awesome-Copilot Skill Import (manual walkthrough)
 
 > **No headed E2E exists yet** for the awesome-copilot import flow (covered by integration tests only). Use this manual path live, or pre-record:
 
@@ -370,24 +300,14 @@ dotnet test tests\OpenClawNet.PlaywrightTests `
 
 ---
 
-### Run-All Variant (full skills journey suite, headed)
-
-For a longer recording session — runs all three skill journeys back-to-back:
-
-```powershell
-$env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"
-$env:PLAYWRIGHT_HEADED = "true"
-$env:PLAYWRIGHT_SLOWMO = "1200"   # slightly faster — three demos back-to-back
-
-dotnet test tests\OpenClawNet.PlaywrightTests `
-  --filter "FullyQualifiedName~SkillsPirateJourneyE2ETests|FullyQualifiedName~SkillsEmojiTeacherJourneyE2ETests|FullyQualifiedName~SkillsBulletPointJourneyE2ETests" `
-  --logger "console;verbosity=normal"
-```
-
-### Cleanup (after demos)
+### Cleanup (after the talk)
 
 ```powershell
 Remove-Item Env:\PLAYWRIGHT_HEADED   # back to headless for normal CI runs
 Remove-Item Env:\PLAYWRIGHT_SLOWMO -ErrorAction SilentlyContinue
+# Stop Aspire in the other terminal (Ctrl+C) or:
+# aspire stop
 ```
+
+> **Note on other demos:** The cold-boot variants (`SkillsPirateJourneyE2ETests`, `ToolApprovalFlowTests`, `SkillsEmojiTeacherJourneyE2ETests`, etc.) still live in `tests/OpenClawNet.PlaywrightTests/` and are great for **feature checks during development** — they own the Aspire lifecycle and verify the full happy path from a clean slate. They're NOT in this script because the ~60s startup hurts a live talk. Run them with the in-process pattern (`PLAYWRIGHT_HEADED=true` + `--filter "FullyQualifiedName~..."`) when you're alone at your desk, not on stage.
 - **Transparency** — users see memory stats, not a black box
