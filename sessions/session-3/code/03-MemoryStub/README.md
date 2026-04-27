@@ -23,7 +23,7 @@ Environment overrides:
 | `MEMORY_WINDOW` | `6`            | Number of recent messages kept in-context |
 | `OLLAMA_MODEL`  | `llama3.2:3b`  | Model name passed to Ollama             |
 
-The DB lives next to the binary at `bin/Debug/net9.0/memory.db`.
+The DB lives next to the binary at `bin/Debug/net10.0/memory.db`.
 
 ## Sample session (example session — fabricated)
 
