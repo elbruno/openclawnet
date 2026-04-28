@@ -25,6 +25,7 @@ public class OpenClawDbContext : DbContext
     public DbSet<SecretEntity> Secrets => Set<SecretEntity>();
     public DbSet<JobRunArtifact> JobRunArtifacts => Set<JobRunArtifact>();
     public DbSet<JobChannelConfiguration> JobChannelConfigurations => Set<JobChannelConfiguration>();
+    public DbSet<SkillVector> SkillVectors => Set<SkillVector>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -166,6 +167,13 @@ public class OpenClawDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             e.HasIndex(c => new { c.JobId, c.ChannelType }).IsUnique();
             e.Property(c => c.IsEnabled).HasDefaultValue(false);
+        });
+        
+        modelBuilder.Entity<SkillVector>(e =>
+        {
+            e.ToTable("SkillVectors");
+            e.HasKey(s => s.Id);
+            e.HasIndex(s => s.SkillName);
         });
     }
 }

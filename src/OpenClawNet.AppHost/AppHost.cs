@@ -6,6 +6,12 @@ var dbPath = builder.Configuration["OpenClawNet:ConnectionStrings:DbPath"]
 var sqlite = builder.AddSqlite("openclawnet-db", databasePath: dbPath, databaseFileName: "openclawnet.db")
     .WithSqliteWeb();
 
+// Ollama resource — semantic search integration for Phase 2B (MempalaceNet)
+var ollama = builder.AddContainer("ollama", "ollama/ollama", "latest")
+    .WithHttpEndpoint(11434, 11434, "http")
+    .WithVolume("ollama-data", "/root/.ollama")
+    .WithEnvironment("OLLAMA_HOST", "0.0.0.0:11434");
+
 // Ollama is expected to be running locally (localhost:11434).
 // The gateway falls back to local Ollama via RuntimeModelSettings.
 

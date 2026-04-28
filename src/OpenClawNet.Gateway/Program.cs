@@ -263,6 +263,16 @@ var initialProvider = builder.Configuration.GetValue<string>("Model:Provider") ?
 if (initialProvider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
     builder.Services.AddHostedService<OllamaWarmupService>();
 
+// Ollama health check — monitors Ollama availability for semantic search integration
+builder.Services.AddHttpClient<OllamaHealthCheck>();
+builder.Services.AddSingleton<OllamaHealthCheck>(sp =>
+{
+    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
+    var httpClient = httpClientFactory.CreateClient();
+    var logger = sp.GetRequiredService<ILogger<OllamaHealthCheck>>();
+    return new OllamaHealthCheck(httpClient, logger);
+});
+
 var app = builder.Build();
 
 // Aspire default endpoints
