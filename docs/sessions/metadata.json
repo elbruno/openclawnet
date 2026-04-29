@@ -1,0 +1,121 @@
+{
+  "$schema": "./metadata.schema.json",
+  "series": {
+    "name": "OpenClawNet",
+    "tagline": "Build a .NET Aspire + Blazor AI agent platform, stage by stage.",
+    "repo": "https://github.com/elbruno/openclawnet",
+    "site": "https://elbruno.github.io/openclawnet/"
+  },
+  "speakers": {
+    "bruno-capuano": {
+      "name": "Bruno Capuano",
+      "title": "Principal Cloud Advocate",
+      "affiliation": "Microsoft",
+      "links": {
+        "github": "https://github.com/elbruno",
+        "twitter": "https://twitter.com/elbruno",
+        "linkedin": "https://www.linkedin.com/in/elbruno/"
+      }
+    },
+    "pablo-nunes-lopes": {
+      "name": "Pablo Nunes Lopes",
+      "title": "Cloud Advocate",
+      "affiliation": "Microsoft",
+      "links": {
+        "linkedin": "https://www.linkedin.com/in/pablonuneslopes/"
+      }
+    },
+    "pablo-piovano": {
+      "name": "Pablo Piovano",
+      "title": "Microsoft MVP",
+      "affiliation": null,
+      "links": {
+        "linkedin": "https://www.linkedin.com/in/ppiova/"
+      }
+    }
+  },
+  "sessions": [
+    {
+      "id": "session-1",
+      "number": 1,
+      "status": "published",
+      "languages": {
+        "en": {
+          "title": "Foundation & Local Chat",
+          "description": "Architecture tour, IAgentProvider, Ollama + Azure OpenAI + Copilot, NDJSON streaming, SQLite storage.",
+          "slides": "session-1/slides.md",
+          "html": "session-1/slides.html",
+          "speakers": ["bruno-capuano", "pablo-nunes-lopes"]
+        },
+        "es": {
+          "title": "Fundación y chat local",
+          "description": "Recorrido por la arquitectura, IAgentProvider, Ollama + Azure OpenAI + Copilot, streaming NDJSON, almacenamiento en SQLite.",
+          "slides": "session-1/slides-es.md",
+          "html": "session-1/slides-es.html",
+          "speakers": ["bruno-capuano", "pablo-piovano"]
+        }
+      }
+    },
+    {
+      "id": "session-2",
+      "number": 2,
+      "status": "published",
+      "languages": {
+        "en": {
+          "title": "Tools & Agent Workflows",
+          "description": "From chatbot to agent: in-process ITool + MCP, one approval gate, one runtime.",
+          "slides": "session-2/slides.md",
+          "html": "session-2/slides.html",
+          "speakers": ["bruno-capuano", "pablo-nunes-lopes"]
+        },
+        "es": {
+          "title": "Herramientas y flujos de agentes",
+          "description": "De chatbot a agente: ITool en proceso + MCP, una sola compuerta de aprobación, un solo runtime.",
+          "slides": "session-2/slides-es.md",
+          "html": "session-2/slides-es.html",
+          "speakers": ["bruno-capuano", "pablo-piovano"]
+        }
+      }
+    },
+    {
+      "id": "session-3",
+      "number": 3,
+      "status": "published",
+      "releasedAt": "2026-04-29",
+      "languages": {
+        "en": {
+          "title": "Skills, Storage & Memory",
+          "description": "Agent personality through skills, fail-closed storage, and memory system planning — shipping the iteration's core features.",
+          "slides": "session-3/slides.md",
+          "html": "session-3/slides.html",
+          "speakers": ["bruno-capuano", "pablo-nunes-lopes"]
+        },
+        "es": {
+          "title": "Habilidades, almacenamiento y memoria",
+          "description": "Personalidad del agente a través de habilidades, almacenamiento con cierre seguro, y planificación del sistema de memoria — entregando las características principales de la iteración.",
+          "slides": "session-3/slides-es.md",
+          "html": "session-3/slides-es.html",
+          "speakers": ["bruno-capuano", "pablo-piovano"]
+        }
+      }
+    },
+    {
+      "id": "session-4",
+      "number": 4,
+      "status": "coming-soon",
+      "languages": {
+        "en": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-nunes-lopes"] },
+        "es": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-piovano"] }
+      }
+    },
+    {
+      "id": "session-5",
+      "number": 5,
+      "status": "coming-soon",
+      "languages": {
+        "en": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-nunes-lopes"] },
+        "es": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-piovano"] }
+      }
+    }
+  ]
+}
