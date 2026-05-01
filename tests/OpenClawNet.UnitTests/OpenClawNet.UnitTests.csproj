@@ -57,6 +57,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Calculator\OpenClawNet.Tools.Calculator.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Memory\OpenClawNet.Tools.Memory.csproj" />
   </ItemGroup>
 
 </Project>

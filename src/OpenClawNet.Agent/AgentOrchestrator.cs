@@ -2,6 +2,7 @@ using System.Runtime.CompilerServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Storage;
+using OpenClawNet.Tools.Abstractions;
 
 namespace OpenClawNet.Agent;
 
@@ -16,6 +17,7 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
     private readonly IConversationStore _conversationStore;
     private readonly IWorkspaceLoader _workspaceLoader;
     private readonly WorkspaceOptions _workspaceOptions;
+    private readonly IAgentContextAccessor? _agentContextAccessor;
     private readonly ILogger<AgentOrchestrator> _logger;
 
     public AgentOrchestrator(
@@ -23,13 +25,28 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
         IConversationStore conversationStore,
         IWorkspaceLoader workspaceLoader,
         IOptions<WorkspaceOptions> workspaceOptions,
-        ILogger<AgentOrchestrator> logger)
+        ILogger<AgentOrchestrator> logger,
+        IAgentContextAccessor? agentContextAccessor = null)
     {
         _runtime = runtime;
         _conversationStore = conversationStore;
         _workspaceLoader = workspaceLoader;
         _workspaceOptions = workspaceOptions.Value;
+        _agentContextAccessor = agentContextAccessor;
         _logger = logger;
+    }
+
+    private IDisposable PushAgentContext(string? agentProfileName)
+    {
+        if (_agentContextAccessor is null || string.IsNullOrWhiteSpace(agentProfileName))
+            return NullDisposable.Instance;
+        return _agentContextAccessor.Push(new AgentExecutionContext(agentProfileName));
+    }
+
+    private sealed class NullDisposable : IDisposable
+    {
+        public static readonly NullDisposable Instance = new();
+        public void Dispose() { }
     }
 
     public async Task<AgentResponse> ProcessAsync(AgentRequest request, CancellationToken cancellationToken = default)
@@ -50,6 +67,7 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
             AgentProfileName = request.AgentProfileName
         };
 
+        using var _agentScope = PushAgentContext(request.AgentProfileName);
         var executedContext = await _runtime.ExecuteAsync(context, cancellationToken);
 
         return new AgentResponse
@@ -79,6 +97,18 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
             AgentProfileName = request.AgentProfileName
         };
 
+        await foreach (var @event in StreamWithAgentScopeAsync(context, request.AgentProfileName, cancellationToken))
+        {
+            yield return @event;
+        }
+    }
+
+    private async IAsyncEnumerable<AgentStreamEvent> StreamWithAgentScopeAsync(
+        AgentContext context,
+        string? agentProfileName,
+        [EnumeratorCancellation] CancellationToken cancellationToken)
+    {
+        using var _agentScope = PushAgentContext(agentProfileName);
         await foreach (var @event in _runtime.ExecuteStreamAsync(context, cancellationToken))
         {
             yield return @event;
@@ -123,6 +153,7 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
         AgentContext executedContext;
         try
         {
+            using var _agentScope = PushAgentContext(request.AgentProfileName);
             executedContext = await _runtime.ExecuteAsync(context, ct);
         }
         finally

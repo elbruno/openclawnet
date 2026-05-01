@@ -10,7 +10,16 @@ public static class ToolsServiceCollectionExtensions
         services.AddSingleton<IToolRegistry, ToolRegistry>();
         services.AddScoped<IToolExecutor, ToolExecutor>();
         services.AddSingleton<IToolApprovalPolicy, AlwaysApprovePolicy>();
+        services.TryAddSingletonAgentContextAccessor();
         return services;
+    }
+
+    private static void TryAddSingletonAgentContextAccessor(this IServiceCollection services)
+    {
+        if (!services.Any(d => d.ServiceType == typeof(IAgentContextAccessor)))
+        {
+            services.AddSingleton<IAgentContextAccessor, AsyncLocalAgentContextAccessor>();
+        }
     }
     
     public static IServiceCollection AddTool<TTool>(this IServiceCollection services)

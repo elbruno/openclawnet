@@ -30,6 +30,7 @@
     <Project Path="src/OpenClawNet.Tools.YouTube/OpenClawNet.Tools.YouTube.csproj" />
     <Project Path="src/OpenClawNet.Tools.Text2Image/OpenClawNet.Tools.Text2Image.csproj" />
     <Project Path="src/OpenClawNet.Tools.Embeddings/OpenClawNet.Tools.Embeddings.csproj" />
+    <Project Path="src/OpenClawNet.Tools.Memory/OpenClawNet.Tools.Memory.csproj" />
     <Project Path="src/OpenClawNet.Tools.TextToSpeech/OpenClawNet.Tools.TextToSpeech.csproj" />
     <Project Path="src/OpenClawNet.Tools.GitHub/OpenClawNet.Tools.GitHub.csproj" />
     <Project Path="src/OpenClawNet.Tools.ImageEdit/OpenClawNet.Tools.ImageEdit.csproj" />

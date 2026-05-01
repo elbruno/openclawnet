@@ -24,6 +24,7 @@ using OpenClawNet.Tools.Embeddings;
 using OpenClawNet.Tools.GitHub;
 using OpenClawNet.Tools.HtmlQuery;
 using OpenClawNet.Tools.ImageEdit;
+using OpenClawNet.Tools.Memory;
 using OpenClawNet.Tools.Text2Image;
 using OpenClawNet.Tools.TextToSpeech;
 using OpenClawNet.Tools.YouTube;
@@ -201,6 +202,11 @@ builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<ImageEditTool>(
 // HTML query — fetch a URL, parse with AngleSharp, run a CSS selector.
 builder.Services.AddSingleton<HtmlQueryTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<HtmlQueryTool>());
+
+// Memory tools — RememberTool/RecallTool wired against IAgentMemoryStore (issue #100).
+// The MempalaceNet-backed store lands via #98; until then AddMemory() registers the
+// stub implementation and the tools resolve through it transparently.
+builder.Services.AddMemoryTools();
 
 // Named HTTP clients for external tool services (Aspire service discovery resolves the URLs)
 builder.Services.AddHttpClient("shell-service", c => c.BaseAddress = new Uri("https+http://shell-service"));
