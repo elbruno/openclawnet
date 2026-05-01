@@ -18,7 +18,7 @@ public sealed class ShellTool : ITool
     }
 
     public string Name => "shell";
-    public string Description => "Run shell commands (e.g., echo, ls, curl, dotnet). Executes arbitrary commands in an isolated shell service and returns stdout, stderr, and exit codes.";
+    public string Description => "Execute system shell commands (bash/PowerShell). Use this for all command-line operations, file manipulation, package management, script execution, and system queries. RequiresApproval=true.";
 
     public ToolMetadata Metadata => new()
     {

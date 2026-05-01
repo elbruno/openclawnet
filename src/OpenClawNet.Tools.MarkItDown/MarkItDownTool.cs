@@ -39,11 +39,10 @@ public sealed class MarkItDownTool : ITool
     public string Name => "markdown_convert";
 
     public string Description =>
-        "Convert a URL into clean Markdown (HTML stripped of navigation, scripts, and styles), " +
-        "and optionally save the result to a file under the OpenClawNet storage directory. " +
-        "Pass save_to_file=true (with optional filename) when the user asks to 'save', 'write to a file', " +
-        "'download as markdown', or persist the result. Use this instead of web_fetch or browser when " +
-        "the agent needs readable content for summarization, RAG, or to keep on disk.";
+        "Convert a web URL (http/https) into clean Markdown by fetching the page and stripping HTML navigation, scripts, and styles. " +
+        "ONLY use this tool when the user explicitly asks to convert a URL to Markdown, summarize a web page, or download web content as Markdown. " +
+        "Do NOT use this tool for file operations, shell commands, or non-web tasks. " +
+        "Optionally save the result to file by passing save_to_file=true.";
 
     public ToolMetadata Metadata => new()
     {
@@ -62,7 +61,7 @@ public sealed class MarkItDownTool : ITool
         """),
         RequiresApproval = false,
         Category = "web",
-        Tags = ["markdown", "web", "convert", "rag", "summarize", "save", "file"]
+        Tags = ["markdown", "web", "convert", "url", "summarize"]
     };
 
     public async Task<ToolResult> ExecuteAsync(ToolInput input, CancellationToken cancellationToken = default)
