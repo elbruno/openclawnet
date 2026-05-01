@@ -35,6 +35,8 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Abstractions\OpenClawNet.Mcp.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Core\OpenClawNet.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Web\OpenClawNet.Mcp.Web.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
   </ItemGroup>
 
 </Project>

@@ -20,10 +20,10 @@ public sealed class AgentMemoryStoreTests
         services.AddMemory();
         var provider = services.BuildServiceProvider();
 
-        // Assert
+        // Assert — issue #98 replaced the stub with MempalaceAgentMemoryStore.
         var store = provider.GetRequiredService<IAgentMemoryStore>();
         Assert.NotNull(store);
-        Assert.IsType<StubAgentMemoryStore>(store);
+        Assert.IsType<MempalaceAgentMemoryStore>(store);
     }
 
     [Fact]

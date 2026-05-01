@@ -7,6 +7,9 @@
 
   <ItemGroup>
     <PackageReference Include="Elbruno.LocalEmbeddings" Version="1.4.3" />
+    <PackageReference Include="MemPalace.Ai" Version="0.14.0" />
+    <PackageReference Include="MemPalace.Backends.Sqlite" Version="0.14.0" />
+    <PackageReference Include="MemPalace.Core" Version="0.14.0" />
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.4.1" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
   </ItemGroup>
