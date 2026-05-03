@@ -7,6 +7,7 @@ using Moq;
 using OpenClawNet.Gateway.Services;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Models.Ollama;
+using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Gateway;
 
@@ -16,25 +17,19 @@ namespace OpenClawNet.UnitTests.Gateway;
 /// </summary>
 public sealed class RuntimeModelClientTests : IDisposable
 {
-    private readonly string _tempDir;
+    private readonly PerTestTempDirectory _temp = new("RuntimeModelClientTests");
+    private string _tempDir => _temp.Path;
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly ILoggerFactory _loggerFactory = NullLoggerFactory.Instance;
 
     public RuntimeModelClientTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), $"RuntimeModelClientTests-{Guid.NewGuid()}");
-        Directory.CreateDirectory(_tempDir);
-
         var mockFactory = new Mock<IHttpClientFactory>();
         mockFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
         _httpClientFactory = mockFactory.Object;
     }
 
-    public void Dispose()
-    {
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
-    }
+    public void Dispose() => _temp.Dispose();
 
     // ── GetOrCreate / Provider Routing ────────────────────────────────────────
 

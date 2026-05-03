@@ -15,6 +15,7 @@ using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Gateway.Services;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
+using OpenClawNet.UnitTests.Fixtures;
 using Xunit;
 
 namespace OpenClawNet.UnitTests.Gateway;
@@ -234,6 +235,7 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
     private sealed class WebApplicationFactory : IAsyncDisposable
     {
         private readonly WebApplication _app;
+        private readonly PerTestTempDirectory _temp = new("ocn-jobtest");
         private Task? _runTask;
         public IServiceProvider Services => _app.Services;
         private readonly string _baseUrl = "http://localhost:15998"; // Random high port
@@ -250,8 +252,6 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
             builder.Services.AddSingleton<IAgentRuntime, MockAgentRuntime>();
             
             // Create RuntimeModelSettings for tests
-            var tempDir = Path.Combine(Path.GetTempPath(), "ocn-jobtest-" + Guid.NewGuid().ToString());
-            Directory.CreateDirectory(tempDir);
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -260,7 +260,7 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
                 })
                 .Build();
             var mockEnv = new Mock<IHostEnvironment>();
-            mockEnv.Setup(e => e.ContentRootPath).Returns(tempDir);
+            mockEnv.Setup(e => e.ContentRootPath).Returns(_temp.Path);
             var runtimeSettings = new RuntimeModelSettings(config, mockEnv.Object, NullLogger<RuntimeModelSettings>.Instance);
             builder.Services.AddSingleton(runtimeSettings);
             
@@ -295,6 +295,7 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
             if (_runTask is not null)
                 await _runTask;
             await _app.DisposeAsync();
+            _temp.Dispose();
         }
     }
 

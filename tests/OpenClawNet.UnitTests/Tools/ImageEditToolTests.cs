@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Tools.Abstractions;
 using OpenClawNet.Tools.ImageEdit;
+using OpenClawNet.UnitTests.Fixtures;
 using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
@@ -11,13 +12,12 @@ namespace OpenClawNet.UnitTests.Tools;
 
 public class ImageEditToolTests : IDisposable
 {
-    private readonly string _tempRoot;
+    private readonly PerTestTempDirectory _temp = new("openclaw-imgedit-tests");
+    private string _tempRoot => _temp.Path;
     private readonly StorageOptions _storage;
 
     public ImageEditToolTests()
     {
-        _tempRoot = Path.Combine(Path.GetTempPath(), "openclaw-imgedit-tests-" + Guid.NewGuid());
-        Directory.CreateDirectory(_tempRoot);
         _storage = new StorageOptions
         {
             RootPath = _tempRoot,
@@ -26,10 +26,7 @@ public class ImageEditToolTests : IDisposable
         };
     }
 
-    public void Dispose()
-    {
-        try { Directory.Delete(_tempRoot, recursive: true); } catch { }
-    }
+    public void Dispose() => _temp.Dispose();
 
     private string CreateRedPng(int width = 40, int height = 30)
     {

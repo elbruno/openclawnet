@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
+using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Scheduler;
 
@@ -13,7 +14,8 @@ public sealed class AutoCaptureIntegrationTests : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<OpenClawDbContext> _options;
-    private readonly string _testArtifactRoot;
+    private readonly PerTestTempDirectory _temp = new("openclaw-test");
+    private string _testArtifactRoot => _temp.Path;
 
     public AutoCaptureIntegrationTests()
     {
@@ -23,16 +25,12 @@ public sealed class AutoCaptureIntegrationTests : IDisposable
         _options = new DbContextOptionsBuilder<OpenClawDbContext>()
             .UseSqlite(_connection)
             .Options;
-
-        _testArtifactRoot = Path.Combine(Path.GetTempPath(), $"openclaw-test-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_testArtifactRoot);
     }
 
     public void Dispose()
     {
         _connection?.Dispose();
-        if (Directory.Exists(_testArtifactRoot))
-            Directory.Delete(_testArtifactRoot, recursive: true);
+        _temp.Dispose();
     }
 
     [Fact]

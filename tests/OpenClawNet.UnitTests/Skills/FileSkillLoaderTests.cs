@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenClawNet.Skills;
+using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Skills;
 
@@ -10,21 +11,16 @@ namespace OpenClawNet.UnitTests.Skills;
 /// </summary>
 public sealed class FileSkillLoaderTests : IDisposable
 {
-    private readonly string _tempDir;
+    private readonly PerTestTempDirectory _temp = new("ocn-skills");
+    private string _tempDir => _temp.Path;
     private readonly string _installedDir;
 
     public FileSkillLoaderTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), $"ocn-skills-{Guid.NewGuid():N}");
         _installedDir = Path.Combine(_tempDir, "installed");
-        Directory.CreateDirectory(_tempDir);
     }
 
-    public void Dispose()
-    {
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
-    }
+    public void Dispose() => _temp.Dispose();
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 

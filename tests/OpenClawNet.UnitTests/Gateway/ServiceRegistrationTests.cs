@@ -13,6 +13,7 @@ using OpenClawNet.Models.Foundry;
 using OpenClawNet.Models.FoundryLocal;
 using OpenClawNet.Models.GitHubCopilot;
 using OpenClawNet.Models.Ollama;
+using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Gateway;
 
@@ -22,13 +23,12 @@ namespace OpenClawNet.UnitTests.Gateway;
 /// </summary>
 public sealed class ServiceRegistrationTests : IAsyncLifetime
 {
-    private readonly string _tempDir;
+    private readonly PerTestTempDirectory _temp = new("ServiceRegistrationTests");
+    private string _tempDir => _temp.Path;
     private readonly ServiceProvider _serviceProvider;
 
     public ServiceRegistrationTests()
     {
-        _tempDir = Path.Combine(Path.GetTempPath(), $"ServiceRegistrationTests-{Guid.NewGuid()}");
-        Directory.CreateDirectory(_tempDir);
 
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>
@@ -108,8 +108,7 @@ public sealed class ServiceRegistrationTests : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _serviceProvider.DisposeAsync();
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+        _temp.Dispose();
     }
 
     [Fact]
