@@ -10,6 +10,7 @@ using OpenClawNet.Gateway.Services;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
+using OpenClawNet.UnitTests.Fixtures;
 using Xunit;
 
 namespace OpenClawNet.UnitTests.Services;
@@ -18,13 +19,8 @@ public sealed class JobExecutorTests : IAsyncLifetime
 {
     private SqliteConnection _connection = null!;
     private IDbContextFactory<OpenClawDbContext> _dbFactory = null!;
-    private readonly string _tempDir;
-
-    public JobExecutorTests()
-    {
-        _tempDir = Path.Combine(Path.GetTempPath(), "ocn-test-" + Guid.NewGuid().ToString());
-        Directory.CreateDirectory(_tempDir);
-    }
+    private readonly PerTestTempDirectory _temp = new("ocn-jobexec");
+    private string _tempDir => _temp.Path;
 
     public async Task InitializeAsync()
     {
@@ -45,8 +41,7 @@ public sealed class JobExecutorTests : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _connection.DisposeAsync();
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
+        _temp.Dispose();
     }
 
     private RuntimeModelSettings CreateTestRuntimeSettings(string provider = "ollama", string? model = "llama3.2:3b")

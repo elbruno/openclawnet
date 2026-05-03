@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenClawNet.Tools.FileSystem;
+using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Tools;
 
@@ -11,19 +12,10 @@ namespace OpenClawNet.UnitTests.Tools;
 /// </summary>
 public sealed class FileSystemToolTests : IDisposable
 {
-    private readonly string _tempDir;
+    private readonly PerTestTempDirectory _temp = new("ocn-fstool");
+    private string _tempDir => _temp.Path;
 
-    public FileSystemToolTests()
-    {
-        _tempDir = Path.Combine(Path.GetTempPath(), $"ocn-test-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(_tempDir);
-    }
-
-    public void Dispose()
-    {
-        if (Directory.Exists(_tempDir))
-            Directory.Delete(_tempDir, recursive: true);
-    }
+    public void Dispose() => _temp.Dispose();
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -120,21 +112,14 @@ public sealed class FileSystemToolTests : IDisposable
     public async Task List_WithAbsolutePath_ListsDirectory()
     {
         // Arrange — workspace at a different root, but we provide an absolute path
-        var outsideDir = Path.Combine(Path.GetTempPath(), $"ocn-outside-{Guid.NewGuid():N}");
-        Directory.CreateDirectory(outsideDir);
+        using var outside = new PerTestTempDirectory("ocn-outside");
+        var outsideDir = outside.Path;
         await File.WriteAllTextAsync(Path.Combine(outsideDir, "readme.txt"), "hello");
 
         var tool = CreateTool(_tempDir); // workspace is _tempDir, NOT outsideDir
 
-        try
-        {
-            var output = await ExecuteActionAsync(tool, "list", outsideDir);
-            output.Should().Contain("readme.txt");
-        }
-        finally
-        {
-            Directory.Delete(outsideDir, recursive: true);
-        }
+        var output = await ExecuteActionAsync(tool, "list", outsideDir);
+        output.Should().Contain("readme.txt");
     }
 
     [Fact]
