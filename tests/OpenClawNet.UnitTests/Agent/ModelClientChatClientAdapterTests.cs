@@ -174,6 +174,38 @@ public sealed class ModelClientChatClientAdapterTests
     }
 
     [Fact]
+    public void ToOpenClawMessage_PropagatesFunctionResultContent_StringResult()
+    {
+        // Regression for elbruno/openclawnet-plan#115:
+        // FunctionResultContent.Result must flow into OCChatMessage.Content so that
+        // tool results are not silently dropped on the round-trip into IModelClient.
+        var meaiMsg = new MEAIChatMessage(ChatRole.Tool, [
+            new FunctionResultContent("call_42", "the weather in Seattle is 12C and rainy")
+        ]);
+
+        var ocMsg = ModelClientChatClientAdapter.ToOpenClawMessage(meaiMsg);
+
+        ocMsg.Role.Should().Be(ChatMessageRole.Tool);
+        ocMsg.ToolCallId.Should().Be("call_42");
+        ocMsg.Content.Should().Be("the weather in Seattle is 12C and rainy");
+    }
+
+    [Fact]
+    public void ToOpenClawMessage_PropagatesFunctionResultContent_ObjectResult()
+    {
+        // Non-string Result values must be JSON-serialized into Content rather than dropped.
+        var payload = new Dictionary<string, object?> { ["city"] = "Seattle", ["tempC"] = 12 };
+        var meaiMsg = new MEAIChatMessage(ChatRole.Tool, [
+            new FunctionResultContent("call_43", payload)
+        ]);
+
+        var ocMsg = ModelClientChatClientAdapter.ToOpenClawMessage(meaiMsg);
+
+        ocMsg.ToolCallId.Should().Be("call_43");
+        ocMsg.Content.Should().Contain("Seattle").And.Contain("tempC");
+    }
+
+    [Fact]
     public void ParseArguments_HandlesEmptyString()
     {
         var result = ModelClientChatClientAdapter.ParseArguments("");

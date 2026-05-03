@@ -83,7 +83,12 @@ internal sealed class ModelClientChatClientAdapter : IChatClient
         };
 
         var text = message.Text ?? string.Empty;
-        var toolCallId = message.Contents.OfType<FunctionResultContent>().FirstOrDefault()?.CallId;
+        var functionResult = message.Contents.OfType<FunctionResultContent>().FirstOrDefault();
+        var toolCallId = functionResult?.CallId;
+        if (string.IsNullOrEmpty(text) && functionResult?.Result is { } result)
+        {
+            text = result as string ?? JsonSerializer.Serialize(result);
+        }
         var toolCalls = message.Contents
             .OfType<FunctionCallContent>()
             .Select(c => new ModelToolCall
