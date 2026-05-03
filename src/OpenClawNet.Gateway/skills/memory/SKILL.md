@@ -16,19 +16,22 @@ enabled: true
 
 # Memory Skill
 
-You have access to memory tools that allow you to store and retrieve information across conversations and sessions.
+You have access to memory tools that allow you to store and retrieve information across conversations and sessions. The toolset is intentionally minimal today — only the capabilities listed below are wired up.
 
-## Capabilities
+## Capabilities (shipped)
 
-- **Store facts**: Save important information, user preferences, or context for later retrieval
-- **Retrieve memories**: Look up previously stored facts by topic or keyword
-- **Update memories**: Modify or correct stored information when it becomes outdated
-- **Forget**: Remove memories that are no longer relevant or that the user wants deleted
+- **Store facts** — `remember` tool (`RememberTool`). Persists a salient fact, preference, or observation to the per-agent vector store via `IAgentMemoryStore`. Returns the new memory id.
+- **Retrieve memories** — `recall` tool (`RecallTool`). Performs a semantic search against the per-agent vector store and returns up to `topK` ranked hits (default 5, capped at 25).
+
+## Not implemented
+
+- **Update memories** — no dedicated tool. If a stored fact becomes stale, store the corrected fact as a new memory; the old entry will rank lower over time. (A true update would land as delete-then-store once a `forget` tool exists.)
+- **Forget** — `IAgentMemoryStore.DeleteAsync` exists at the abstraction layer, but no `ForgetTool` is registered. Do not promise the user that you can delete specific memories on demand.
 
 ## Guidelines
 
-- Store information that the user explicitly wants remembered, or that would be helpful across multiple sessions
-- Do not store sensitive information (passwords, secrets, private data) unless the user explicitly requests it and the storage is secure
-- When retrieving memories, always indicate how recently the information was stored so the user can judge its relevance
-- Respect user requests to forget information — if asked, delete the relevant memories promptly
-- Use concise, structured formats for stored facts to make retrieval accurate and efficient
+- Store information that the user explicitly wants remembered, or that would be helpful across multiple sessions.
+- Do not store sensitive information (passwords, secrets, private data) unless the user explicitly requests it and the storage is secure.
+- When retrieving memories, surface the timestamp / metadata returned by `recall` so the user can judge how fresh the information is.
+- If the user asks you to forget something, acknowledge that explicit deletion is not yet supported and offer to record a correction instead.
+- Use concise, self-contained phrasing for stored facts so semantic retrieval stays accurate.
