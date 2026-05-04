@@ -42,6 +42,30 @@ app.MapStaticAssets();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
+// Proxy artifact downloads from the Channels site to the Gateway. The browser
+// hits this site (localhost:7030) and we forward server-side via service
+// discovery — this keeps the Gateway URL hidden from clients and satisfies
+// the Gateway's loopback-only access gate on /api/channels/* endpoints.
+app.MapGet("/api/channels/{jobId:guid}/runs/{runId:guid}/artifacts/{artifactId:guid}/content",
+    async (Guid jobId, Guid runId, Guid artifactId, IHttpClientFactory factory, CancellationToken ct) =>
+    {
+        var client = factory.CreateClient("gateway");
+        var upstream = await client.GetAsync(
+            $"api/channels/{jobId}/runs/{runId}/artifacts/{artifactId}/content",
+            HttpCompletionOption.ResponseHeadersRead,
+            ct);
+
+        if (!upstream.IsSuccessStatusCode)
+            return Results.StatusCode((int)upstream.StatusCode);
+
+        var contentType = upstream.Content.Headers.ContentType?.ToString()
+            ?? "application/octet-stream";
+        var fileName = upstream.Content.Headers.ContentDisposition?.FileName?.Trim('"');
+
+        var stream = await upstream.Content.ReadAsStreamAsync(ct);
+        return Results.File(stream, contentType, fileName);
+    });
+
 app.MapDefaultEndpoints();
 
 app.Run();

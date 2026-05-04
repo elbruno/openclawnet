@@ -1,32 +1,35 @@
 using System.Text;
 using System.Text.Json;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using OpenClawNet.Channels.Configuration;
 
 namespace OpenClawNet.Channels.Adapters;
 
 /// <summary>
-/// Slack webhook adapter that POSTs job artifacts to Slack using Incoming Webhooks.
+/// Slack proactive adapter that delivers job artifacts to Slack channels using the Slack API.
+/// Uses Bot Token authentication for proactive message delivery.
 /// Fire-and-forget pattern: logs errors but doesn't throw, allowing job to succeed regardless.
-/// Content is truncated at ~3500 chars to respect Slack message limits (~4000 chars total).
 /// </summary>
-public class SlackWebhookAdapter : IChannelDeliveryAdapter
+public class SlackProactiveAdapter : IChannelDeliveryAdapter
 {
-    private const int MaxContentLength = 3500;
     private readonly HttpClient _httpClient;
-    private readonly IConfiguration _configuration;
-    private readonly ILogger<SlackWebhookAdapter> _logger;
+    private readonly SlackClientOptions _options;
+    private readonly ILogger<SlackProactiveAdapter> _logger;
 
-    public string Name => "Slack";
+    public string Name => "SlackProactive";
 
-    public SlackWebhookAdapter(
+    public SlackProactiveAdapter(
         HttpClient httpClient,
-        IConfiguration configuration,
-        ILogger<SlackWebhookAdapter> logger)
+        IOptions<SlackClientOptions> options,
+        ILogger<SlackProactiveAdapter> logger)
     {
         _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _configuration = configuration ?? throw new ArgumentNullException(nameof(configuration));
+        _options = options?.Value ?? throw new ArgumentNullException(nameof(options));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+
+        // Validate configuration on construction
+        _options.Validate();
     }
 
     public async Task<DeliveryResult> DeliverAsync(
@@ -39,58 +42,67 @@ public class SlackWebhookAdapter : IChannelDeliveryAdapter
     {
         try
         {
-            // Parse webhook URL from channel config JSON: { "webhookUrl": "https://hooks.slack.com/..." }
-            var webhookUrl = ExtractWebhookUrl(content);
-            if (string.IsNullOrWhiteSpace(webhookUrl))
+            // Parse channel ID from channel config JSON: { "channelId": "C0123456789" }
+            var channelId = ExtractChannelId(content);
+            if (string.IsNullOrWhiteSpace(channelId))
             {
-                var errorMsg = "Slack webhook URL not found in channel config";
+                var errorMsg = "Slack channel ID not found in channel config";
                 _logger.LogError(
                     "Failed to deliver to Slack for job {JobId}, artifact {ArtifactId}: {Error}",
                     jobId, artifactId, errorMsg);
                 return new DeliveryResult(Success: false, ErrorMessage: errorMsg);
             }
-
-            // Validate URL format
-            if (!Uri.TryCreate(webhookUrl, UriKind.Absolute, out var uri) || 
-                !webhookUrl.StartsWith("https://hooks.slack.com/", StringComparison.OrdinalIgnoreCase))
-            {
-                var errorMsg = $"Invalid Slack webhook URL: {webhookUrl}";
-                _logger.LogError(
-                    "Failed to deliver to Slack for job {JobId}, artifact {ArtifactId}: {Error}",
-                    jobId, artifactId, errorMsg);
-                return new DeliveryResult(Success: false, ErrorMessage: errorMsg);
-            }
-
-            // Truncate content if needed (currently not used as we only show metadata)
-            // var truncatedContent = TruncateContent(content);
 
             // Build Slack message with blocks (Slack Block Kit format)
-            // Note: We pass empty string for content since we only show metadata
-            var slackMessage = BuildSlackMessage(jobName, artifactType, string.Empty, artifactId);
+            var slackMessage = BuildSlackMessage(jobName, artifactType, artifactId, channelId);
 
             var json = JsonSerializer.Serialize(slackMessage);
             var httpContent = new StringContent(json, Encoding.UTF8, "application/json");
 
-            // Set timeout to 5 seconds
+            // Set timeout
             using var cts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            cts.CancelAfter(TimeSpan.FromSeconds(5));
+            cts.CancelAfter(_options.Timeout);
 
-            // POST to Slack webhook URL
-            var response = await _httpClient.PostAsync(webhookUrl, httpContent, cts.Token);
+            // Add authorization header
+            var request = new HttpRequestMessage(HttpMethod.Post, _options.EndpointUrl);
+            request.Headers.Add("Authorization", $"Bearer {_options.BotToken}");
+            request.Content = httpContent;
+
+            // POST to Slack API
+            var response = await _httpClient.SendAsync(request, cts.Token);
             response.EnsureSuccessStatusCode();
 
-            _logger.LogInformation(
-                "Slack webhook delivered successfully for job {JobId} ({JobName}), artifact {ArtifactId} ({ArtifactType})",
-                jobId, jobName, artifactId, artifactType);
+            // Parse Slack API response to extract message timestamp (ts)
+            var responseContent = await response.Content.ReadAsStringAsync(cts.Token);
+            string? externalId = null;
+            try
+            {
+                using var doc = JsonDocument.Parse(responseContent);
+                if (doc.RootElement.TryGetProperty("ok", out var ok) && ok.GetBoolean())
+                {
+                    if (doc.RootElement.TryGetProperty("ts", out var ts))
+                    {
+                        externalId = ts.GetString();
+                    }
+                }
+            }
+            catch (JsonException)
+            {
+                // Ignore JSON parsing errors for response - not critical
+            }
 
-            return new DeliveryResult(Success: true);
+            _logger.LogInformation(
+                "Slack proactive message delivered successfully for job {JobId} ({JobName}), artifact {ArtifactId} ({ArtifactType}) to channel {ChannelId}",
+                jobId, jobName, artifactId, artifactType, channelId);
+
+            return new DeliveryResult(Success: true, ExternalId: externalId);
         }
         catch (OperationCanceledException)
         {
             // Timeout
-            var errorMsg = "Slack webhook delivery timed out (5 second limit)";
+            var errorMsg = $"Slack proactive message delivery timed out ({_options.Timeout.TotalSeconds} second limit)";
             _logger.LogError(
-                "Slack webhook delivery timed out for job {JobId}, artifact {ArtifactId}",
+                "Slack proactive message delivery timed out for job {JobId}, artifact {ArtifactId}",
                 jobId, artifactId);
             return new DeliveryResult(Success: false, ErrorMessage: errorMsg);
         }
@@ -100,7 +112,7 @@ public class SlackWebhookAdapter : IChannelDeliveryAdapter
             var errorMsg = $"HTTP error: {ex.Message}";
             _logger.LogError(
                 ex,
-                "HTTP error delivering Slack webhook for job {JobId}, artifact {ArtifactId}. Will be retried via audit log.",
+                "HTTP error delivering Slack proactive message for job {JobId}, artifact {ArtifactId}. Will be retried via audit log.",
                 jobId, artifactId);
             return new DeliveryResult(Success: false, ErrorMessage: errorMsg);
         }
@@ -120,61 +132,41 @@ public class SlackWebhookAdapter : IChannelDeliveryAdapter
             var errorMsg = $"Unexpected error: {ex.Message}";
             _logger.LogError(
                 ex,
-                "Failed to deliver Slack webhook for job {JobId}, artifact {ArtifactId}. Will be retried via audit log.",
+                "Failed to deliver Slack proactive message for job {JobId}, artifact {ArtifactId}. Will be retried via audit log.",
                 jobId, artifactId);
             return new DeliveryResult(Success: false, ErrorMessage: errorMsg);
         }
     }
 
-    private string? ExtractWebhookUrl(string channelConfig)
+    private string? ExtractChannelId(string channelConfig)
     {
         if (string.IsNullOrWhiteSpace(channelConfig))
             return null;
 
         try
         {
-            // Try to parse as JSON first: { "webhookUrl": "..." }
+            // Parse as JSON: { "channelId": "C0123456789" }
             using var doc = JsonDocument.Parse(channelConfig);
-            if (doc.RootElement.TryGetProperty("webhookUrl", out var urlElement))
+            if (doc.RootElement.TryGetProperty("channelId", out var channelIdElement))
             {
-                return urlElement.GetString();
-            }
-
-            // Fallback: treat entire content as URL (for backward compatibility)
-            var trimmed = channelConfig.Trim();
-            if (trimmed.StartsWith("https://hooks.slack.com/", StringComparison.OrdinalIgnoreCase))
-            {
-                return trimmed;
+                return channelIdElement.GetString();
             }
 
             return null;
         }
         catch (JsonException)
         {
-            // Not valid JSON, try as direct URL
-            var trimmed = channelConfig.Trim();
-            if (trimmed.StartsWith("https://hooks.slack.com/", StringComparison.OrdinalIgnoreCase))
-            {
-                return trimmed;
-            }
+            // Not valid JSON - return null
             return null;
         }
     }
 
-    private string TruncateContent(string content)
-    {
-        if (string.IsNullOrEmpty(content) || content.Length <= MaxContentLength)
-            return content;
-
-        return content.Substring(0, MaxContentLength) + "\n\n... (content truncated)";
-    }
-
-    private object BuildSlackMessage(string jobName, string artifactType, string content, Guid artifactId)
+    private object BuildSlackMessage(string jobName, string artifactType, Guid artifactId, string channelId)
     {
         // Slack Block Kit format with header and section blocks
-        // Note: content parameter here is the artifact content to display, not the channel config
         return new
         {
+            channel = channelId,
             text = $"Job '{jobName}' artifact: {artifactType}", // Fallback text for notifications
             blocks = new object[]
             {

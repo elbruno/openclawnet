@@ -280,5 +280,27 @@ public class OpenClawDbContext : DbContext
                 .HasDefaultValueSql("datetime('now', 'utc')");
             e.HasIndex(v => v.SkillName).IsUnique();
         });
+        
+        modelBuilder.Entity<AdapterDeliveryLog>(e =>
+        {
+            e.ToTable("AdapterDeliveryLogs");
+            e.HasKey(l => l.Id);
+            e.Property(l => l.JobId)
+                .IsRequired();
+            e.Property(l => l.ChannelType)
+                .IsRequired()
+                .HasMaxLength(64);
+            e.Property(l => l.ChannelConfig)
+                .IsRequired();
+            e.Property(l => l.Status)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<DeliveryStatus>(v, ignoreCase: true))
+                .HasDefaultValue(DeliveryStatus.Pending);
+            e.HasOne(l => l.Job)
+                .WithMany()
+                .HasForeignKey(l => l.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
     }
 }

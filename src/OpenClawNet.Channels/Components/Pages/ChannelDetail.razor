@@ -10,6 +10,83 @@
 
 <MudText Typo="Typo.h4" Class="mb-4">@(_channelName ?? "Loading...")</MudText>
 
+@if (_failedRuns is { Count: > 0 })
+{
+    <MudPaper Class="mb-4" Elevation="0">
+        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mb-2" NoIcon="false">
+            <MudText Typo="Typo.subtitle1">
+                <strong>@_failedRuns.Count failed run@(_failedRuns.Count == 1 ? "" : "s")</strong>
+                — diagnostic details below.
+            </MudText>
+        </MudAlert>
+
+        @foreach (var fr in _failedRuns)
+        {
+            <MudCard Class="mb-3" Elevation="2" Style="border-left: 4px solid var(--mud-palette-error);">
+                <MudCardHeader>
+                    <CardHeaderContent>
+                        <MudText Typo="Typo.h6" Color="Color.Error">
+                            <MudIcon Icon="@Icons.Material.Filled.ErrorOutline" Size="Size.Small" Class="me-1" />
+                            Run failed
+                        </MudText>
+                        <MudText Typo="Typo.caption" Color="Color.Secondary">
+                            Started @FormatTimestamp(fr.StartedAt)
+                            @if (fr.CompletedAt.HasValue)
+                            {
+                                <span> · Failed @FormatTimestamp(fr.CompletedAt.Value)</span>
+                                <span> · Duration @FormatDuration(fr.CompletedAt.Value - fr.StartedAt)</span>
+                            }
+                            @if (!string.IsNullOrWhiteSpace(fr.ExecutedByAgentProfile))
+                            {
+                                <span> · profile <code>@fr.ExecutedByAgentProfile</code></span>
+                            }
+                            <span> · run <code>@fr.RunId.ToString()[..8]</code></span>
+                        </MudText>
+                    </CardHeaderContent>
+                </MudCardHeader>
+                <MudCardContent>
+                    @if (string.IsNullOrWhiteSpace(fr.Error) && string.IsNullOrWhiteSpace(fr.PartialResult))
+                    {
+                        <MudAlert Severity="Severity.Warning" Dense="true">
+                            No failure details captured for this run — re-run with the
+                            latest build to see diagnostics (the executor now persists
+                            the full exception chain on failure).
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        @if (!string.IsNullOrWhiteSpace(fr.Error))
+                        {
+                            var firstLine = FirstLine(fr.Error!);
+                            <MudText Typo="Typo.body1" Color="Color.Error" Class="mb-2">
+                                <strong>@firstLine</strong>
+                            </MudText>
+
+                            @if (fr.Error!.Length > firstLine.Length)
+                            {
+                                <MudExpansionPanels MultiExpansion="true" Elevation="0">
+                                    <MudExpansionPanel Text="Stack trace">
+                                        <pre class="artifact-pre">@fr.Error</pre>
+                                    </MudExpansionPanel>
+                                </MudExpansionPanels>
+                            }
+                        }
+
+                        @if (!string.IsNullOrWhiteSpace(fr.PartialResult))
+                        {
+                            <MudExpansionPanels MultiExpansion="true" Elevation="0" Class="mt-2">
+                                <MudExpansionPanel Text="Partial output captured before failure">
+                                    <pre class="artifact-pre">@fr.PartialResult</pre>
+                                </MudExpansionPanel>
+                            </MudExpansionPanels>
+                        }
+                    }
+                </MudCardContent>
+            </MudCard>
+        }
+    </MudPaper>
+}
+
 @if (_loading && _artifacts == null)
 {
     <MudProgressCircular Color="Color.Primary" Indeterminate="true" />
@@ -21,7 +98,10 @@ else if (_error != null)
 }
 else if (_artifacts == null || !_artifacts.Any())
 {
-    <MudAlert Severity="Severity.Info">No artifacts found for this channel.</MudAlert>
+    @if (_failedRuns is null || _failedRuns.Count == 0)
+    {
+        <MudAlert Severity="Severity.Info">No artifacts found for this channel.</MudAlert>
+    }
 }
 else
 {
@@ -34,7 +114,7 @@ else
                     <CardHeaderContent>
                         <MudText Typo="Typo.h6" Class="text-break">@(artifact.Title ?? $"Run {artifact.RunId}")</MudText>
                         <MudText Typo="Typo.caption" Color="Color.Secondary">
-                            @FormatTimestamp(artifact.CreatedAtUtc) · @artifact.ArtifactType · @FormatSize(artifact.ContentSizeBytes)
+                            @FormatTimestamp(artifact.CreatedAt) · @artifact.ArtifactType · @FormatSize(artifact.ContentSizeBytes)
                         </MudText>
                     </CardHeaderContent>
                     <CardHeaderActions>
@@ -53,9 +133,9 @@ else
                     }
                     else if (artifact.ArtifactType == "json" && !string.IsNullOrEmpty(artifact.ContentInline))
                     {
-                        @* Syntax-highlighted JSON *@
+                        @* JSON content (rendered as preformatted text; MudBlazor does not ship a syntax highlighter component) *@
                         <div class="code-block">
-                            <MudCodeHighlight Language="Language.Json" Code="@artifact.ContentInline" />
+                            <pre class="artifact-pre"><code class="language-json">@artifact.ContentInline</code></pre>
                         </div>
                     }
                     else if (artifact.ArtifactType == "error" && !string.IsNullOrEmpty(artifact.ContentInline))
@@ -73,7 +153,7 @@ else
                     {
                         @* File artifact - show download link *@
                         <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Filled.Download"
-                                   Href="@($"/api/artifacts/{artifact.Id}/download")" Target="_blank">
+                                   Href="@($"/api/channels/{JobId}/runs/{artifact.RunId}/artifacts/{artifact.Id}/content")" Target="_blank">
                             Download (@artifact.MimeType)
                         </MudButton>
                     }
@@ -122,7 +202,8 @@ else
     public Guid JobId { get; set; }
 
     private string? _channelName;
-    private List<ArtifactDto>? _artifacts;
+    private List<ArtifactForViewDto>? _artifacts;
+    private List<FailedRunForViewDto>? _failedRuns;
     private bool _loading = true;
     private string? _error;
     private System.Threading.Timer? _pollTimer;
@@ -152,15 +233,16 @@ else
         {
             _loading = true;
             var client = HttpClientFactory.CreateClient("gateway");
-            var response = await client.GetAsync($"api/channels/{JobId}");
+            var response = await client.GetAsync($"api/channels/{JobId}/view");
             
             if (response.IsSuccessStatusCode)
             {
-                var channelDetail = await response.Content.ReadFromJsonAsync<ChannelDetailDto>();
+                var channelDetail = await response.Content.ReadFromJsonAsync<ChannelDetailViewDto>();
                 if (channelDetail != null)
                 {
                     _channelName = channelDetail.JobName;
-                    _artifacts = channelDetail.Artifacts.OrderByDescending(a => a.CreatedAtUtc).ToList();
+                    _artifacts = channelDetail.Artifacts.OrderByDescending(a => a.CreatedAt).ToList();
+                    _failedRuns = channelDetail.FailedRuns?.OrderByDescending(r => r.StartedAt).ToList();
                     _error = null;
                 }
             }
@@ -214,10 +296,14 @@ else
         _pollTimer?.Dispose();
     }
 
-    // DTOs matching Gateway API contract (Phase 1)
-    private record ChannelDetailDto(Guid JobId, string JobName, List<ArtifactDto> Artifacts);
-    
-    private record ArtifactDto(
+    // DTOs matching Gateway /view endpoint (Option C - ViewDto pattern)
+    private record ChannelDetailViewDto(
+        Guid JobId,
+        string JobName,
+        List<ArtifactForViewDto> Artifacts,
+        List<FailedRunForViewDto>? FailedRuns);
+
+    private record ArtifactForViewDto(
         Guid Id,
         Guid RunId,
         string ArtifactType,
@@ -226,6 +312,27 @@ else
         string? ContentPath,
         long ContentSizeBytes,
         string? MimeType,
-        DateTime CreatedAtUtc
-    );
+        DateTime CreatedAt);
+
+    private record FailedRunForViewDto(
+        Guid RunId,
+        string Status,
+        DateTime StartedAt,
+        DateTime? CompletedAt,
+        string? Error,
+        string? PartialResult,
+        string? ExecutedByAgentProfile);
+
+    private static string FirstLine(string text)
+    {
+        var idx = text.IndexOf('\n');
+        return idx < 0 ? text : text[..idx].TrimEnd('\r');
+    }
+
+    private static string FormatDuration(TimeSpan d)
+    {
+        if (d.TotalSeconds < 1) return $"{(int)d.TotalMilliseconds}ms";
+        if (d.TotalMinutes < 1) return $"{d.TotalSeconds:0.0}s";
+        return $"{(int)d.TotalMinutes}m {d.Seconds}s";
+    }
 }

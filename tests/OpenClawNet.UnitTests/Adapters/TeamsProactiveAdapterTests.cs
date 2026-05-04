@@ -16,14 +16,14 @@ public sealed class TeamsProactiveAdapterTests
 {
     private readonly Mock<IBotFrameworkHttpAdapter> _mockAdapter;
     private readonly Mock<IConfiguration> _mockConfig;
-    private readonly Mock<ILogger<TeamsProactiveAdapter>> _mockLogger;
+    private readonly Mock<ILogger<OpenClawNet.Adapters.Teams.TeamsProactiveAdapter>> _mockLogger;
     private readonly Mock<IConfigurationSection> _mockAppIdSection;
 
     public TeamsProactiveAdapterTests()
     {
         _mockAdapter = new Mock<IBotFrameworkHttpAdapter>();
         _mockConfig = new Mock<IConfiguration>();
-        _mockLogger = new Mock<ILogger<TeamsProactiveAdapter>>();
+        _mockLogger = new Mock<ILogger<OpenClawNet.Adapters.Teams.TeamsProactiveAdapter>>();
         _mockAppIdSection = new Mock<IConfigurationSection>();
 
         // Default configuration setup
@@ -37,7 +37,7 @@ public sealed class TeamsProactiveAdapterTests
     public void Constructor_ThrowsArgumentNullException_WhenAdapterIsNull()
     {
         // Act & Assert
-        var act = () => new TeamsProactiveAdapter(null!, _mockConfig.Object, _mockLogger.Object);
+        var act = () => new OpenClawNet.Adapters.Teams.TeamsProactiveAdapter(null!, _mockConfig.Object, _mockLogger.Object);
         act.Should().Throw<ArgumentNullException>().WithParameterName("adapter");
     }
 
@@ -45,7 +45,7 @@ public sealed class TeamsProactiveAdapterTests
     public void Constructor_ThrowsArgumentNullException_WhenLoggerIsNull()
     {
         // Act & Assert
-        var act = () => new TeamsProactiveAdapter(_mockAdapter.Object, _mockConfig.Object, null!);
+        var act = () => new OpenClawNet.Adapters.Teams.TeamsProactiveAdapter(_mockAdapter.Object, _mockConfig.Object, null!);
         act.Should().Throw<ArgumentNullException>().WithParameterName("logger");
     }
 
@@ -57,7 +57,7 @@ public sealed class TeamsProactiveAdapterTests
         emptyConfig.Setup(c => c["MicrosoftAppId"]).Returns((string?)null);
 
         // Act & Assert
-        var act = () => new TeamsProactiveAdapter(_mockAdapter.Object, emptyConfig.Object, _mockLogger.Object);
+        var act = () => new OpenClawNet.Adapters.Teams.TeamsProactiveAdapter(_mockAdapter.Object, emptyConfig.Object, _mockLogger.Object);
         act.Should().Throw<InvalidOperationException>()
             .WithMessage("MicrosoftAppId not configured for Teams adapter");
     }
@@ -247,9 +247,9 @@ public sealed class TeamsProactiveAdapterTests
 
     // ── Helper Methods ─────────────────────────────────────────────────────────
 
-    private TeamsProactiveAdapter CreateAdapter()
+    private OpenClawNet.Adapters.Teams.TeamsProactiveAdapter CreateAdapter()
     {
-        return new TeamsProactiveAdapter(_mockAdapter.Object, _mockConfig.Object, _mockLogger.Object);
+        return new OpenClawNet.Adapters.Teams.TeamsProactiveAdapter(_mockAdapter.Object, _mockConfig.Object, _mockLogger.Object);
     }
 
     private string CreateValidChannelConfig()
