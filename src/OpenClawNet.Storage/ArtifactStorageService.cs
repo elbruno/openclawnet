@@ -13,17 +13,20 @@ public class ArtifactStorageService
 {
     private readonly IDbContextFactory<OpenClawDbContext> _dbFactory;
     private readonly ILogger<ArtifactStorageService> _logger;
+    private readonly IArtifactCreatedNotifier _notifier;
     private readonly string _artifactRootPath;
     private const int InlineThresholdBytes = 64 * 1024; // 64 KB
 
     public ArtifactStorageService(
         IDbContextFactory<OpenClawDbContext> dbFactory,
         IConfiguration configuration,
-        ILogger<ArtifactStorageService> logger)
+        ILogger<ArtifactStorageService> logger,
+        IArtifactCreatedNotifier? notifier = null)
     {
         _dbFactory = dbFactory;
         _logger = logger;
-        
+        _notifier = notifier ?? new NullArtifactCreatedNotifier();
+
         var storageRoot = configuration.GetValue<string>("Storage:RootPath")
             ?? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "OpenClawNet");
         _artifactRootPath = Path.Combine(storageRoot, "artifacts");
@@ -58,6 +61,10 @@ public class ArtifactStorageService
         _logger.LogInformation("Created artifact {ArtifactId} for JobRun {JobRunId} (type={Type}, size={Size})",
             artifact.Id, run.Id, artifactType, artifact.ContentSizeBytes);
 
+        // Concept-review §5 (UX) — fan out via HTTP NDJSON channel stream (best-effort).
+        try { _notifier.NotifyArtifactCreated(artifact.JobId, artifact.JobRunId, artifact.Id); }
+        catch (Exception ex) { _logger.LogDebug(ex, "ArtifactCreatedNotifier failed (ignored)"); }
+
         return artifact;
     }
 
@@ -85,6 +92,10 @@ public class ArtifactStorageService
 
         _logger.LogInformation("Created artifact {ArtifactId} for JobRun {JobRunId} (type={Type}, size={Size})",
             artifact.Id, jobRunId, type, artifact.ContentSizeBytes);
+
+        // Concept-review §5 (UX) — fan out via HTTP NDJSON channel stream (best-effort).
+        try { _notifier.NotifyArtifactCreated(artifact.JobId, artifact.JobRunId, artifact.Id); }
+        catch (Exception ex) { _logger.LogDebug(ex, "ArtifactCreatedNotifier failed (ignored)"); }
 
         return artifact;
     }

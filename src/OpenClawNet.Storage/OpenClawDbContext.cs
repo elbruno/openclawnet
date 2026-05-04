@@ -24,7 +24,12 @@ public class OpenClawDbContext : DbContext
     public DbSet<ToolTestRecord> ToolTestRecords => Set<ToolTestRecord>();
     public DbSet<SecretEntity> Secrets => Set<SecretEntity>();
     public DbSet<JobRunArtifact> JobRunArtifacts => Set<JobRunArtifact>();
+    public DbSet<JobDefinitionStateChange> JobStateChanges => Set<JobDefinitionStateChange>();
+    public DbSet<ToolApprovalLog> ToolApprovalLogs => Set<ToolApprovalLog>();
+    public DbSet<AgentInvocationLog> AgentInvocationLogs => Set<AgentInvocationLog>();
+    public DbSet<ChatSessionArtifact> ChatSessionArtifacts => Set<ChatSessionArtifact>();
     public DbSet<JobChannelConfiguration> JobChannelConfigurations => Set<JobChannelConfiguration>();
+    public DbSet<AdapterDeliveryLog> AdapterDeliveryLogs => Set<AdapterDeliveryLog>();
     public DbSet<SkillVector> SkillVectors => Set<SkillVector>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -148,7 +153,7 @@ public class OpenClawDbContext : DbContext
                 .HasConversion(
                     v => v.ToString().ToLowerInvariant(),
                     v => Enum.Parse<JobRunArtifactKind>(v, ignoreCase: true))
-                .HasDefaultValue(JobRunArtifactKind.Text);
+                .HasDefaultValueSql("'text'");
             e.HasOne(a => a.Run)
                 .WithMany()
                 .HasForeignKey(a => a.JobRunId)
@@ -156,24 +161,124 @@ public class OpenClawDbContext : DbContext
             e.HasIndex(a => new { a.JobId, a.CreatedAt }).IsDescending(false, true);
             e.HasIndex(a => new { a.JobRunId, a.Sequence });
         });
-        
+
+        modelBuilder.Entity<JobDefinitionStateChange>(e =>
+        {
+            e.ToTable("JobStateChanges");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.FromStatus)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<JobStatus>(v, ignoreCase: true));
+            e.Property(x => x.ToStatus)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<JobStatus>(v, ignoreCase: true));
+            e.HasOne(x => x.Job)
+                .WithMany()
+                .HasForeignKey(x => x.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(x => new { x.JobId, x.ChangedAt }).IsDescending(false, true);
+        });
+
+        modelBuilder.Entity<ToolApprovalLog>(e =>
+        {
+            e.ToTable("ToolApprovalLogs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Source)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<ApprovalDecisionSource>(v, ignoreCase: true));
+            e.HasIndex(x => x.SessionId);
+            e.HasIndex(x => x.RequestId);
+            e.HasIndex(x => x.DecidedAt);
+        });
+
+        modelBuilder.Entity<AgentInvocationLog>(e =>
+        {
+            e.ToTable("AgentInvocationLogs");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Kind)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<AgentInvocationKind>(v, ignoreCase: true));
+            e.HasIndex(x => new { x.Kind, x.SourceId });
+            e.HasIndex(x => x.StartedAt);
+        });
+
+        modelBuilder.Entity<ChatSessionArtifact>(e =>
+        {
+            e.ToTable("ChatSessionArtifacts");
+            e.HasKey(a => a.Id);
+            e.Property(a => a.ArtifactType)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<JobRunArtifactKind>(v, ignoreCase: true))
+                .HasDefaultValueSql("'text'");
+            e.HasOne(a => a.Session)
+                .WithMany()
+                .HasForeignKey(a => a.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(a => new { a.SessionId, a.Sequence });
+            e.HasIndex(a => a.CreatedAt);
+        });
+
         modelBuilder.Entity<JobChannelConfiguration>(e =>
         {
             e.ToTable("JobChannelConfigurations");
             e.HasKey(c => c.Id);
+            e.Property(c => c.JobId)
+                .IsRequired();
+            e.Property(c => c.ChannelType)
+                .IsRequired()
+                .HasMaxLength(64);
+            e.Property(c => c.ChannelConfig)
+                .IsRequired();
             e.HasOne(c => c.Job)
                 .WithMany()
                 .HasForeignKey(c => c.JobId)
                 .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(c => c.JobId);
             e.HasIndex(c => new { c.JobId, c.ChannelType }).IsUnique();
-            e.Property(c => c.IsEnabled).HasDefaultValue(false);
         });
-        
+
+        modelBuilder.Entity<AdapterDeliveryLog>(e =>
+        {
+            e.ToTable("AdapterDeliveryLogs");
+            e.HasKey(l => l.Id);
+            e.Property(l => l.JobId)
+                .IsRequired();
+            e.Property(l => l.ChannelType)
+                .IsRequired()
+                .HasMaxLength(64);
+            e.Property(l => l.ChannelConfig)
+                .IsRequired();
+            e.Property(l => l.Status)
+                .HasConversion(
+                    v => v.ToString().ToLowerInvariant(),
+                    v => Enum.Parse<DeliveryStatus>(v, ignoreCase: true))
+                .HasDefaultValue(DeliveryStatus.Pending);
+            e.HasOne(l => l.Job)
+                .WithMany()
+                .HasForeignKey(l => l.JobId)
+                .OnDelete(DeleteBehavior.Cascade);
+            e.HasIndex(l => l.JobId);
+            e.HasIndex(l => l.CreatedAt);
+        });
+
         modelBuilder.Entity<SkillVector>(e =>
         {
             e.ToTable("SkillVectors");
-            e.HasKey(s => s.Id);
-            e.HasIndex(s => s.SkillName);
+            e.HasKey(v => v.Id);
+            e.Property(v => v.SkillName)
+                .IsRequired()
+                .HasMaxLength(256);
+            e.Property(v => v.Embedding)
+                .IsRequired();
+            e.Property(v => v.CreatedAt)
+                .IsRequired()
+                .HasDefaultValueSql("datetime('now', 'utc')");
+            e.HasIndex(v => v.SkillName).IsUnique();
         });
     }
 }

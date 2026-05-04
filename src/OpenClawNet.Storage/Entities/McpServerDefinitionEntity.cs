@@ -30,6 +30,15 @@ public class McpServerDefinitionEntity
     public bool Enabled { get; set; } = true;
 
     /// <summary>
+    /// Server-level default for tool-call approval. <c>null</c> = inherit from agent profile;
+    /// <c>true</c>/<c>false</c> = override agent default for every tool from this server,
+    /// unless a per-tool <see cref="McpToolOverrideEntity.RequireApproval"/> overrides it.
+    /// Concept-review §4a — server-level default to avoid having to set per-tool flags
+    /// across multi-tool MCP servers.
+    /// </summary>
+    public bool? DefaultRequireApproval { get; set; }
+
+    /// <summary>
     /// Built-in servers ship with OpenClawNet. They can be disabled but never deleted —
     /// PR-E's destructive seed migration reasserts them.
     /// </summary>

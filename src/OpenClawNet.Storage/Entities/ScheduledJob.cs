@@ -45,5 +45,12 @@ public sealed class ScheduledJob
     /// <summary>Webhook endpoint for external triggers (null if not webhook-triggered).</summary>
     public string? WebhookEndpoint { get; set; }
 
+    /// <summary>
+    /// Id of the built-in template (or demo) this job was instantiated from, when
+    /// applicable. Pure traceability — the job is fully editable and is NOT linked
+    /// back to the template at runtime. Null for jobs created from scratch.
+    /// </summary>
+    public string? SourceTemplateName { get; set; }
+
     public List<JobRun> Runs { get; set; } = [];
 }

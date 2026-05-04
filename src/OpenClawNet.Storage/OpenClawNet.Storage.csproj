@@ -12,12 +12,9 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="*" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="*" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="*" />
     <PackageReference Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="*" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="*" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="*" />
-    <PackageReference Include="YamlDotNet" Version="*" />
-    <PackageReference Include="sqlite-vec" Version="0.1.7-alpha.2.1" />
   </ItemGroup>
 
   <ItemGroup>

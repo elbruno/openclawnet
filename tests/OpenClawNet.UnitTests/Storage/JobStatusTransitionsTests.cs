@@ -41,9 +41,9 @@ public sealed class JobStatusTransitionsTests
     }
 
     [Fact]
-    public void JobStatus_HasExactlyFiveValues()
+    public void JobStatus_HasExactlySixValues()
     {
-        Enum.GetValues<JobStatus>().Should().HaveCount(5);
+        Enum.GetValues<JobStatus>().Should().HaveCount(6);
     }
 
     // ──────────────────────────────────────────────

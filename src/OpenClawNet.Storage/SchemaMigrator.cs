@@ -44,6 +44,11 @@ public static class SchemaMigrator
         await AddColumnIfMissingAsync(db, "Jobs", "TriggerType", "TEXT DEFAULT 'manual'");
         await AddColumnIfMissingAsync(db, "Jobs", "WebhookEndpoint", "TEXT");
 
+        // Jobs table: traceability link from a job back to the template/demo it was
+        // instantiated from. Free-form text; null for hand-rolled jobs. Allows multi-
+        // instance demo jobs to keep their lineage without coupling to template state.
+        await AddColumnIfMissingAsync(db, "Jobs", "SourceTemplateName", "TEXT");
+
         // JobRuns table: PR #6 additions (execution audit trail)
         await AddColumnIfMissingAsync(db, "JobRuns", "InputSnapshotJson", "TEXT");
         await AddColumnIfMissingAsync(db, "JobRuns", "TokensUsed", "INTEGER");
@@ -100,6 +105,14 @@ public static class SchemaMigrator
 
         // AgentProfiles table: Kind discriminator (Standard | System | ToolTester)
         await AddColumnIfMissingAsync(db, "AgentProfiles", "Kind", "TEXT NOT NULL DEFAULT 'Standard'");
+
+        // Messages table: Tool approval bubbles — Phase A
+        await AddColumnIfMissingAsync(db, "Messages", "MessageType", "TEXT DEFAULT 'Chat'");
+        await AddColumnIfMissingAsync(db, "Messages", "ToolName", "TEXT");
+        await AddColumnIfMissingAsync(db, "Messages", "ToolArgsJson", "TEXT");
+        await AddColumnIfMissingAsync(db, "Messages", "ToolDecision", "TEXT");
+        await AddColumnIfMissingAsync(db, "Messages", "ToolDecidedBy", "TEXT");
+        await AddColumnIfMissingAsync(db, "Messages", "ToolDecidedAt", "TEXT");
 
         // AgentProfiles table
         await CreateTableIfMissingAsync(db, "AgentProfiles",
@@ -236,7 +249,139 @@ public static class SchemaMigrator
         await CreateIndexIfMissingAsync(db, "IX_JobRunArtifacts_JobRunId_Sequence",
             "CREATE INDEX IX_JobRunArtifacts_JobRunId_Sequence ON JobRunArtifacts(JobRunId, Sequence)");
 
-        // PR-F: drop the legacy AgentProfiles.Model column. The agent now references a
+        // ── Concept-review (April 2026) §4a/4b/4c — new audit + telemetry tables ──
+
+        // §4b: server-default approval (nullable; null = inherit from agent profile).
+        await AddColumnIfMissingAsync(db, "McpServerDefinitions", "DefaultRequireApproval", "INTEGER");
+
+        // §4b: per-job state-change audit log.
+        await CreateTableIfMissingAsync(db, "JobStateChanges",
+            """
+            CREATE TABLE JobStateChanges (
+                Id TEXT NOT NULL PRIMARY KEY,
+                JobId TEXT NOT NULL,
+                FromStatus TEXT NOT NULL,
+                ToStatus TEXT NOT NULL,
+                Reason TEXT,
+                ChangedBy TEXT,
+                ChangedAt TEXT NOT NULL,
+                FOREIGN KEY (JobId) REFERENCES Jobs(Id) ON DELETE CASCADE
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_JobStateChanges_JobId_ChangedAt",
+            "CREATE INDEX IX_JobStateChanges_JobId_ChangedAt ON JobStateChanges(JobId, ChangedAt DESC)");
+
+        // §4a: tool-approval decision audit log.
+        await CreateTableIfMissingAsync(db, "ToolApprovalLogs",
+            """
+            CREATE TABLE ToolApprovalLogs (
+                Id TEXT NOT NULL PRIMARY KEY,
+                RequestId TEXT NOT NULL,
+                SessionId TEXT NOT NULL,
+                ToolName TEXT NOT NULL,
+                AgentProfileName TEXT,
+                Approved INTEGER NOT NULL,
+                RememberForSession INTEGER NOT NULL,
+                Source TEXT NOT NULL,
+                DecidedAt TEXT NOT NULL
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_ToolApprovalLogs_SessionId",
+            "CREATE INDEX IX_ToolApprovalLogs_SessionId ON ToolApprovalLogs(SessionId)");
+        await CreateIndexIfMissingAsync(db, "IX_ToolApprovalLogs_RequestId",
+            "CREATE INDEX IX_ToolApprovalLogs_RequestId ON ToolApprovalLogs(RequestId)");
+        await CreateIndexIfMissingAsync(db, "IX_ToolApprovalLogs_DecidedAt",
+            "CREATE INDEX IX_ToolApprovalLogs_DecidedAt ON ToolApprovalLogs(DecidedAt)");
+
+        // §4c: shared telemetry across chat + job runs (sibling-model, Option B).
+        await CreateTableIfMissingAsync(db, "AgentInvocationLogs",
+            """
+            CREATE TABLE AgentInvocationLogs (
+                Id TEXT NOT NULL PRIMARY KEY,
+                Kind TEXT NOT NULL,
+                SourceId TEXT NOT NULL,
+                AgentProfileName TEXT,
+                Provider TEXT,
+                Model TEXT,
+                TokensIn INTEGER,
+                TokensOut INTEGER,
+                LatencyMs INTEGER,
+                StartedAt TEXT NOT NULL,
+                CompletedAt TEXT,
+                Error TEXT
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_AgentInvocationLogs_Kind_SourceId",
+            "CREATE INDEX IX_AgentInvocationLogs_Kind_SourceId ON AgentInvocationLogs(Kind, SourceId)");
+        await CreateIndexIfMissingAsync(db, "IX_AgentInvocationLogs_StartedAt",
+            "CREATE INDEX IX_AgentInvocationLogs_StartedAt ON AgentInvocationLogs(StartedAt)");
+
+        // §4c: optional chat-side artifact stream — channels can include these via feature flag.
+        await CreateTableIfMissingAsync(db, "ChatSessionArtifacts",
+            """
+            CREATE TABLE ChatSessionArtifacts (
+                Id TEXT NOT NULL PRIMARY KEY,
+                SessionId TEXT NOT NULL,
+                Sequence INTEGER NOT NULL DEFAULT 0,
+                ArtifactType TEXT NOT NULL DEFAULT 'text',
+                Title TEXT,
+                ContentInline TEXT,
+                ContentPath TEXT,
+                ContentSizeBytes INTEGER NOT NULL DEFAULT 0,
+                MimeType TEXT,
+                CreatedAt TEXT NOT NULL,
+                Metadata TEXT,
+                FOREIGN KEY (SessionId) REFERENCES Sessions(Id) ON DELETE CASCADE
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_ChatSessionArtifacts_SessionId_Sequence",
+            "CREATE INDEX IX_ChatSessionArtifacts_SessionId_Sequence ON ChatSessionArtifacts(SessionId, Sequence)");
+        await CreateIndexIfMissingAsync(db, "IX_ChatSessionArtifacts_CreatedAt",
+            "CREATE INDEX IX_ChatSessionArtifacts_CreatedAt ON ChatSessionArtifacts(CreatedAt)");
+
+        // Phase 2 Feature 1: Job-to-Channel Routing Model (Story 3)
+        // Stores the channel routing configuration for jobs (which channels receive notifications).
+        await CreateTableIfMissingAsync(db, "JobChannelConfigurations",
+            """
+            CREATE TABLE JobChannelConfigurations (
+                Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                JobId TEXT NOT NULL,
+                ChannelType TEXT NOT NULL,
+                IsEnabled INTEGER NOT NULL DEFAULT 0,
+                ChannelConfig TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NOT NULL,
+                FOREIGN KEY (JobId) REFERENCES Jobs(Id) ON DELETE CASCADE
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_JobChannelConfigurations_JobId",
+            "CREATE INDEX IX_JobChannelConfigurations_JobId ON JobChannelConfigurations(JobId)");
+        await CreateIndexIfMissingAsync(db, "IX_JobChannelConfigurations_JobId_ChannelType",
+            "CREATE UNIQUE INDEX IX_JobChannelConfigurations_JobId_ChannelType ON JobChannelConfigurations(JobId, ChannelType)");
+
+        // Phase 2 Feature 1: Delivery Audit Log (Story 4)
+        // Tracks success/failure of each channel delivery attempt for post-mortem analysis.
+        await CreateTableIfMissingAsync(db, "AdapterDeliveryLogs",
+            """
+            CREATE TABLE AdapterDeliveryLogs (
+                Id TEXT NOT NULL PRIMARY KEY,
+                JobId TEXT NOT NULL,
+                ChannelType TEXT NOT NULL,
+                ChannelConfig TEXT NOT NULL,
+                Status TEXT NOT NULL DEFAULT 'pending',
+                DeliveredAt TEXT,
+                ErrorMessage TEXT,
+                ResponseCode INTEGER,
+                CreatedAt TEXT NOT NULL,
+                FOREIGN KEY (JobId) REFERENCES Jobs(Id) ON DELETE CASCADE
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_AdapterDeliveryLogs_JobId",
+            "CREATE INDEX IX_AdapterDeliveryLogs_JobId ON AdapterDeliveryLogs(JobId)");
+        await CreateIndexIfMissingAsync(db, "IX_AdapterDeliveryLogs_CreatedAt",
+            "CREATE INDEX IX_AdapterDeliveryLogs_CreatedAt ON AdapterDeliveryLogs(CreatedAt)");
+
+        // PR-F: drop the legacy AgentProfiles.Model column.The agent now references a
         // ModelProviderDefinition whose own Model field is authoritative — see Bruno's
         // directive on the agent-UI redesign. Idempotent via the SchemaVersions marker.
         await DropAgentProfileModelColumnAsync(db);

@@ -10,7 +10,7 @@ public class JobRunArtifact
     public Guid JobRunId { get; set; }
     public Guid JobId { get; set; }
     public int Sequence { get; set; } = 0;
-    public JobRunArtifactKind ArtifactType { get; set; } = JobRunArtifactKind.Text;
+    public JobRunArtifactKind ArtifactType { get; set; }
     public string? Title { get; set; }
     public string? ContentInline { get; set; }
     public string? ContentPath { get; set; }
@@ -27,10 +27,10 @@ public class JobRunArtifact
 /// </summary>
 public enum JobRunArtifactKind
 {
-    Markdown,
-    Json,
-    Text,
-    File,
-    Link,
-    Error
+    Text = 0,
+    Markdown = 1,
+    Json = 2,
+    File = 3,
+    Link = 4,
+    Error = 5
 }

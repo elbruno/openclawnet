@@ -12,5 +12,7 @@ public enum JobStatus
     /// <summary>Permanently stopped by user. Terminal state.</summary>
     Cancelled = 3,
     /// <summary>Schedule exhausted or one-shot completed. Terminal state.</summary>
-    Completed = 4
+    Completed = 4,
+    /// <summary>Hidden from default UI lists but preserved for audit. Terminal.</summary>
+    Archived = 5
 }

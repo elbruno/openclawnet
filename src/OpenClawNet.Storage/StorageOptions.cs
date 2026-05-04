@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using Microsoft.Extensions.Logging;
 
 namespace OpenClawNet.Storage;
 
@@ -15,12 +16,16 @@ namespace OpenClawNet.Storage;
 /// </remarks>
 public sealed class StorageOptions
 {
+    private ILogger<StorageOptions>? _logger;
+
     public const string SectionName = "Storage";
 
     /// <summary>
     /// Root directory for all local OpenClawNet storage. Defaults to
-    /// <c>C:\openclawnet\storage</c> on Windows and
-    /// <c>~/openclawnet/storage</c> elsewhere.
+    /// <c>C:\openclawnet</c> on Windows and <c>~/openclawnet</c> elsewhere
+    /// (W-1 Q3 — legacy <c>/storage</c> suffix removed). Override via
+    /// the <c>OPENCLAWNET_STORAGE_ROOT</c> environment variable or the
+    /// <c>Storage:RootPath</c> configuration key.
     /// </summary>
     public string RootPath { get; set; } = DefaultRootPath();
 
@@ -36,26 +41,52 @@ public sealed class StorageOptions
     /// </summary>
     public string ModelsFolderName { get; set; } = "models";
 
-    /// <summary>Absolute path for binary artifact outputs.</summary>
-    public string BinaryArtifactsPath => Path.Combine(RootPath, BinaryFolderName);
-
-    /// <summary>Absolute path for downloaded model caches.</summary>
-    public string ModelsPath => Path.Combine(RootPath, ModelsFolderName);
-
     /// <summary>
-    /// Subfolder name (under <see cref="RootPath"/>) for agent outputs and working files.
-    /// Default: <c>agents</c>.
+    /// Subfolder name (under <see cref="RootPath"/>) for agent output files,
+    /// notes, and state. Default: <c>agents</c>.
     /// </summary>
     public string AgentsFolderName { get; set; } = "agents";
-
-    /// <summary>Absolute path for agent outputs: {RootPath}/agents</summary>
-    public string AgentsPath => Path.Combine(RootPath, AgentsFolderName);
 
     /// <summary>
     /// Subfolder name (under <see cref="RootPath"/>) for user-imported skills.
     /// Default: <c>skills</c>.
     /// </summary>
     public string SkillsFolderName { get; set; } = "skills";
+
+    /// <summary>
+    /// W-3 (Drummond AC2) — total-quota ceiling under <see cref="ModelsPath"/>.
+    /// Default: 50 GB. Configured via <c>Storage:ModelMaxTotalBytes</c>.
+    /// </summary>
+    public long ModelMaxTotalBytes { get; set; } = ModelStorageQuota.DefaultMaxTotalBytes;
+
+    /// <summary>
+    /// W-3 (Drummond AC2) — per-file ceiling under <see cref="ModelsPath"/>.
+    /// Default: 20 GB. Configured via <c>Storage:ModelMaxPerFileBytes</c>.
+    /// </summary>
+    public long ModelMaxPerFileBytes { get; set; } = ModelStorageQuota.DefaultMaxPerFileBytes;
+
+    /// <summary>
+    /// W-4 (Drummond W-4 AC2) — per-folder ceiling under each user folder.
+    /// Default: 5 GB. Configured via <c>Storage:UserMaxPerFolderBytes</c>.
+    /// </summary>
+    public long UserMaxPerFolderBytes { get; set; } = UserFolderQuota.DefaultMaxPerFolderBytes;
+
+    /// <summary>
+    /// W-4 (Drummond W-4 AC2) — total ceiling across all user folders
+    /// under <see cref="RootPath"/> (excluding scope subfolders agents/,
+    /// models/, skills/, binary/, dataprotection-keys/, audit/).
+    /// Default: 25 GB. Configured via <c>Storage:UserMaxTotalBytes</c>.
+    /// </summary>
+    public long UserMaxTotalBytes { get; set; } = UserFolderQuota.DefaultMaxTotalBytes;
+
+    /// <summary>Absolute path for binary artifact outputs.</summary>
+    public string BinaryArtifactsPath => Path.Combine(RootPath, BinaryFolderName);
+
+    /// <summary>Absolute path for downloaded model caches.</summary>
+    public string ModelsPath => Path.Combine(RootPath, ModelsFolderName);
+
+    /// <summary>Absolute path for agent outputs: {RootPath}/agents</summary>
+    public string AgentsPath => Path.Combine(RootPath, AgentsFolderName);
 
     /// <summary>Absolute path for user-imported skills: {RootPath}/skills</summary>
     public string SkillsPath => Path.Combine(RootPath, SkillsFolderName);
@@ -74,45 +105,69 @@ public sealed class StorageOptions
 
     /// <summary>
     /// Returns (and creates if missing) a per-agent subfolder: {RootPath}/agents/{agentName}/.
+    /// Attempts primary path first, falls back to LocalApplicationData if primary fails.
     /// Sanitizes agent name to prevent path traversal attacks.
     /// </summary>
+    /// <param name="agentName">The name of the agent (will be sanitized)</param>
+    /// <returns>The full path to the agent's folder</returns>
+    /// <exception cref="ArgumentException">If the agent name is invalid after sanitization</exception>
     public string AgentFolderForName(string agentName)
     {
-        var sanitized = SanitizeAgentName(agentName);
-        var primaryPath = Path.Combine(AgentsPath, sanitized);
-        
+        // Sanitize agent name to prevent path traversal attacks
+        var sanitizedName = SanitizeAgentName(agentName);
+
+        var primaryPath = Path.Combine(AgentsPath, sanitizedName);
         try
         {
             Directory.CreateDirectory(primaryPath);
+            _logger?.LogDebug("Created agent folder at primary path: {PrimaryPath}", primaryPath);
             return primaryPath;
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            // Fallback to LocalApplicationData when primary path is inaccessible
+            _logger?.LogWarning(ex, "Cannot create agents directory at {PrimaryPath}; falling back to LocalApplicationData", primaryPath);
+
             var fallbackPath = Path.Combine(
                 Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-                "OpenClawNet", "agents", sanitized);
+                "OpenClawNet", "agents", sanitizedName);
             Directory.CreateDirectory(fallbackPath);
+            _logger?.LogInformation("Using fallback agent folder at: {FallbackPath}", fallbackPath);
             return fallbackPath;
         }
     }
 
-    /// <summary>Sanitizes agent names to prevent path traversal attacks. Replaces .. / \ with _</summary>
+    /// <summary>
+    /// Sanitizes an agent name to prevent path traversal attacks.
+    /// Removes/replaces: .., /, \, and null characters.
+    /// </summary>
+    /// <param name="agentName">The original agent name</param>
+    /// <returns>The sanitized agent name</returns>
+    /// <exception cref="ArgumentException">If the name is empty or becomes invalid after sanitization</exception>
     private static string SanitizeAgentName(string agentName)
     {
         if (string.IsNullOrWhiteSpace(agentName))
-            throw new ArgumentException("Agent name cannot be null or whitespace.", nameof(agentName));
+            throw new ArgumentException("Agent name cannot be null or whitespace", nameof(agentName));
 
+        // Remove any path traversal characters: .. / \ and null
         var sanitized = agentName
             .Replace("..", "_")
             .Replace("/", "_")
             .Replace("\\", "_")
             .Replace("\0", "_");
 
+        // Reject if becomes empty or only dots/underscores after sanitization
         if (string.IsNullOrWhiteSpace(sanitized) || sanitized.All(c => c == '_' || c == '.'))
-            throw new ArgumentException($"Invalid agent name after sanitization: {agentName}", nameof(agentName));
+            throw new ArgumentException($"Invalid agent name (becomes empty after sanitization): {agentName}", nameof(agentName));
 
         return sanitized;
+    }
+
+    /// <summary>
+    /// Internal method to set the logger instance. Called during DI configuration.
+    /// </summary>
+    internal void SetLogger(ILogger<StorageOptions> logger)
+    {
+        _logger = logger;
     }
 
     /// <summary>Ensures <see cref="RootPath"/>, binary, models, agents, and skills directories exist.</summary>
@@ -125,10 +180,7 @@ public sealed class StorageOptions
         Directory.CreateDirectory(SkillsPath);
     }
 
-    private static string DefaultRootPath() =>
-        RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
-            ? @"C:\openclawnet\storage"
-            : Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.UserProfile),
-                "openclawnet", "storage");
+    // W-1 (Q3): default root no longer carries the legacy '/storage' suffix.
+    // Single source of truth lives in OpenClawNetPaths.DefaultRoot.
+    private static string DefaultRootPath() => OpenClawNetPaths.DefaultRoot;
 }
