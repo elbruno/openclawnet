@@ -18,6 +18,9 @@ namespace OpenClawNet.Gateway.Endpoints;
 ///   <item><c>GET /api/skills</c> — full per-layer list with per-agent enable map.</item>
 ///   <item><c>GET /api/skills/{name}</c> — single-skill detail.</item>
 ///   <item><c>POST /api/skills</c> — create an Installed-layer skill (L-2: System is read-only).</item>
+///   <item><c>POST /api/skills/reload</c> — force rebuild of skills snapshot.</item>
+///   <item><c>POST /api/skills/{name}/enable</c> — enable skill for all agents.</item>
+///   <item><c>POST /api/skills/{name}/disable</c> — disable skill for all agents.</item>
 ///   <item><c>PUT /api/skills/{name}/enabled-for/{agentName}</c> — toggle per-agent enable.</item>
 ///   <item><c>PATCH /api/skills/enabled</c> — same as PUT, accepts <c>{agent, skill, enabled}</c> (Helly UI client form).</item>
 ///   <item><c>DELETE /api/skills/{name}</c> — Installed layer only (L-2 enforced).</item>
@@ -49,6 +52,9 @@ public static class SkillEndpoints
         group.MapGet("/changes-since/{snapshotId}", GetChangesSince).WithName("GetSkillsChangesSince");
         group.MapGet("/{name}", GetSkill).WithName("GetSkill");
         group.MapPost("/", CreateSkill).WithName("CreateSkill");
+        group.MapPost("/reload", ReloadSkills).WithName("ReloadSkills");
+        group.MapPost("/{name}/enable", EnableSkill).WithName("EnableSkill");
+        group.MapPost("/{name}/disable", DisableSkill).WithName("DisableSkill");
         group.MapPut("/{name}/enabled-for/{agentName}", PutEnabledFor).WithName("PutSkillEnabledFor");
         group.MapPatch("/enabled", PatchEnabled).WithName("PatchSkillEnabled");
         group.MapDelete("/{name}", DeleteSkill).WithName("DeleteSkill");
@@ -207,6 +213,114 @@ public static class SkillEndpoints
         }
 
         return Results.NoContent();
+    }
+
+    // ====================================================================
+    // POST /api/skills/reload — force rebuild of skills snapshot
+    // ====================================================================
+    private static async Task<IResult> ReloadSkills(
+        OpenClawNetSkillsRegistry registry,
+        CancellationToken ct)
+    {
+        registry.Rebuild();
+        var snap = await registry.GetSnapshotAsync(ct).ConfigureAwait(false);
+        return Results.Ok(new
+        {
+            reloaded = true,
+            count = snap.Skills.Count
+        });
+    }
+
+    // ====================================================================
+    // POST /api/skills/{name}/enable — enable skill for all agents
+    // ====================================================================
+    private static async Task<IResult> EnableSkill(
+        string name,
+        OpenClawNetSkillsRegistry registry,
+        HttpContext http,
+        CancellationToken ct)
+    {
+        if (!IsValidSkillName(name))
+            return Problem(StatusCodes.Status400BadRequest, "invalid_name");
+
+        var snap = await registry.GetSnapshotAsync(ct).ConfigureAwait(false);
+        var record = snap.Skills.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.Ordinal));
+        if (record is null)
+            return Problem(StatusCodes.Status404NotFound, "not_found", $"Skill '{name}' not in current snapshot.");
+
+        var requestedBy = http.User?.Identity?.Name ?? "anonymous";
+        
+        // Get all agent folders and enable for each
+        var (rootPath, _) = OpenClawNetPaths.ResolveRoot();
+        var agentsRoot = Path.Combine(rootPath, "skills", "agents");
+        var agents = Directory.Exists(agentsRoot) 
+            ? Directory.EnumerateDirectories(agentsRoot).Select(Path.GetFileName).ToList()
+            : new List<string?>();
+
+        // If no agents exist, enable for a default agent
+        if (agents.Count == 0)
+            agents.Add("default");
+
+        foreach (var agentName in agents.Where(a => !string.IsNullOrWhiteSpace(a)))
+        {
+            try
+            {
+                await registry.SetEnabledForAgentAsync(agentName!, name, true, requestedBy, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                // Log but continue with other agents
+            }
+        }
+
+        var enabledByAgent = LoadAllEnabledMaps(registry, name);
+        return Results.Ok(ToDto(record, enabledByAgent));
+    }
+
+    // ====================================================================
+    // POST /api/skills/{name}/disable — disable skill for all agents
+    // ====================================================================
+    private static async Task<IResult> DisableSkill(
+        string name,
+        OpenClawNetSkillsRegistry registry,
+        HttpContext http,
+        CancellationToken ct)
+    {
+        if (!IsValidSkillName(name))
+            return Problem(StatusCodes.Status400BadRequest, "invalid_name");
+
+        var snap = await registry.GetSnapshotAsync(ct).ConfigureAwait(false);
+        var record = snap.Skills.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.Ordinal));
+        if (record is null)
+            return Problem(StatusCodes.Status404NotFound, "not_found", $"Skill '{name}' not in current snapshot.");
+
+        var requestedBy = http.User?.Identity?.Name ?? "anonymous";
+        
+        // Get all agent folders and disable for each
+        var (rootPath, _) = OpenClawNetPaths.ResolveRoot();
+        var agentsRoot = Path.Combine(rootPath, "skills", "agents");
+        var agents = Directory.Exists(agentsRoot) 
+            ? Directory.EnumerateDirectories(agentsRoot).Select(Path.GetFileName).ToList()
+            : new List<string?>();
+
+        // If no agents exist, disable for a default agent
+        if (agents.Count == 0)
+            agents.Add("default");
+
+        foreach (var agentName in agents.Where(a => !string.IsNullOrWhiteSpace(a)))
+        {
+            try
+            {
+                await registry.SetEnabledForAgentAsync(agentName!, name, false, requestedBy, ct).ConfigureAwait(false);
+            }
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
+            {
+                // Log but continue with other agents
+            }
+        }
+
+        var enabledByAgent = LoadAllEnabledMaps(registry, name);
+        return Results.Ok(ToDto(record, enabledByAgent));
     }
 
     // ====================================================================

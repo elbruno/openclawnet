@@ -30,21 +30,14 @@ public class ActivityPanelExportTests : PlaywrightTestBase
     {
         await WithScreenshotOnFailure(async () =>
         {
-            await Page.GotoAsync(Fixture.WebBaseUrl, new PageGotoOptions
+            // Navigate directly to chat page where the agent console panel is rendered
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat", new PageGotoOptions
             {
                 WaitUntil = WaitUntilState.NetworkIdle,
                 Timeout = 60_000
             });
 
-            // Open a new chat so the activity panel is rendered.
-            var newChatBtn = Page.Locator("button:has-text('New Chat'), a:has-text('New Chat')").First;
-            if (await newChatBtn.IsVisibleAsync())
-            {
-                await newChatBtn.ClickAsync();
-                await Page.WaitForTimeoutAsync(500);
-            }
-
-            // Panel should be present
+            // Panel should be present (it's part of Chat.razor)
             var panel = Page.Locator("[data-testid='agent-console']");
             await Assertions.Expect(panel).ToBeVisibleAsync(new() { Timeout = 15_000 });
 
@@ -80,18 +73,12 @@ public class ActivityPanelExportTests : PlaywrightTestBase
     {
         await WithScreenshotOnFailure(async () =>
         {
-            await Page.GotoAsync(Fixture.WebBaseUrl, new PageGotoOptions
+            // Navigate directly to chat page where the agent console panel is rendered
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat", new PageGotoOptions
             {
                 WaitUntil = WaitUntilState.NetworkIdle,
                 Timeout = 60_000
             });
-
-            var newChatBtn = Page.Locator("button:has-text('New Chat'), a:has-text('New Chat')").First;
-            if (await newChatBtn.IsVisibleAsync())
-            {
-                await newChatBtn.ClickAsync();
-                await Page.WaitForTimeoutAsync(500);
-            }
 
             var panel = Page.Locator("[data-testid='agent-console']");
             await Assertions.Expect(panel).ToBeVisibleAsync(new() { Timeout = 15_000 });

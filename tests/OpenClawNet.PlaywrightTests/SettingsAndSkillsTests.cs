@@ -136,8 +136,9 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
                 new System.Text.RegularExpressions.Regex("Model Providers"),
                 new PageAssertionsToHaveTitleOptions { Timeout = 10_000 });
 
-            // Verify the table or provider list is visible (seeded defaults should be present)
-            var tableOrContent = Page.Locator("table, .provider-card, [class*='provider']").First;
+            // Verify the MudDataGrid table or provider list is visible (seeded defaults should be present)
+            // MudBlazor renders as div structure, not HTML table — look for MudDataGrid container or provider rows
+            var tableOrContent = Page.Locator(".mud-table, .mud-table-container, [data-testid*='model-provider-row'], .mud-grid").First;
             await Assertions.Expect(tableOrContent).ToBeVisibleAsync(new() { Timeout = 10_000 });
         });
     }

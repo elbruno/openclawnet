@@ -50,9 +50,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
             await Assertions.Expect(errorHeading).Not.ToBeVisibleAsync(new() { Timeout = 5_000 });
 
             await LogStepAsync("🔍 Looking for import button");
-            var importButton = Page.Locator(
-                "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-            ).First;
+            var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
 
             // Test 1a: Button exists and is visible
             await Assertions.Expect(importButton).ToBeVisibleAsync(new() { Timeout = 10_000 });
@@ -117,9 +115,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                 });
 
                 // Click import button
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
                 await importButton.ClickAsync();
                 await LogStepAsync("🟨 Import button clicked");
 
@@ -224,9 +220,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                 });
 
                 // Click import button and upload zip
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
                 await importButton.ClickAsync();
 
                 var fileInput = Page.Locator("input[type='file']").First;
@@ -289,9 +283,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                     Timeout = 60_000
                 });
 
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
 
                 await importButton.ClickAsync();
                 var fileInput = Page.Locator("input[type='file']").First;
@@ -378,9 +370,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                     Timeout = 60_000
                 });
 
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
                 await importButton.ClickAsync();
 
                 var fileInput = Page.Locator("input[type='file']").First;
@@ -481,9 +471,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                     Timeout = 60_000
                 });
 
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
 
                 await importButton.ClickAsync();
                 await LogStepAsync("📂 File picker opened");
@@ -554,9 +542,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                     Timeout = 60_000
                 });
 
-                var importButton = Page.Locator(
-                    "button:has-text('Import'), button[title*='Import'], button[aria-label*='Import']"
-                ).First;
+                var importButton = Page.GetByRole(AriaRole.Button, new() { NameString = "Import…" });
 
                 // Attempt to upload empty zip
                 await importButton.ClickAsync();

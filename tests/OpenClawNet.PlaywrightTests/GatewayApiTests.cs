@@ -239,13 +239,19 @@ public class GatewayApiTests : IAsyncLifetime
         var disableResp = await _client.PostAsync($"/api/skills/{skillName}/disable", null);
         Assert.Equal(HttpStatusCode.OK, disableResp.StatusCode);
         var disabled = await disableResp.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.False(disabled.GetProperty("enabled").GetBoolean());
+        // Check that the skill has enabledByAgent entries and all are false
+        var enabledByAgent = disabled.GetProperty("enabledByAgent");
+        Assert.True(enabledByAgent.EnumerateObject().Any(), "Expected at least one agent mapping");
+        Assert.All(enabledByAgent.EnumerateObject(), kvp => Assert.False(kvp.Value.GetBoolean(), $"Expected {kvp.Name} to be disabled"));
 
         // Re-enable
         var enableResp = await _client.PostAsync($"/api/skills/{skillName}/enable", null);
         Assert.Equal(HttpStatusCode.OK, enableResp.StatusCode);
         var enabled = await enableResp.Content.ReadFromJsonAsync<JsonElement>();
-        Assert.True(enabled.GetProperty("enabled").GetBoolean());
+        // Check that all agents now have the skill enabled
+        var enabledByAgent2 = enabled.GetProperty("enabledByAgent");
+        Assert.True(enabledByAgent2.EnumerateObject().Any(), "Expected at least one agent mapping");
+        Assert.All(enabledByAgent2.EnumerateObject(), kvp => Assert.True(kvp.Value.GetBoolean(), $"Expected {kvp.Name} to be enabled"));
     }
 
     // ── Demo 06: SignalR Hub Connectivity (deprecated — chat now uses HTTP NDJSON) ──

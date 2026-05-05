@@ -50,7 +50,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
 
             foreach (var label in expectedMenuLabels)
             {
-                var link = nav.Locator($"a.nav-link:has-text('{label}')");
+                var link = nav.GetByRole(AriaRole.Link, new() { Name = label, Exact = true });
                 await Assertions.Expect(link).ToBeVisibleAsync();
             }
         });
@@ -117,7 +117,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
 
             // Click the nav link
             var nav = Page.Locator("nav.nav");
-            var link = nav.Locator($"a.nav-link:has-text('{menuLabel}')");
+            var link = nav.GetByRole(AriaRole.Link, new() { Name = menuLabel, Exact = true });
             await link.ClickAsync();
 
             // Blazor enhanced nav — wait for the URL to update

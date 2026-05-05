@@ -70,8 +70,8 @@ public class AspireDashboardTests : PlaywrightTestBase
                 Timeout = 60_000
             });
 
-            // Look for the session title in the sessions list — scope to list-group to avoid matching elsewhere
-            var sessionItem = Page.Locator(".list-group-item:has-text('Dashboard Verify Session')").First;
+            // Look for the session title in the MudDataGrid — scope to MudDataGrid rows or session links
+            var sessionItem = Page.Locator("a:has-text('Dashboard Verify Session'), [data-testid*='session-row']:has-text('Dashboard Verify Session'), .mud-table-row:has-text('Dashboard Verify Session')").First;
             await Assertions.Expect(sessionItem).ToBeVisibleAsync(new() { Timeout = 15_000 });
         });
     }

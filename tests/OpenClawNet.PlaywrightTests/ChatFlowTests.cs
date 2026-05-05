@@ -36,8 +36,8 @@ public class ChatFlowTests : PlaywrightTestBase
                 await Page.WaitForTimeoutAsync(1_000);
             }
 
-            // Find the chat input textarea or input
-            var chatInput = Page.Locator("textarea, input[type='text']").Last;
+            // Find the chat input using the data-testid
+            var chatInput = Page.Locator("[data-testid='chat-input']");
             await Assertions.Expect(chatInput).ToBeVisibleAsync(new() { Timeout = 10_000 });
             await chatInput.FillAsync("Say hello in exactly 3 words.");
 
@@ -96,8 +96,9 @@ public class ChatFlowTests : PlaywrightTestBase
                 Timeout = 60_000
             });
 
-            // The sessions page should list our session — scope to list-group to avoid strict mode violation
-            var sessionEntry = Page.Locator(".list-group-item:has-text('Sessions Panel Test')").First;
+            // The sessions page uses MudDataGrid - look for the session link with data-testid
+            // or any clickable element containing our session title
+            var sessionEntry = Page.Locator("a:has-text('Sessions Panel Test'), [data-testid*='session-row']:has-text('Sessions Panel Test'), .mud-table-row:has-text('Sessions Panel Test')").First;
             await Assertions.Expect(sessionEntry).ToBeVisibleAsync(new() { Timeout = 15_000 });
         });
     }
