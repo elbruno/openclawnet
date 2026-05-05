@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
 
@@ -13,6 +14,7 @@ public static class DemoEndpoints
     private const string DocPipelineJobName = "Document Processing Pipeline";
     private const string WebsiteWatcherJobName = "Website Watcher";
     private const string FolderHealthJobName = "Folder Health Report";
+    private const string MarkdownSummaryJobName = "URL Markdown Summary";
 
     public static IEndpointRouteBuilder MapDemoEndpoints(this IEndpointRouteBuilder app)
     {
@@ -42,31 +44,29 @@ public static class DemoEndpoints
             .WithName("GetFolderHealthStatus")
             .WithDescription("Returns the current status of the folder-health demo job.");
 
+        group.MapPost("/markdown-summary/setup", SetupMarkdownSummaryAsync)
+            .WithName("SetupMarkdownSummary")
+            .WithDescription("Creates a recurring job that converts a URL to Markdown via the markdown_convert tool and produces a brief AI summary of the page content.");
+
+        group.MapGet("/markdown-summary/status", GetMarkdownSummaryStatusAsync)
+            .WithName("GetMarkdownSummaryStatus")
+            .WithDescription("Returns the current status of the URL → Markdown summary demo job.");
+
         return app;
     }
 
     private static async Task<IResult> SetupDocPipelineAsync(
         IDbContextFactory<OpenClawDbContext> dbFactory,
+        IAgentProfileStore profileStore,
         DocPipelineSetupRequest? request = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
 
-        // Check if a doc-pipeline demo job already exists in a non-terminal state
-        var existing = await db.Jobs
-            .Where(j => j.Name == DocPipelineJobName
-                && j.Status != JobStatus.Cancelled
-                && j.Status != JobStatus.Completed)
-            .FirstOrDefaultAsync();
-
-        if (existing is not null)
-        {
-            return Results.Conflict(new
-            {
-                error = "A document processing pipeline job already exists.",
-                jobId = existing.Id,
-                message = "Use GET /api/demos/doc-pipeline/status to check progress, or delete the existing job first via DELETE /api/jobs/{id}."
-            });
-        }
+        // Multi-instance demo: every POST creates a new JobDefinition. Server-side
+        // dedup on Name only — if "Document Processing Pipeline" already exists we
+        // append " (2)", " (3)", … so the user always lands on a fresh, fully editable
+        // job. SourceTemplateName retains lineage for audit/reporting.
+        var uniqueName = await GenerateUniqueJobNameAsync(db, DocPipelineJobName);
 
         var folderPath = request?.FolderPath ?? @"C:\src\openclawnet-plan\docs\sampleDocs";
         var intervalSeconds = request?.IntervalSeconds ?? 30;
@@ -86,7 +86,7 @@ public static class DemoEndpoints
 
         var job = new ScheduledJob
         {
-            Name = DocPipelineJobName,
+            Name = uniqueName,
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
@@ -95,7 +95,9 @@ public static class DemoEndpoints
             StartAt = now,
             EndAt = now.AddMinutes(durationMinutes),
             AllowConcurrentRuns = false,
-            NaturalLanguageSchedule = $"Every {intervalSeconds} seconds for {durationMinutes} minutes"
+            NaturalLanguageSchedule = $"Every {intervalSeconds} seconds for {durationMinutes} minutes",
+            SourceTemplateName = DocPipelineJobName,
+            AgentProfileName = await JobEndpoints.ResolveAgentProfileNameAsync(null, profileStore)
         };
 
         db.Jobs.Add(job);
@@ -110,7 +112,7 @@ public static class DemoEndpoints
             StartsAt = now,
             EndsAt = now.AddMinutes(durationMinutes),
             IntervalSeconds = intervalSeconds,
-            Message = $"Document processing pipeline created in Draft state. Start it from the Jobs list to run every {intervalSeconds}s for {durationMinutes} minutes."
+            Message = $"Document processing pipeline '{job.Name}' created in Draft state. Start it from the Jobs list to run every {intervalSeconds}s for {durationMinutes} minutes."
         });
     }
 
@@ -124,25 +126,12 @@ public static class DemoEndpoints
 
     private static async Task<IResult> SetupWebsiteWatcherAsync(
         IDbContextFactory<OpenClawDbContext> dbFactory,
+        IAgentProfileStore profileStore,
         WebsiteWatcherSetupRequest? request = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
 
-        var existing = await db.Jobs
-            .Where(j => j.Name == WebsiteWatcherJobName
-                && j.Status != JobStatus.Cancelled
-                && j.Status != JobStatus.Completed)
-            .FirstOrDefaultAsync();
-
-        if (existing is not null)
-        {
-            return Results.Conflict(new
-            {
-                error = "A website-watcher job already exists.",
-                jobId = existing.Id,
-                message = "Use GET /api/demos/website-watcher/status to check progress, or DELETE /api/jobs/{id} to remove it."
-            });
-        }
+        var uniqueName = await GenerateUniqueJobNameAsync(db, WebsiteWatcherJobName);
 
         var url = string.IsNullOrWhiteSpace(request?.Url) ? "https://example.com" : request!.Url!.Trim();
         var logPath = string.IsNullOrWhiteSpace(request?.LogPath)
@@ -162,7 +151,7 @@ public static class DemoEndpoints
 
         var job = new ScheduledJob
         {
-            Name = WebsiteWatcherJobName,
+            Name = uniqueName,
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
@@ -170,7 +159,9 @@ public static class DemoEndpoints
             NextRunAt = now.AddSeconds(10),
             StartAt = now,
             AllowConcurrentRuns = false,
-            NaturalLanguageSchedule = "Every 15 minutes"
+            NaturalLanguageSchedule = "Every 15 minutes",
+            SourceTemplateName = WebsiteWatcherJobName,
+            AgentProfileName = await JobEndpoints.ResolveAgentProfileNameAsync(null, profileStore)
         };
 
         db.Jobs.Add(job);
@@ -184,7 +175,7 @@ public static class DemoEndpoints
             LogPath = logPath,
             CronExpression = cronExpression,
             StartsAt = now,
-            Message = $"Website watcher created in Draft state. Start it from the Jobs list to check {url} every 15 minutes and log changes to {logPath}."
+            Message = $"Website watcher '{job.Name}' created in Draft state. Start it from the Jobs list to check {url} every 15 minutes and log changes to {logPath}."
         });
     }
 
@@ -198,25 +189,12 @@ public static class DemoEndpoints
 
     private static async Task<IResult> SetupFolderHealthAsync(
         IDbContextFactory<OpenClawDbContext> dbFactory,
+        IAgentProfileStore profileStore,
         FolderHealthSetupRequest? request = null)
     {
         await using var db = await dbFactory.CreateDbContextAsync();
 
-        var existing = await db.Jobs
-            .Where(j => j.Name == FolderHealthJobName
-                && j.Status != JobStatus.Cancelled
-                && j.Status != JobStatus.Completed)
-            .FirstOrDefaultAsync();
-
-        if (existing is not null)
-        {
-            return Results.Conflict(new
-            {
-                error = "A folder-health-report job already exists.",
-                jobId = existing.Id,
-                message = "Use GET /api/demos/folder-health/status to check progress, or DELETE /api/jobs/{id} to remove it."
-            });
-        }
+        var uniqueName = await GenerateUniqueJobNameAsync(db, FolderHealthJobName);
 
         var folder = string.IsNullOrWhiteSpace(request?.FolderPath)
             ? @"C:\src\openclawnet-plan\docs"
@@ -236,7 +214,7 @@ public static class DemoEndpoints
 
         var job = new ScheduledJob
         {
-            Name = FolderHealthJobName,
+            Name = uniqueName,
             Prompt = prompt,
             CronExpression = cronExpression,
             IsRecurring = true,
@@ -244,7 +222,9 @@ public static class DemoEndpoints
             NextRunAt = NextDailyNineUtc(now),
             StartAt = now,
             AllowConcurrentRuns = false,
-            NaturalLanguageSchedule = "Daily at 09:00 UTC"
+            NaturalLanguageSchedule = "Daily at 09:00 UTC",
+            SourceTemplateName = FolderHealthJobName,
+            AgentProfileName = await JobEndpoints.ResolveAgentProfileNameAsync(null, profileStore)
         };
 
         db.Jobs.Add(job);
@@ -257,7 +237,7 @@ public static class DemoEndpoints
             FolderPath = folder,
             CronExpression = cronExpression,
             StartsAt = now,
-            Message = $"Folder health report created in Draft state. Start it from the Jobs list to run daily at 09:00 UTC against {folder}."
+            Message = $"Folder health report '{job.Name}' created in Draft state. Start it from the Jobs list to run daily at 09:00 UTC against {folder}."
         });
     }
 
@@ -267,10 +247,123 @@ public static class DemoEndpoints
         return await GetDemoJobStatusAsync(dbFactory, FolderHealthJobName);
     }
 
+    // ── URL → Markdown Summary demo ────────────────────────────────────────────
+
+    private static async Task<IResult> SetupMarkdownSummaryAsync(
+        IDbContextFactory<OpenClawDbContext> dbFactory,
+        IAgentProfileStore profileStore,
+        MarkdownSummaryRequest? request = null)
+    {
+        await using var db = await dbFactory.CreateDbContextAsync();
+
+        var uniqueName = await GenerateUniqueJobNameAsync(db, MarkdownSummaryJobName);
+
+        var url = string.IsNullOrWhiteSpace(request?.Url) ? "https://elbruno.com" : request!.Url!.Trim();
+        var intervalMinutes = request?.IntervalMinutes is > 0 ? request.IntervalMinutes!.Value : 60;
+
+        // Cron: every N minutes, on the minute. Cap at 1440 (1 day) for safety.
+        var safeMinutes = Math.Min(intervalMinutes, 1440);
+        var cronExpression = safeMinutes >= 60
+            ? $"0 */{Math.Max(1, safeMinutes / 60)} * * *"
+            : $"*/{safeMinutes} * * * *";
+
+        var now = DateTime.UtcNow;
+
+        var prompt =
+            "Convert the page at " + url + " to Markdown using the `markdown_convert` tool (pass `url` = \"" + url + "\").\n" +
+            "Then produce a concise summary of the page in 3-5 bullet points covering:\n" +
+            "  • What the page is about (title + topic).\n" +
+            "  • Key sections or headings.\n" +
+            "  • Any notable links, calls-to-action, or recent updates visible in the content.\n" +
+            "Format the response as Markdown:\n" +
+            "  ## Summary of " + url + "\n" +
+            "  - bullet 1\n  - bullet 2\n  ...\n" +
+            "Keep the entire response under 250 words. If the markdown_convert tool fails, report the error verbatim — do not retry.";
+
+        var job = new ScheduledJob
+        {
+            Name = uniqueName,
+            Prompt = prompt,
+            CronExpression = cronExpression,
+            IsRecurring = true,
+            Status = JobStatus.Draft,
+            NextRunAt = now.AddSeconds(10),
+            StartAt = now,
+            AllowConcurrentRuns = false,
+            NaturalLanguageSchedule = safeMinutes >= 60
+                ? $"Every {Math.Max(1, safeMinutes / 60)} hour(s)"
+                : $"Every {safeMinutes} minutes",
+            SourceTemplateName = MarkdownSummaryJobName,
+            AgentProfileName = await JobEndpoints.ResolveAgentProfileNameAsync(null, profileStore)
+        };
+
+        db.Jobs.Add(job);
+        await db.SaveChangesAsync();
+
+        return Results.Created($"/api/jobs/{job.Id}", new MarkdownSummaryResponse
+        {
+            JobId = job.Id,
+            Name = job.Name,
+            Url = url,
+            CronExpression = cronExpression,
+            IntervalMinutes = safeMinutes,
+            StartsAt = now,
+            Message = $"URL → Markdown summary '{job.Name}' created in Draft state. Start it from the Jobs list to fetch {url}, convert it to Markdown, and generate a summary every {safeMinutes} minutes."
+        });
+    }
+
+    private static async Task<IResult> GetMarkdownSummaryStatusAsync(
+        IDbContextFactory<OpenClawDbContext> dbFactory)
+    {
+        return await GetDemoJobStatusAsync(dbFactory, MarkdownSummaryJobName);
+    }
+
     private static DateTime NextDailyNineUtc(DateTime now)
     {
         var today9 = new DateTime(now.Year, now.Month, now.Day, 9, 0, 0, DateTimeKind.Utc);
         return today9 > now ? today9 : today9.AddDays(1);
+    }
+
+    /// <summary>
+    /// Generates a job name that is unique across the <c>Jobs</c> table by appending
+    /// " (N)" when collisions exist. The first instance keeps the bare template name;
+    /// subsequent instances become "Name (2)", "Name (3)", etc. Comparison is case-
+    /// insensitive to match SQLite's default NOCASE collation behaviour for ASCII.
+    /// </summary>
+    /// <remarks>
+    /// This is a server-side dedup convenience — the user can rename the job freely
+    /// after creation. Computed via a single SELECT (existing names) rather than a
+    /// retry loop, so concurrent setups in the same process won't collide as long as
+    /// EF's change tracker hasn't been bypassed. Two truly concurrent HTTP setups
+    /// could in theory both pick the same suffix; SQLite has no UNIQUE on Jobs.Name
+    /// so the duplicate would still persist — acceptable for a demo endpoint.
+    /// </remarks>
+    internal static async Task<string> GenerateUniqueJobNameAsync(OpenClawDbContext db, string baseName)
+    {
+        var existing = await db.Jobs
+            .Where(j => j.Name == baseName || j.Name.StartsWith(baseName + " ("))
+            .Select(j => j.Name)
+            .ToListAsync();
+
+        if (existing.Count == 0) return baseName;
+        if (!existing.Contains(baseName, StringComparer.OrdinalIgnoreCase))
+            return baseName;
+
+        // Find the smallest N >= 2 such that "{baseName} (N)" is not taken.
+        var taken = new HashSet<int>();
+        foreach (var name in existing)
+        {
+            if (name.Length <= baseName.Length + 3) continue;
+            if (!name.StartsWith(baseName + " (", StringComparison.OrdinalIgnoreCase)) continue;
+            if (!name.EndsWith(')')) continue;
+            var inner = name.Substring(baseName.Length + 2, name.Length - baseName.Length - 3);
+            if (int.TryParse(inner, out var n) && n >= 2) taken.Add(n);
+        }
+
+        for (var i = 2; ; i++)
+        {
+            if (!taken.Contains(i)) return $"{baseName} ({i})";
+        }
     }
 
     // ── Shared status helper ───────────────────────────────────────────────────
@@ -339,6 +432,28 @@ public sealed record WebsiteWatcherSetupResponse
     public required string Url { get; init; }
     public required string LogPath { get; init; }
     public required string CronExpression { get; init; }
+    public DateTime StartsAt { get; init; }
+    public required string Message { get; init; }
+}
+
+// --- URL → Markdown Summary DTOs ---
+
+public sealed record MarkdownSummaryRequest
+{
+    /// <summary>Absolute http/https URL to convert and summarize.</summary>
+    public string? Url { get; init; }
+
+    /// <summary>How often to re-run the summary, in minutes. Defaults to 60.</summary>
+    public int? IntervalMinutes { get; init; }
+}
+
+public sealed record MarkdownSummaryResponse
+{
+    public Guid JobId { get; init; }
+    public required string Name { get; init; }
+    public required string Url { get; init; }
+    public required string CronExpression { get; init; }
+    public int IntervalMinutes { get; init; }
     public DateTime StartsAt { get; init; }
     public required string Message { get; init; }
 }

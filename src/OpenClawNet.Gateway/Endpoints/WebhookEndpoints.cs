@@ -24,7 +24,7 @@ public static class WebhookEndpoints
             WebhookPayload payload,
             IAgentOrchestrator orchestrator,
             IDbContextFactory<OpenClawDbContext> dbFactory,
-            ILogger<Program> logger) =>
+            ILogger<GatewayProgramMarker> logger) =>
         {
             await using var db = await dbFactory.CreateDbContextAsync();
 

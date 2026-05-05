@@ -55,7 +55,13 @@ public static class SessionEndpoints
                     Id = m.Id,
                     Role = m.Role,
                     Content = m.Content,
-                    CreatedAt = m.CreatedAt
+                    CreatedAt = m.CreatedAt,
+                    MessageType = m.MessageType,
+                    ToolName = m.ToolName,
+                    ToolArgsJson = m.ToolArgsJson,
+                    ToolDecision = m.ToolDecision,
+                    ToolDecidedBy = m.ToolDecidedBy,
+                    ToolDecidedAt = m.ToolDecidedAt
                 }).ToList()
             });
         })
@@ -99,7 +105,13 @@ public static class SessionEndpoints
                 Id = m.Id,
                 Role = m.Role,
                 Content = m.Content,
-                CreatedAt = m.CreatedAt
+                CreatedAt = m.CreatedAt,
+                MessageType = m.MessageType,
+                ToolName = m.ToolName,
+                ToolArgsJson = m.ToolArgsJson,
+                ToolDecision = m.ToolDecision,
+                ToolDecidedBy = m.ToolDecidedBy,
+                ToolDecidedAt = m.ToolDecidedAt
             }));
         })
         .WithName("GetSessionMessages");
@@ -137,4 +149,10 @@ public sealed record MessageDto
     public required string Role { get; init; }
     public required string Content { get; init; }
     public DateTime CreatedAt { get; init; }
+    public string MessageType { get; init; } = "Chat";
+    public string? ToolName { get; init; }
+    public string? ToolArgsJson { get; init; }
+    public string? ToolDecision { get; init; }
+    public string? ToolDecidedBy { get; init; }
+    public DateTime? ToolDecidedAt { get; init; }
 }

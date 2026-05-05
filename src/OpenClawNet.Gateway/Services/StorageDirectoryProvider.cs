@@ -1,6 +1,7 @@
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Gateway.Configuration;
+using OpenClawNet.Storage.Services;
 
 namespace OpenClawNet.Gateway.Services;
 

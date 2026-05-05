@@ -13,7 +13,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="skills/**" CopyToOutputDirectory="Always" />
+    <!-- K-1b #1: legacy gateway-content skill glob retired. System skills now ship
+         with OpenClawNet.Skills (SystemSkills/**) and seed into
+         {StorageRoot}/skills/system/ at boot via SystemSkillsSeeder. -->
     <Content Include="..\..\docs\mcp-suggestions.yaml" Link="docs\mcp-suggestions.yaml" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Resources\JobTemplates\*.json" />
   </ItemGroup>
@@ -48,9 +50,9 @@
     <ProjectReference Include="..\OpenClawNet.Tools.GitHub\OpenClawNet.Tools.GitHub.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
-    <ProjectReference Include="..\OpenClawNet.Tools.Memory\OpenClawNet.Tools.Memory.csproj" />
     <ProjectReference Include="..\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />
     <ProjectReference Include="..\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
     <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
     <ProjectReference Include="..\OpenClawNet.Models.GitHubCopilot\OpenClawNet.Models.GitHubCopilot.csproj" />
     <ProjectReference Include="..\OpenClawNet.Mcp.Abstractions\OpenClawNet.Mcp.Abstractions.csproj" />

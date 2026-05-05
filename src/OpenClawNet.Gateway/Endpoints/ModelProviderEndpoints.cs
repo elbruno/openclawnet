@@ -83,7 +83,7 @@ public static class ModelProviderEndpoints
             string name,
             IModelProviderDefinitionStore store,
             IEnumerable<IAgentProvider> providers,
-            ILogger<Program> logger,
+            ILogger<GatewayProgramMarker> logger,
             CancellationToken ct) =>
         {
             var def = await store.GetAsync(name, ct);

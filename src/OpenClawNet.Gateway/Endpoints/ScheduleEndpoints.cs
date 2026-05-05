@@ -11,7 +11,7 @@ public static class ScheduleEndpoints
 
         group.MapPost("/parse", async (ScheduleParseRequest request,
             SmartScheduleParser parser,
-            ILogger<Program> logger) =>
+            ILogger<GatewayProgramMarker> logger) =>
         {
             if (string.IsNullOrWhiteSpace(request.Input))
                 return Results.BadRequest(new { error = "Input is required." });

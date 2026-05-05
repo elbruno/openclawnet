@@ -25,8 +25,9 @@ public static class ChatStreamEndpoints
             ChatStreamRequest request,
             IAgentOrchestrator orchestrator,
             IAgentProfileStore profileStore,
-            ILogger<Program> logger,
+            ILogger<GatewayProgramMarker> logger,
             HttpContext httpContext,
+            [Microsoft.AspNetCore.Mvc.FromServices] OpenClawNet.Storage.Entities.AgentInvocationLogger? invocationLogger,
             CancellationToken cancellationToken) =>
         {
             if (string.IsNullOrWhiteSpace(request.Message))
@@ -113,6 +114,21 @@ public static class ChatStreamEndpoints
                 await StreamViaOrchestratorAsync(
                     agentRequest, orchestrator, request.SessionId,
                     httpContext, logger, cancellationToken);
+
+                // Concept-review §4c — record sibling-model invocation row for chat turns.
+                if (invocationLogger is not null)
+                {
+                    _ = invocationLogger.RecordAsync(new OpenClawNet.Storage.Entities.AgentInvocationLog
+                    {
+                        Kind = OpenClawNet.Storage.Entities.AgentInvocationKind.Chat,
+                        SourceId = request.SessionId,
+                        AgentProfileName = profile.Name,
+                        Provider = agentRequest.Provider,
+                        Model = agentRequest.Model,
+                        StartedAt = DateTime.UtcNow,
+                        CompletedAt = DateTime.UtcNow,
+                    }, CancellationToken.None);
+                }
             }
         })
         .WithName("StreamChat")
@@ -141,7 +157,11 @@ public static class ChatStreamEndpoints
                     ToolDescription = evt.ToolDescription,
                     ToolArgsJson = evt.ToolArgsJson,
                     RequestId = evt.RequestId,
-                    SessionId = sessionId
+                    ApprovalExpiresAt = evt.ApprovalExpiresAt,
+                    SessionId = sessionId,
+                    Approved = evt.Approved,
+                    DecisionSource = evt.DecisionSource,
+                    DecidedAt = evt.DecidedAt
                 };
 
                 var line = JsonSerializer.Serialize(streamEvent, JsonOpts);
@@ -259,6 +279,7 @@ public static class ChatStreamEndpoints
     {
         AgentStreamEventType.ContentDelta => "content",
         AgentStreamEventType.ToolApprovalRequest => "tool_approval",
+        AgentStreamEventType.ToolApprovalResolved => "tool_approval_resolved",
         AgentStreamEventType.ToolCallStart => "tool_start",
         AgentStreamEventType.ToolCallComplete => "tool_complete",
         AgentStreamEventType.Complete => "complete",
@@ -298,5 +319,11 @@ public sealed record ChatStreamEvent
     public string? ToolDescription { get; init; }
     public string? ToolArgsJson { get; init; }
     public Guid? RequestId { get; init; }
+    /// <summary>UTC instant at which the approval prompt auto-denies. Null = no timeout.</summary>
+    public DateTime? ApprovalExpiresAt { get; init; }
     public Guid SessionId { get; init; }
+    // Phase B: tool_approval_resolved fields
+    public bool? Approved { get; init; }
+    public string? DecisionSource { get; init; }
+    public DateTime? DecidedAt { get; init; }
 }
