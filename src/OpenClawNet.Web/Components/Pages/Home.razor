@@ -7,20 +7,153 @@
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 
-<PageTitle>OpenClawNet</PageTitle>
+<PageTitle>OpenClawNet - AI Agent Platform</PageTitle>
 
-<MudContainer MaxWidth="MaxWidth.Large" Class="py-6">
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-8">
     @* Hero Section *@
-    <MudPaper Elevation="0" Class="pa-6 mb-6 text-center">
-        <MudText Typo="Typo.h3" GutterBottom="true" Class="fw-bold">
+    <MudPaper Elevation="0" Class="pa-8 mb-6 text-center" Style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 16px;">
+        <MudText Typo="Typo.h2" GutterBottom="true" Class="fw-bold">
             🦞 OpenClawNet
         </MudText>
-        <MudText Typo="Typo.h6" Color="Color.Secondary">
-            Intelligent automation agents who do things — scheduled jobs, chat sessions, and external integrations
+        <MudText Typo="Typo.h5" Class="mb-4" Style="opacity: 0.95;">
+            AI Agent Platform for Intelligent Automation
         </MudText>
-        <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/chat" Class="mt-4">
-            Start Chatting
-        </MudButton>
+        <MudText Typo="Typo.body1" Class="mb-5" Style="max-width: 600px; margin: 0 auto; opacity: 0.9;">
+            Schedule jobs, run chat sessions, and deliver outputs across multiple channels — all powered by AI agents with tool-use capabilities
+        </MudText>
+        <MudStack Row="true" Justify="Justify.Center" Spacing="3">
+            <MudButton Variant="Variant.Filled" Color="Color.Surface" Href="/chat" Size="Size.Large" Class="text-primary">
+                <MudIcon Icon="@Icons.Material.Filled.Chat" Class="me-2" />
+                Start Chatting
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Surface" Href="/jobs/templates" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Explore" Class="me-2" />
+                Explore Templates
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+
+    @* Feature Highlights *@
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-4 text-center">
+        ✨ What's New in Phase 2
+    </MudText>
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-5" Style="height: 100%; border-left: 4px solid #667eea;">
+                <MudIcon Icon="@Icons.Material.Filled.History" Size="Size.Large" Color="Color.Primary" Class="mb-3" />
+                <MudText Typo="Typo.h6" GutterBottom="true">Audit Trails</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Track every job state change, tool approval, and adapter delivery with comprehensive audit logs
+                </MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/audit" Size="Size.Small">
+                    View Audit Logs →
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-5" Style="height: 100%; border-left: 4px solid #764ba2;">
+                <MudIcon Icon="@Icons.Material.Filled.SendToMobile" Size="Size.Large" Color="Color.Secondary" Class="mb-3" />
+                <MudText Typo="Typo.h6" GutterBottom="true">Multi-Channel Delivery</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Send job outputs to Teams, Slack, webhooks, or custom channels — all configured per job
+                </MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Secondary" Href="/jobs" Size="Size.Small">
+                    Configure Channels →
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+        <MudItem xs="12" md="4">
+            <MudPaper Elevation="2" Class="pa-5" Style="height: 100%; border-left: 4px solid #f093fb;">
+                <MudIcon Icon="@Icons.Material.Filled.PersonSearch" Size="Size.Large" Color="Color.Tertiary" Class="mb-3" />
+                <MudText Typo="Typo.h6" GutterBottom="true">Agent Profiles</MudText>
+                <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                    Create and manage AI agent profiles with custom instructions, tools, and model settings
+                </MudText>
+                <MudButton Variant="Variant.Text" Color="Color.Tertiary" Href="/agent-profiles" Size="Size.Small">
+                    Manage Profiles →
+                </MudButton>
+            </MudPaper>
+        </MudItem>
+    </MudGrid>
+
+    @* Featured Demo Templates *@
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-4 text-center">
+        🚀 Featured Demo Templates
+    </MudText>
+    <MudGrid Class="mb-6">
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="h-100">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.Calculate" Color="Color.Primary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Calculator Agent</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Perform mathematical calculations using natural language queries
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Primary" Href="/jobs/templates" Size="Size.Small">
+                        Use Template
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="h-100">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.Cloud" Color="Color.Secondary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Weather Reporter</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Get weather forecasts and create scheduled reports for multiple cities
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Secondary" Href="/jobs/templates" Size="Size.Small">
+                        Use Template
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+        <MudItem xs="12" sm="6" md="4">
+            <MudCard Elevation="2" Class="h-100">
+                <MudCardContent>
+                    <MudIcon Icon="@Icons.Material.Filled.Search" Color="Color.Tertiary" Size="Size.Large" Class="mb-2" />
+                    <MudText Typo="Typo.h6" GutterBottom="true">Web Researcher</MudText>
+                    <MudText Typo="Typo.body2" Color="Color.Secondary">
+                        Search the web and compile research reports on any topic
+                    </MudText>
+                </MudCardContent>
+                <MudCardActions>
+                    <MudButton Variant="Variant.Text" Color="Color.Tertiary" Href="/jobs/templates" Size="Size.Small">
+                        Use Template
+                    </MudButton>
+                </MudCardActions>
+            </MudCard>
+        </MudItem>
+    </MudGrid>
+
+    @* Quick Start Guide *@
+    <MudPaper Elevation="1" Class="pa-5 mb-6" Style="background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);">
+        <MudText Typo="Typo.h5" GutterBottom="true" Class="fw-bold">
+            <MudIcon Icon="@Icons.Material.Filled.Lightbulb" Class="me-2" />
+            Quick Start Guide
+        </MudText>
+        <MudText Typo="Typo.body1" Class="mb-3">
+            Get started with OpenClawNet in just a few steps:
+        </MudText>
+        <MudList T="string" Dense="true">
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                <MudText Typo="Typo.body2"><strong>1. Configure Model Providers:</strong> Set up Azure OpenAI, Ollama, or other AI providers in <MudLink Href="/model-providers" Color="Color.Primary">Settings</MudLink></MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                <MudText Typo="Typo.body2"><strong>2. Create Agent Profiles:</strong> Define AI agents with custom instructions in <MudLink Href="/agent-profiles" Color="Color.Primary">Agent Profiles</MudLink></MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                <MudText Typo="Typo.body2"><strong>3. Try a Template:</strong> Browse <MudLink Href="/jobs/templates" Color="Color.Primary">Job Templates</MudLink> for ready-to-use examples</MudText>
+            </MudListItem>
+            <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                <MudText Typo="Typo.body2"><strong>4. Start Chatting:</strong> Test your agents in <MudLink Href="/chat" Color="Color.Primary">Chat</MudLink> mode</MudText>
+            </MudListItem>
+        </MudList>
     </MudPaper>
 
     @* Recent Job Output Widget *@
@@ -69,14 +202,15 @@
                                 <MudText Typo="Typo.subtitle1" Class="fw-bold text-truncate">
                                     @job.JobName
                                 </MudText>
-                                <MudIcon Icon="@GetStatusIcon(job.Status)" Color="@GetStatusColor(job.Status)" Size="Size.Small" />
                             </div>
                             <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mb-2">
-                                @GetRelativeTime(job.Timestamp)
+                                @GetRelativeTime(job.LastActivityUtc)
                             </MudText>
-                            <MudText Typo="Typo.body2" Class="text-truncate-multiline">
-                                @job.Summary
-                            </MudText>
+                            <div class="d-flex align-center gap-2">
+                                <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.Description">
+                                    @job.TotalArtifacts @(job.TotalArtifacts == 1 ? "artifact" : "artifacts")
+                                </MudChip>
+                            </div>
                         </MudCardContent>
                     </MudCard>
                 </MudItem>
@@ -200,22 +334,6 @@
         }
     }
 
-    private string GetStatusIcon(string status) => status.ToLowerInvariant() switch
-    {
-        "success" or "completed" => Icons.Material.Filled.CheckCircle,
-        "error" or "failed" => Icons.Material.Filled.Error,
-        "running" or "in_progress" => Icons.Material.Filled.Pending,
-        _ => Icons.Material.Filled.Info
-    };
-
-    private Color GetStatusColor(string status) => status.ToLowerInvariant() switch
-    {
-        "success" or "completed" => Color.Success,
-        "error" or "failed" => Color.Error,
-        "running" or "in_progress" => Color.Warning,
-        _ => Color.Info
-    };
-
     private string GetRelativeTime(DateTime timestamp)
     {
         var now = DateTime.UtcNow;
@@ -240,12 +358,15 @@
         _refreshTimer?.Dispose();
     }
 
+    /// <summary>
+    /// Maps to ChannelSummaryDto from Gateway /api/channels endpoint.
+    /// Fields: JobId, JobName, LastActivityUtc, TotalArtifacts
+    /// </summary>
     private class JobOutputItem
     {
         public Guid JobId { get; set; }
         public string JobName { get; set; } = string.Empty;
-        public DateTime Timestamp { get; set; }
-        public string Status { get; set; } = string.Empty;
-        public string Summary { get; set; } = string.Empty;
+        public DateTime LastActivityUtc { get; set; }
+        public int TotalArtifacts { get; set; }
     }
 }

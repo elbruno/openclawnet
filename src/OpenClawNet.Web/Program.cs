@@ -41,6 +41,25 @@ builder.Services.AddHttpClient("scheduler", (sp, client) =>
 // Typed clients for Jobs API
 builder.Services.AddScoped<JobsClient>();
 
+// W-4: typed client for user-folder gateway endpoints. Reuses the named
+// "gateway" HttpClient (Aspire service discovery) — see the named-client
+// registration above. Scoped lifetime matches the per-circuit Razor pages
+// that consume it.
+builder.Services.AddScoped<UserFolderClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    return new UserFolderClient(factory.CreateClient("gateway"));
+});
+
+// K-3: typed client for the skills gateway endpoints (snapshot / list / get /
+// create / enable-for / delete / changes-since). Same Aspire-resolved
+// "gateway" base address as UserFolderClient.
+builder.Services.AddScoped<SkillsClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    return new SkillsClient(factory.CreateClient("gateway"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

@@ -1,0 +1,55 @@
+@*
+    K-3 activity-panel row for a skill function call (spec §3, Q3 = Option A —
+    one row per function call). Renders 📚 icon (book — same convention as
+    Skills page rows per D-1), skill name, function called, duration, success
+    glyph. Per Q5 NEVER displays argument or return values.
+
+    Click expands an in-row detail block showing the K-2 trace events (S-* )
+    that share this SkillInvocationId. Until K-2 lands, the detail block
+    renders whatever payload is available.
+*@
+
+<div class="border-bottom py-1 px-2 small @(_expanded ? "bg-light" : null)" data-testid="skill-invocation-row">
+    <div class="d-flex align-items-center gap-2" role="button" @onclick="() => _expanded = !_expanded">
+        <span class="bi bi-book" aria-hidden="true" title="Skill"></span>
+        <code>@SkillName</code>
+        <span class="text-muted">·</span>
+        <span class="text-muted">@FunctionName</span>
+        <span class="text-muted ms-auto">@DurationMs ms</span>
+        @if (string.Equals(Result, "error", StringComparison.OrdinalIgnoreCase))
+        {
+            <span class="text-danger" title="@(ErrorCategory ?? "error")">✗</span>
+        }
+        else
+        {
+            <span class="text-success">✓</span>
+        }
+    </div>
+
+    @if (_expanded)
+    {
+        <div class="mt-2 ms-4 small text-muted">
+            <div><strong>Invocation:</strong> <code>@InvocationId</code></div>
+            <div><strong>Layer:</strong> @Layer</div>
+            @if (!string.IsNullOrEmpty(ErrorCategory))
+            {
+                <div class="text-danger"><strong>Error:</strong> @ErrorCategory</div>
+            }
+            <div class="text-muted fst-italic mt-1">
+                Trace events (K-2): pending — full S-1..S-11b trace appears here when audit is wired.
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string InvocationId { get; set; } = "";
+    [Parameter, EditorRequired] public string SkillName { get; set; } = "";
+    [Parameter, EditorRequired] public string FunctionName { get; set; } = "";
+    [Parameter] public string Layer { get; set; } = "system";
+    [Parameter] public long DurationMs { get; set; }
+    [Parameter] public string Result { get; set; } = "ok";
+    [Parameter] public string? ErrorCategory { get; set; }
+
+    private bool _expanded;
+}

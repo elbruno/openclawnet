@@ -1,0 +1,292 @@
+@using System.Text.Json
+@using OpenClawNet.Services.Scheduler.Endpoints
+@implements IAsyncDisposable
+@inject IHttpClientFactory HttpClientFactory
+@inject IJSRuntime JS
+
+<div class="live-console card mb-4">
+    <div class="live-console-header d-flex justify-content-between align-items-center">
+        <div class="d-flex align-items-center gap-2">
+            <span class="live-dot @(IsRunning ? "running" : "done")"></span>
+            <strong>Live console</strong>
+            <span class="text-muted small font-monospace">run @RunId.ToString()[..8]</span>
+        </div>
+        <div class="small text-muted">
+            @if (IsRunning) { <span>elapsed @FormatElapsed(_elapsedMs)</span> }
+            else { <span>@(_finalStatus ?? "completed")</span> }
+            @if (!_autoScroll)
+            {
+                <button class="btn btn-sm btn-outline-light ms-2" @onclick="ResumeAutoScroll">
+                    Jump to live ▼
+                </button>
+            }
+        </div>
+    </div>
+    <div class="live-console-body" @ref="_bodyEl" @onscroll="OnScroll">
+        @if (_lines.Count == 0)
+        {
+            <div class="live-console-line dim">[waiting for first event…]</div>
+        }
+        else
+        {
+            @foreach (var line in _lines)
+            {
+                <div class="live-console-line @line.CssClass">
+                    <span class="ts">@line.Timestamp.ToLocalTime().ToString("HH:mm:ss")</span>
+                    <span class="msg">@line.Text</span>
+                </div>
+            }
+        }
+        @if (!IsRunning)
+        {
+            <div class="live-console-line footer">▣ Run @(_finalStatus ?? "completed") &mdash; stream closed.</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter, EditorRequired] public Guid JobId { get; set; }
+    [Parameter, EditorRequired] public Guid RunId { get; set; }
+
+    private readonly List<ConsoleLine> _lines = new();
+    private CancellationTokenSource? _cts;
+    private Task? _streamTask;
+    private bool _autoScroll = true;
+    private long _elapsedMs;
+    private string? _finalStatus;
+    private ElementReference _bodyEl;
+    private Guid _startedFor;
+
+    private bool IsRunning => _finalStatus is null;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_startedFor == RunId) return;
+        await StopStream();
+        _startedFor = RunId;
+        _lines.Clear();
+        _autoScroll = true;
+        _finalStatus = null;
+        _elapsedMs = 0;
+        StartStream();
+    }
+
+    private void StartStream()
+    {
+        _cts = new CancellationTokenSource();
+        var ct = _cts.Token;
+        _streamTask = Task.Run(() => ConsumeStreamAsync(ct), ct);
+    }
+
+    private async Task ConsumeStreamAsync(CancellationToken ct)
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("scheduler-self");
+            using var request = new HttpRequestMessage(HttpMethod.Get,
+                $"/api/scheduler/jobs/{JobId}/runs/{RunId}/stream");
+            request.Headers.Accept.Add(new System.Net.Http.Headers.MediaTypeWithQualityHeaderValue("application/x-ndjson"));
+
+            using var response = await client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, ct);
+            if (!response.IsSuccessStatusCode)
+            {
+                await AppendAsync(new ConsoleLine(DateTime.UtcNow,
+                    $"[stream error: HTTP {(int)response.StatusCode}]", "err"));
+                _finalStatus = "failed";
+                await InvokeAsync(StateHasChanged);
+                return;
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync(ct);
+            using var reader = new StreamReader(stream);
+
+            while (!ct.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(ct);
+                if (line is null) break;
+                if (string.IsNullOrWhiteSpace(line)) continue;
+
+                LiveConsoleEvent? evt;
+                try
+                {
+                    evt = JsonSerializer.Deserialize<LiveConsoleEvent>(line,
+                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                }
+                catch { continue; }
+                if (evt is null) continue;
+
+                await HandleEventAsync(evt);
+            }
+        }
+        catch (OperationCanceledException) { /* expected on dispose */ }
+        catch (Exception ex)
+        {
+            await AppendAsync(new ConsoleLine(DateTime.UtcNow, $"[stream interrupted: {ex.Message}]", "err"));
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+
+    private async Task HandleEventAsync(LiveConsoleEvent evt)
+    {
+        switch (evt.Type)
+        {
+            case "snapshot":
+                _elapsedMs = evt.ElapsedMs ?? 0;
+                await AppendAsync(new ConsoleLine(evt.Timestamp,
+                    $"▶ Run started — status={evt.Status}", "info"));
+                if (!string.IsNullOrEmpty(evt.Result))
+                {
+                    await AppendAsync(new ConsoleLine(evt.Timestamp, evt.Result!, "out"));
+                }
+                break;
+
+            case "event":
+                await AppendAsync(new ConsoleLine(evt.Timestamp, FormatEventLine(evt), KindCss(evt.Kind)));
+                break;
+
+            case "status":
+                _elapsedMs = evt.ElapsedMs ?? _elapsedMs;
+                if (!string.IsNullOrEmpty(evt.Result))
+                {
+                    await AppendAsync(new ConsoleLine(evt.Timestamp, evt.Result!, "out"));
+                }
+                if (!string.IsNullOrEmpty(evt.Error))
+                {
+                    await AppendAsync(new ConsoleLine(evt.Timestamp, evt.Error!, "err"));
+                }
+                break;
+
+            case "complete":
+                _elapsedMs = evt.ElapsedMs ?? _elapsedMs;
+                _finalStatus = evt.Status ?? "completed";
+                await AppendAsync(new ConsoleLine(evt.Timestamp,
+                    $"■ Run {_finalStatus} in {FormatElapsed(_elapsedMs)}", "info"));
+                if (!string.IsNullOrEmpty(evt.Result))
+                {
+                    await AppendAsync(new ConsoleLine(evt.Timestamp, evt.Result!, "out"));
+                }
+                if (!string.IsNullOrEmpty(evt.Error))
+                {
+                    await AppendAsync(new ConsoleLine(evt.Timestamp, evt.Error!, "err"));
+                }
+                break;
+
+            case "not_found":
+                _finalStatus = "missing";
+                await AppendAsync(new ConsoleLine(evt.Timestamp,
+                    evt.Message ?? "Run not found.", "err"));
+                break;
+        }
+        await InvokeAsync(StateHasChanged);
+    }
+
+    private async Task AppendAsync(ConsoleLine line)
+    {
+        _lines.Add(line);
+        // Cap memory: keep the last 500 lines.
+        if (_lines.Count > 500) _lines.RemoveRange(0, _lines.Count - 500);
+        await Task.CompletedTask;
+    }
+
+    private void OnScroll()
+    {
+        // We can't read scrollTop without JS interop in a pure-server scenario;
+        // a simple toggle button is exposed instead so the user can re-anchor
+        // after they scroll up. The auto-scroll is implemented in CSS via
+        // flex-direction: column-reverse fallback below.
+    }
+
+    private void ResumeAutoScroll()
+    {
+        _autoScroll = true;
+        _pendingScroll = true;
+    }
+
+    private bool _pendingScroll = true;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_pendingScroll || _autoScroll)
+        {
+            _pendingScroll = false;
+            try
+            {
+                await JS.InvokeVoidAsync("eval",
+                    "(function(el){ if(!el) return; el.scrollTop = el.scrollHeight; })(document.querySelector('.live-console-body'))");
+            }
+            catch { /* prerender or disconnected — ignore */ }
+        }
+    }
+
+    private static string FormatEventLine(LiveConsoleEvent evt) => evt.Kind switch
+    {
+        "agent_started"   => $"▶ agent started{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + evt.Message)}",
+        "tool_call"       => $"⚙ tool {evt.ToolName ?? "?"}{(evt.DurationMs is int d ? $" ({d} ms)" : "")}{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + evt.Message)}",
+        "agent_completed" => $"✓ agent completed{(evt.TokensUsed is int t ? $" · {t} tokens" : "")}{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + Trim(evt.Message))}",
+        "agent_failed"    => $"✗ agent failed{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + evt.Message)}",
+        "profile_refused" => $"⛔ profile refused{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + evt.Message)}",
+        _                 => $"{evt.Kind}{(string.IsNullOrEmpty(evt.Message) ? "" : " · " + evt.Message)}"
+    };
+
+    private static string KindCss(string? kind) => kind switch
+    {
+        "agent_failed" or "profile_refused" => "err",
+        "agent_completed" => "ok",
+        "tool_call" => "tool",
+        _ => "info"
+    };
+
+    private static string Trim(string s, int max = 240)
+        => s.Length <= max ? s : s[..max] + "…";
+
+    private static string FormatElapsed(long ms)
+    {
+        var ts = TimeSpan.FromMilliseconds(ms);
+        return ts.TotalSeconds < 60 ? $"{ts.TotalSeconds:F1}s" : $"{ts.TotalMinutes:F1}m";
+    }
+
+    private async Task StopStream()
+    {
+        try { _cts?.Cancel(); } catch { }
+        if (_streamTask is not null)
+        {
+            try { await _streamTask; } catch { }
+        }
+        _cts?.Dispose();
+        _cts = null;
+        _streamTask = null;
+    }
+
+    public async ValueTask DisposeAsync() => await StopStream();
+
+    private sealed record ConsoleLine(DateTime Timestamp, string Text, string CssClass);
+}
+
+<style>
+    .live-console { background: #0d1117; color: #e6edf3; border: 1px solid #30363d; }
+    .live-console-header { background: #161b22; color: #c9d1d9; padding: .5rem .75rem; border-bottom: 1px solid #30363d; }
+    .live-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; background: #6e7681; }
+    .live-dot.running { background: #2ea043; box-shadow: 0 0 6px #2ea043; animation: pulse 1.4s infinite; }
+    .live-dot.done { background: #6e7681; }
+    @@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .35; } }
+    .live-console-body {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12.5px;
+        line-height: 1.5;
+        padding: .5rem .75rem;
+        max-height: 360px;
+        min-height: 200px;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+    }
+    .live-console-line { white-space: pre-wrap; word-break: break-word; }
+    .live-console-line .ts { color: #7d8590; margin-right: .6rem; }
+    .live-console-line.info .msg { color: #79c0ff; }
+    .live-console-line.tool .msg { color: #d2a8ff; }
+    .live-console-line.ok   .msg { color: #7ee787; }
+    .live-console-line.err  .msg { color: #ff7b72; }
+    .live-console-line.out  .msg { color: #e6edf3; }
+    .live-console-line.dim  { color: #6e7681; font-style: italic; }
+    .live-console-line.footer { color: #7d8590; padding-top: .5rem; border-top: 1px dashed #30363d; margin-top: .5rem; }
+</style>

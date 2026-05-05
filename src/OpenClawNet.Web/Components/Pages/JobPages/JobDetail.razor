@@ -4,14 +4,32 @@
 @using OpenClawNet.Web.Models.Jobs
 @inject JobsClient JobsClient
 @inject NavigationManager Navigation
+@inject IConfiguration Configuration
+@inject IJSRuntime JS
 
 <PageTitle>Job Detail - OpenClaw .NET</PageTitle>
 
 <div class="d-flex align-items-center justify-content-between mb-3">
-    <h3>@(_job?.Name ?? "Job Detail")</h3>
-    <button class="btn btn-outline-secondary btn-sm" @onclick="NavigateBack">
-        <span class="bi bi-arrow-left"></span> Back to Jobs
-    </button>
+    <div>
+        <h3 class="mb-0">@(_job?.Name ?? "Job Detail")</h3>
+        <div class="small text-muted font-monospace mt-1" title="@JobId" style="user-select:all">
+            <span style="opacity:0.6">id:</span> @JobId
+        </div>
+    </div>
+    <div class="d-flex gap-2">
+        @if (_job is not null && !string.IsNullOrEmpty(_channelsBaseUrl))
+        {
+            @* Concept-review §4c — sibling-model: channel = job's output stream. *@
+            <button class="btn btn-outline-info btn-sm"
+                    @onclick="() => OpenJobChannel(_job.Id)"
+                    title="View this job's output stream in Channels">
+                <span class="bi bi-broadcast"></span> View in Channel
+            </button>
+        }
+        <button class="btn btn-outline-secondary btn-sm" @onclick="NavigateBack">
+            <span class="bi bi-arrow-left"></span> Back to Jobs
+        </button>
+    </div>
 </div>
 
 @if (_loading)
@@ -212,82 +230,90 @@ else
         </div>
     </div>
 
-    @* Run History Section *@
+    @* Tabbed Section: Run History + Audit *@
     <div class="card">
         <div class="card-header">
-            <h5 class="mb-0">Run History</h5>
-        </div>
-        <div class="card-body">
-            @if (_job.Runs.Count == 0)
-            {
-                <div class="text-muted text-center py-4">
-                    No runs yet. Click "Run Now" to execute this job.
-                </div>
-            }
-            else
-            {
-                <MudDataGrid T="JobRunDto"
-                             Items="_job.Runs"
-                             Dense="_dense"
-                             Hover="true"
-                             Striped="true"
-                             Bordered="false"
-                             Filterable="true"
-                             SortMode="SortMode.Single"
-                             ShowColumnOptions="true"
-                             Groupable="false"
-                             FixedHeader="true"
-                             Height="60vh"
-                             Elevation="0">
-                    <ToolBarContent>
-                        <MudText Typo="Typo.subtitle2">@_job.Runs.Count run(s)</MudText>
-                        <MudSpacer />
-                        <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
-                                   Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
-                    </ToolBarContent>
-                    <Columns>
-                        <PropertyColumn Property="x => x.StartedAt" Title="Started" InitialDirection="SortDirection.Descending">
-                            <CellTemplate>
-                                <span data-testid="job-run-row-@context.Item.Id">@context.Item.StartedAt.ToLocalTime().ToString("g")</span>
-                            </CellTemplate>
-                        </PropertyColumn>
-                        <PropertyColumn Property="x => x.Status" Title="Status">
-                            <CellTemplate>
-                                <MudChip T="string" Size="Size.Small"
-                                         Color="@RunStatusChipColor(context.Item.Status)"
-                                         Variant="Variant.Filled">@context.Item.Status</MudChip>
-                            </CellTemplate>
-                        </PropertyColumn>
-                        <TemplateColumn Title="Duration"
-                                        SortBy="x => (x.CompletedAt is null ? 0 : (x.CompletedAt.Value - x.StartedAt).TotalSeconds)">
-                            <CellTemplate>@GetDuration(context.Item)</CellTemplate>
-                        </TemplateColumn>
-                        <PropertyColumn Property="x => x.TokensUsed" Title="Tokens">
-                            <CellTemplate>@(context.Item.TokensUsed?.ToString() ?? "—")</CellTemplate>
-                        </PropertyColumn>
-                        <TemplateColumn Title="Result" Sortable="false" Filterable="false">
-                            <CellTemplate>
-                                @{ var run = context.Item; }
-                                @if (run.Error is not null)
-                                {
-                                    <span class="text-danger small" title="@run.Error">@Truncate(run.Error, 50)</span>
-                                }
-                                else if (run.Result is not null)
-                                {
-                                    <span class="small" title="@run.Result">@Truncate(run.Result, 50)</span>
-                                }
-                                else
-                                {
-                                    <span class="text-muted">—</span>
-                                }
-                            </CellTemplate>
-                        </TemplateColumn>
-                    </Columns>
-                    <PagerContent>
-                        <MudDataGridPager T="JobRunDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
-                    </PagerContent>
-                </MudDataGrid>
-            }
+            <MudTabs Elevation="0" Rounded="false" Centered="false" Color="Color.Primary">
+                <MudTabPanel Text="Run History" Icon="@Icons.Material.Filled.History">
+                    <div class="card-body">
+                        @if (_job.Runs.Count == 0)
+                        {
+                            <div class="text-muted text-center py-4">
+                                No runs yet. Click "Run Now" to execute this job.
+                            </div>
+                        }
+                        else
+                        {
+                            <MudDataGrid T="JobRunDto"
+                                         Items="_job.Runs"
+                                         Dense="_dense"
+                                         Hover="true"
+                                         Striped="true"
+                                         Bordered="false"
+                                         Filterable="true"
+                                         SortMode="SortMode.Single"
+                                         ShowColumnOptions="true"
+                                         Groupable="false"
+                                         FixedHeader="true"
+                                         Height="60vh"
+                                         Elevation="0">
+                                <ToolBarContent>
+                                    <MudText Typo="Typo.subtitle2">@_job.Runs.Count run(s)</MudText>
+                                    <MudSpacer />
+                                    <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                                               Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+                                </ToolBarContent>
+                                <Columns>
+                                    <PropertyColumn Property="x => x.StartedAt" Title="Started" InitialDirection="SortDirection.Descending">
+                                        <CellTemplate>
+                                            <span data-testid="job-run-row-@context.Item.Id">@context.Item.StartedAt.ToLocalTime().ToString("g")</span>
+                                        </CellTemplate>
+                                    </PropertyColumn>
+                                    <PropertyColumn Property="x => x.Status" Title="Status">
+                                        <CellTemplate>
+                                            <MudChip T="string" Size="Size.Small"
+                                                     Color="@RunStatusChipColor(context.Item.Status)"
+                                                     Variant="Variant.Filled">@context.Item.Status</MudChip>
+                                        </CellTemplate>
+                                    </PropertyColumn>
+                                    <TemplateColumn Title="Duration"
+                                                    SortBy="x => (x.CompletedAt is null ? 0 : (x.CompletedAt.Value - x.StartedAt).TotalSeconds)">
+                                        <CellTemplate>@GetDuration(context.Item)</CellTemplate>
+                                    </TemplateColumn>
+                                    <PropertyColumn Property="x => x.TokensUsed" Title="Tokens">
+                                        <CellTemplate>@(context.Item.TokensUsed?.ToString() ?? "—")</CellTemplate>
+                                    </PropertyColumn>
+                                    <TemplateColumn Title="Result" Sortable="false" Filterable="false">
+                                        <CellTemplate>
+                                            @{ var run = context.Item; }
+                                            @if (run.Error is not null)
+                                            {
+                                                <span class="text-danger small" title="@run.Error">@Truncate(run.Error, 50)</span>
+                                            }
+                                            else if (run.Result is not null)
+                                            {
+                                                <span class="small" title="@run.Result">@Truncate(run.Result, 50)</span>
+                                            }
+                                            else
+                                            {
+                                                <span class="text-muted">—</span>
+                                            }
+                                        </CellTemplate>
+                                    </TemplateColumn>
+                                </Columns>
+                                <PagerContent>
+                                    <MudDataGridPager T="JobRunDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
+                                </PagerContent>
+                            </MudDataGrid>
+                        }
+                    </div>
+                </MudTabPanel>
+                <MudTabPanel Text="Audit" Icon="@Icons.Material.Filled.Gavel">
+                    <div class="card-body">
+                        <JobAuditHistory JobId="@JobId" />
+                    </div>
+                </MudTabPanel>
+            </MudTabs>
         </div>
     </div>
 }
@@ -304,11 +330,13 @@ else
     private bool _statsLoading;
     private string? _statsError;
     private bool _dense = true;
+    private string? _channelsBaseUrl;
 
     private JobStatsResponse _stats = new() { TotalRuns = 0, CompletedRuns = 0, FailedRuns = 0, SuccessRate = 0 };
 
     protected override async Task OnInitializedAsync()
     {
+        _channelsBaseUrl = Configuration["Channels:BaseUrl"];
         await LoadJobAsync();
     }
 
@@ -441,6 +469,14 @@ else
     }
 
     private void NavigateBack() => Navigation.NavigateTo("/jobs");
+
+    private async Task OpenJobChannel(Guid jobId)
+    {
+        if (!string.IsNullOrEmpty(_channelsBaseUrl))
+        {
+            await JS.InvokeVoidAsync("open", $"{_channelsBaseUrl}/channels/{jobId}", "_blank", "noopener");
+        }
+    }
 
     private static string GetStatusBadgeClass(string? status) => status?.ToLowerInvariant() switch
     {

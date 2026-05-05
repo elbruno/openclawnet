@@ -49,7 +49,12 @@ else
                 @foreach (var job in _jobs)
                 {
                     <tr style="cursor:pointer" @onclick="() => ViewJob(job.Id)">
-                        <td class="fw-semibold">@job.Name</td>
+                        <td class="fw-semibold">
+                            @job.Name
+                            <div class="small text-muted font-monospace" title="@job.Id" style="user-select:all">
+                                <span style="opacity:0.6">id:</span> @job.Id
+                            </div>
+                        </td>
                         <td><StatusBadge Status="@job.Status" /></td>
                         <td class="small">
                             @if (!string.IsNullOrEmpty(job.AgentProfileName))

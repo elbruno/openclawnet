@@ -30,13 +30,14 @@ public sealed class ToolApprovalCoordinator : IToolApprovalCoordinator
         // Wire cancellation so a dropped client / cancelled stream doesn't leak the TCS forever.
         var registration = cancellationToken.Register(() =>
         {
+            _logger.LogDebug("Cancellation triggered for request {RequestId}, pending count={Count}", requestId, _pending.Count);
             if (_pending.TryRemove(requestId, out var stale))
             {
                 stale.TrySetCanceled(cancellationToken);
             }
         });
 
-        _logger.LogDebug("Approval request {RequestId} registered, awaiting user decision", requestId);
+        _logger.LogDebug("Approval request {RequestId} registered, pending count={Count}", requestId, _pending.Count);
 
         return AwaitAndCleanupAsync(tcs.Task, registration);
     }
@@ -57,17 +58,19 @@ public sealed class ToolApprovalCoordinator : IToolApprovalCoordinator
 
     public bool TryResolve(Guid requestId, ApprovalDecision decision)
     {
+        _logger.LogDebug("TryResolve called: RequestId={RequestId}, Approved={Approved}, pending count={Count}",
+            requestId, decision.Approved, _pending.Count);
+        
         if (!_pending.TryRemove(requestId, out var tcs))
         {
-            _logger.LogWarning("Approval resolution for unknown request {RequestId}", requestId);
+            _logger.LogWarning("Approval resolution failed - unknown request {RequestId}", requestId);
             return false;
         }
 
-        _logger.LogInformation(
-            "Approval request {RequestId} resolved: Approved={Approved}, RememberForSession={Remember}",
-            requestId, decision.Approved, decision.RememberForSession);
+        _logger.LogDebug("Approval request {RequestId} resolved: Approved={Approved}", requestId, decision.Approved);
 
-        return tcs.TrySetResult(decision);
+        var setResult = tcs.TrySetResult(decision);
+        return setResult;
     }
 
     public void RememberApproval(Guid sessionId, string toolName)

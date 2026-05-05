@@ -1,0 +1,72 @@
+@* Phase C: Tool approval bubble component *@
+<div class="tool-approval-bubble border-start border-3 @BorderClass bg-light p-2 mb-2 rounded-end" 
+     data-testid="approval-bubble">
+    <div class="d-flex align-items-center gap-2">
+        <span style="font-size:1.2rem">@Icon</span>
+        <code class="badge bg-secondary" data-testid="approval-bubble-tool-name">@ToolName</code>
+        <span class="badge @BadgeClass" data-testid="approval-bubble-decision">@DecisionText</span>
+        @if (!string.IsNullOrEmpty(DecidedBy))
+        {
+            <span class="text-muted small">by @DecidedBy</span>
+        }
+        <span class="text-muted small ms-auto" data-testid="approval-bubble-timestamp">
+            @(DecidedAt?.ToString("HH:mm:ss") ?? "")
+        </span>
+    </div>
+    @if (!string.IsNullOrEmpty(ArgsJson))
+    {
+        <div class="mt-2" data-testid="approval-bubble-args">
+            <MudCollapse Expanded="_argsExpanded">
+                <div class="small">
+                    <button class="btn btn-link btn-sm p-0 text-decoration-none" @onclick="ToggleArgs">
+                        @(_argsExpanded ? "▼" : "▶") Arguments
+                    </button>
+                    @if (_argsExpanded)
+                    {
+                        <pre class="bg-white border rounded p-2 mt-1 mb-0 small" style="max-height:200px;overflow-y:auto">@ArgsJson</pre>
+                    }
+                </div>
+            </MudCollapse>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter] public string ToolName { get; set; } = string.Empty;
+    [Parameter] public string Decision { get; set; } = "Approved";
+    [Parameter] public string? ArgsJson { get; set; }
+    [Parameter] public string? DecidedBy { get; set; }
+    [Parameter] public DateTime? DecidedAt { get; set; }
+
+    private bool _argsExpanded = false;
+
+    private void ToggleArgs() => _argsExpanded = !_argsExpanded;
+
+    private string Icon => Decision switch
+    {
+        "Approved" => "✅",
+        "TimedOut" => "⏱",
+        _ => "⛔"
+    };
+
+    private string BorderClass => Decision switch
+    {
+        "Approved" => "border-success",
+        "TimedOut" => "border-secondary",
+        _ => "border-danger"
+    };
+
+    private string BadgeClass => Decision switch
+    {
+        "Approved" => "bg-success",
+        "TimedOut" => "bg-secondary",
+        _ => "bg-danger"
+    };
+
+    private string DecisionText => Decision switch
+    {
+        "Approved" => "approved",
+        "TimedOut" => "timed out",
+        _ => "denied"
+    };
+}

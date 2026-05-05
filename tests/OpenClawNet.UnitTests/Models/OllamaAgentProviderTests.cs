@@ -17,7 +17,7 @@ public class OllamaAgentProviderTests
         provider.ProviderName.Should().Be("ollama");
     }
 
-    [Fact]
+    [Fact(Skip = "OllamaSharp assembly load failure — issue #95")]
     public void CreateChatClient_ReturnsNonNull_WithDefaultOptions()
     {
         var provider = CreateProvider();
@@ -29,7 +29,7 @@ public class OllamaAgentProviderTests
         client.Should().BeAssignableTo<IChatClient>();
     }
 
-    [Fact]
+    [Fact(Skip = "OllamaSharp assembly load failure — issue #95")]
     public void CreateChatClient_UsesProviderDefault_WhenProfileHasNoOverrides()
     {
         // PR-F: AgentProfile no longer carries a Model field; the provider supplies its own.

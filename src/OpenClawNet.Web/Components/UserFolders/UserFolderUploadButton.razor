@@ -1,0 +1,125 @@
+@using Microsoft.AspNetCore.Components.Forms
+@using OpenClawNet.Web.Models.UserFolders
+@using OpenClawNet.Web.Services
+
+<div class="user-folder-uploader">
+    <label class="btn btn-outline-primary btn-sm mb-0">
+        <span class="bi bi-upload me-1" aria-hidden="true"></span>Upload
+        <InputFile OnChange="OnFilesSelected" multiple class="d-none" disabled="@(_inFlight.Count > 0 || string.IsNullOrEmpty(FolderName))" />
+    </label>
+
+    @if (_inFlight.Count > 0)
+    {
+        <div class="mt-2">
+            @foreach (var entry in _inFlight)
+            {
+                <div class="small mb-1">
+                    <div class="d-flex justify-content-between">
+                        <span>@entry.Name</span>
+                        <span>
+                            @if (entry.Error is not null)
+                            {
+                                <span class="text-danger">@entry.Error</span>
+                            }
+                            else if (entry.Done)
+                            {
+                                <span class="text-success">Uploaded</span>
+                            }
+                            else
+                            {
+                                <span>@FormatBytes(entry.Bytes) / @FormatBytes(entry.Total)</span>
+                            }
+                        </span>
+                    </div>
+                    <div class="progress" style="height: 4px;">
+                        <div class="progress-bar @(entry.Error is not null ? "bg-danger" : entry.Done ? "bg-success" : null)"
+                             role="progressbar"
+                             style="width: @(entry.Total > 0 ? (entry.Bytes * 100.0 / entry.Total) : 0)%"></div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    @if (_toast is not null)
+    {
+        <div class="alert alert-warning alert-dismissible mt-2 mb-0 py-2" role="alert">
+            @_toast
+            <button type="button" class="btn-close" aria-label="Close" @onclick="() => _toast = null"></button>
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public string? FolderName { get; set; }
+    [Parameter, EditorRequired] public UserFolderClient? Client { get; set; }
+    [Parameter] public EventCallback<UserFolderUploadResult> OnUploaded { get; set; }
+
+    private readonly List<UploadEntry> _inFlight = new();
+    private string? _toast;
+
+    private async Task OnFilesSelected(InputFileChangeEventArgs e)
+    {
+        if (Client is null || string.IsNullOrEmpty(FolderName)) return;
+
+        foreach (var file in e.GetMultipleFiles(maximumFileCount: 20))
+        {
+            var entry = new UploadEntry { Name = file.Name, Total = file.Size };
+            _inFlight.Add(entry);
+            StateHasChanged();
+
+            var progress = new Progress<long>(b =>
+            {
+                entry.Bytes = b;
+                _ = InvokeAsync(StateHasChanged);
+            });
+
+            try
+            {
+                var result = await Client.UploadAsync(FolderName, file, progress);
+                entry.Bytes = entry.Total;
+                entry.Done = true;
+                await OnUploaded.InvokeAsync(result);
+            }
+            catch (UserFolderClientException ex) when (ex.StatusCode == System.Net.HttpStatusCode.RequestEntityTooLarge)
+            {
+                entry.Error = "Quota exceeded";
+                _toast = $"Quota exceeded for folder '{FolderName}' — upload of {file.Name} was rejected.";
+            }
+            catch (UserFolderClientException ex)
+            {
+                entry.Error = ex.Reason;
+            }
+            catch (Exception ex)
+            {
+                entry.Error = ex.Message;
+            }
+            finally
+            {
+                StateHasChanged();
+            }
+        }
+
+        // Keep completed entries on screen briefly so the user sees the "Uploaded" label, then prune.
+        await Task.Delay(2000);
+        _inFlight.RemoveAll(x => x.Done);
+        StateHasChanged();
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024L * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
+    }
+
+    private sealed class UploadEntry
+    {
+        public string Name { get; set; } = "";
+        public long Bytes { get; set; }
+        public long Total { get; set; }
+        public bool Done { get; set; }
+        public string? Error { get; set; }
+    }
+}

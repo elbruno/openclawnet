@@ -7,13 +7,10 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Agent\OpenClawNet.Agent.csproj" />
     <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
-    <ProjectReference Include="..\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Bot.Builder.Integration.AspNet.Core" Version="4.23.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
   </ItemGroup>
 
   <PropertyGroup>

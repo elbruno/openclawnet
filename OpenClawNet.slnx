@@ -47,6 +47,7 @@
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OpenClawNet.IntegrationTests/OpenClawNet.IntegrationTests.csproj" />
+    <Project Path="tests/OpenClawNet.E2ETests/OpenClawNet.E2ETests.csproj" />
     <Project Path="tests/OpenClawNet.PlaywrightTests/OpenClawNet.PlaywrightTests.csproj" />
     <Project Path="tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj" />
   </Folder>

@@ -128,12 +128,192 @@ public sealed class DemoAndSchedulerHelpersEndpointTests : IAsyncLifetime
     }
 
     [Fact]
-    public async Task WebsiteWatcher_DuplicateSetup_Returns409()
+    public async Task WebsiteWatcher_DuplicateSetup_CreatesSecondInstanceWithSequenceSuffix()
     {
-        await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        var first = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
         var second = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
 
-        second.StatusCode.Should().Be(HttpStatusCode.Conflict);
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstBody = await first.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        var secondBody = await second.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        firstBody!.Name.Should().Be("Website Watcher");
+        secondBody!.Name.Should().Be("Website Watcher (2)");
+        secondBody.JobId.Should().NotBe(firstBody.JobId);
+
+        // Both rows are persisted and tagged with the source template for traceability.
+        await using var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var jobs = await db.Jobs.Where(j => j.SourceTemplateName == "Website Watcher").ToListAsync();
+        jobs.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task WebsiteWatcherSetup_CreatesThirdInstance_WithSuffix3_WhenSuffixTwoExists()
+    {
+        // Create three instances to test suffix progression
+        var first = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        var second = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        var third = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+        third.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstBody = await first.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        var secondBody = await second.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        var thirdBody = await third.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+
+        firstBody!.Name.Should().Be("Website Watcher");
+        secondBody!.Name.Should().Be("Website Watcher (2)");
+        thirdBody!.Name.Should().Be("Website Watcher (3)");
+
+        // All three should have unique IDs
+        var ids = new[] { firstBody.JobId, secondBody.JobId, thirdBody.JobId };
+        ids.Should().OnlyHaveUniqueItems();
+
+        // Verify all three are persisted with source template tracking
+        await using var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var jobs = await db.Jobs.Where(j => j.SourceTemplateName == "Website Watcher").ToListAsync();
+        jobs.Should().HaveCount(3);
+    }
+
+    [Fact]
+    public async Task DocPipelineSetup_AlsoAutoSuffixes_WhenMultipleInstancesCreated()
+    {
+        var first = await _client.PostAsJsonAsync("/api/demos/doc-pipeline/setup", 
+            new { folderPath = @"C:\docs", intervalSeconds = 30, durationMinutes = 5 });
+        var second = await _client.PostAsJsonAsync("/api/demos/doc-pipeline/setup", 
+            new { folderPath = @"C:\other", intervalSeconds = 60, durationMinutes = 10 });
+
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstBody = await first.Content.ReadFromJsonAsync<DocPipelineSetupResponse>();
+        var secondBody = await second.Content.ReadFromJsonAsync<DocPipelineSetupResponse>();
+
+        firstBody!.Name.Should().Be("Document Processing Pipeline");
+        secondBody!.Name.Should().Be("Document Processing Pipeline (2)");
+
+        await using var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var jobs = await db.Jobs.Where(j => j.SourceTemplateName == "Document Processing Pipeline").ToListAsync();
+        jobs.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task FolderHealthSetup_AlsoAutoSuffixes_WhenMultipleInstancesCreated()
+    {
+        var first = await _client.PostAsJsonAsync("/api/demos/folder-health/setup", 
+            new { folderPath = @"C:\src" });
+        var second = await _client.PostAsJsonAsync("/api/demos/folder-health/setup", 
+            new { folderPath = @"C:\data" });
+
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+
+        var firstBody = await first.Content.ReadFromJsonAsync<FolderHealthSetupResponse>();
+        var secondBody = await second.Content.ReadFromJsonAsync<FolderHealthSetupResponse>();
+
+        firstBody!.Name.Should().Be("Folder Health Report");
+        secondBody!.Name.Should().Be("Folder Health Report (2)");
+
+        await using var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var jobs = await db.Jobs.Where(j => j.SourceTemplateName == "Folder Health Report").ToListAsync();
+        jobs.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task JobsPut_PreservesSourceTemplateName_OnRename()
+    {
+        // Create a job from a demo template
+        var setupResp = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", 
+            new { url = "https://example.com" });
+        setupResp.StatusCode.Should().Be(HttpStatusCode.Created);
+        
+        var setup = await setupResp.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        setup.Should().NotBeNull();
+
+        // Verify initial SourceTemplateName
+        await using (var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext())
+        {
+            var job = await db.Jobs.FindAsync(setup!.JobId);
+            job.Should().NotBeNull();
+            job!.SourceTemplateName.Should().Be("Website Watcher");
+
+            // Simulate a rename via direct DB update (since Job endpoints aren't mapped in DemoTestFactory)
+            job.Name = "My Custom Website Monitor";
+            job.Prompt = "Custom prompt for monitoring";
+            job.CronExpression = "*/30 * * * *";
+            await db.SaveChangesAsync();
+        }
+
+        // Verify SourceTemplateName is preserved after rename
+        await using (var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext())
+        {
+            var job = await db.Jobs.AsNoTracking().FirstAsync(j => j.Id == setup!.JobId);
+            job.Name.Should().Be("My Custom Website Monitor", "the rename should succeed");
+            job.SourceTemplateName.Should().Be("Website Watcher", 
+                "SourceTemplateName is a creation-time lineage marker and persists independently of Name edits");
+        }
+    }
+
+    [Fact]
+    public async Task WebsiteWatcherSetup_AfterDeletingFirstInstance_ReusesOriginalName()
+    {
+        // Create first instance
+        var first = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        first.StatusCode.Should().Be(HttpStatusCode.Created);
+        var firstBody = await first.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        firstBody!.Name.Should().Be("Website Watcher");
+
+        // Create second instance
+        var second = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        second.StatusCode.Should().Be(HttpStatusCode.Created);
+        var secondBody = await second.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        secondBody!.Name.Should().Be("Website Watcher (2)");
+
+        // Delete the first instance directly via DB (since DELETE endpoints aren't mapped in DemoTestFactory)
+        await using (var db = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext())
+        {
+            var runToDelete = await db.Jobs.FindAsync(firstBody.JobId);
+            if (runToDelete != null)
+            {
+                db.Jobs.Remove(runToDelete);
+                await db.SaveChangesAsync();
+            }
+        }
+
+        // Create a third instance — should reuse "Website Watcher" since it's now available
+        var third = await _client.PostAsJsonAsync("/api/demos/website-watcher/setup", new { url = "https://example.com" });
+        third.StatusCode.Should().Be(HttpStatusCode.Created);
+        var thirdBody = await third.Content.ReadFromJsonAsync<WebsiteWatcherSetupResponse>();
+        thirdBody!.Name.Should().Be("Website Watcher", 
+            "after deleting the first instance, the original name should be available again");
+
+        // Verify database state: should have "Website Watcher" and "Website Watcher (2)"
+        await using var db2 = _factory.Services
+            .GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var jobs = await db2.Jobs
+            .Where(j => j.SourceTemplateName == "Website Watcher")
+            .OrderBy(j => j.Name)
+            .Select(j => j.Name)
+            .ToListAsync();
+        jobs.Should().BeEquivalentTo(new[] { "Website Watcher", "Website Watcher (2)" });
     }
 
     // ── Folder Health demo ──────────────────────────────────────────────────

@@ -1,0 +1,158 @@
+@using System.Text
+@using OpenClawNet.Web.Models
+@inject NavigationManager Navigation
+
+<div class="profile-card card h-100 border-0 shadow-sm">
+    <div class="card-body">
+        <div class="d-flex align-items-center mb-3">
+            <div class="avatar-placeholder me-3">
+                <i class="bi bi-robot"></i>
+            </div>
+            <div class="flex-grow-1">
+                <h5 class="card-title mb-1">@(Profile?.DisplayName ?? Profile?.Name ?? "Unknown")</h5>
+                @if (!string.IsNullOrEmpty(Profile?.Provider))
+                {
+                    <span class="badge bg-primary">@Profile.Provider</span>
+                }
+                @if (Profile?.IsDefault == true)
+                {
+                    <span class="badge bg-success ms-1">Default</span>
+                }
+                @if (Profile?.IsEnabled == false)
+                {
+                    <span class="badge bg-secondary ms-1">Disabled</span>
+                }
+            </div>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Profile?.Instructions))
+        {
+            <p class="card-text text-muted description-text">
+                @GetTruncatedDescription(Profile.Instructions)
+            </p>
+        }
+        else
+        {
+            <p class="card-text text-muted fst-italic">No description provided</p>
+        }
+
+        <div class="profile-meta mb-2">
+            @if (Profile?.Temperature != null)
+            {
+                <small class="text-muted d-block">
+                    <i class="bi bi-thermometer-half me-1"></i>Temperature: @Profile.Temperature
+                </small>
+            }
+            @if (Profile?.EnabledTools?.Length > 0)
+            {
+                <small class="text-muted d-block">
+                    <i class="bi bi-tools me-1"></i>Tools: @Profile.EnabledTools.Length
+                </small>
+            }
+            @if (Profile?.LastTestedAt != null)
+            {
+                <small class="text-muted d-block">
+                    <i class="bi bi-check-circle me-1"></i>Last tested: @GetRelativeTime(Profile.LastTestedAt.Value)
+                    @if (Profile.LastTestSucceeded == true)
+                    {
+                        <span class="text-success">✓</span>
+                    }
+                    else if (Profile.LastTestSucceeded == false)
+                    {
+                        <span class="text-danger">✗</span>
+                    }
+                </small>
+            }
+        </div>
+    </div>
+    <div class="card-footer bg-white border-0">
+        <button class="btn btn-outline-primary btn-sm w-100" @onclick="ViewFullProfile">
+            <i class="bi bi-eye me-1"></i>View Full Profile
+        </button>
+    </div>
+</div>
+
+<style>
+    .profile-card {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+        cursor: pointer;
+    }
+
+    .profile-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .avatar-placeholder {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        flex-shrink: 0;
+    }
+
+    .description-text {
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        min-height: 4.5rem;
+    }
+
+    .profile-meta {
+        min-height: 3rem;
+    }
+
+    .card-title {
+        font-size: 1.1rem;
+        font-weight: 600;
+    }
+</style>
+
+@code {
+    [Parameter]
+    public AgentProfileDto? Profile { get; set; }
+
+    private string GetTruncatedDescription(string description)
+    {
+        if (string.IsNullOrEmpty(description))
+            return string.Empty;
+
+        const int maxLength = 120;
+        if (description.Length <= maxLength)
+            return description;
+
+        return description.Substring(0, maxLength) + "...";
+    }
+
+    private string GetRelativeTime(DateTime timestamp)
+    {
+        var now = DateTime.UtcNow;
+        var diff = now - timestamp;
+
+        if (diff.TotalSeconds < 60)
+            return "just now";
+        if (diff.TotalMinutes < 60)
+            return $"{(int)diff.TotalMinutes} min ago";
+        if (diff.TotalHours < 24)
+            return $"{(int)diff.TotalHours} hour{((int)diff.TotalHours != 1 ? "s" : "")} ago";
+        if (diff.TotalDays < 7)
+            return $"{(int)diff.TotalDays} day{((int)diff.TotalDays != 1 ? "s" : "")} ago";
+
+        return timestamp.ToLocalTime().ToString("MMM d");
+    }
+
+    private void ViewFullProfile()
+    {
+        if (Profile != null)
+        {
+            Navigation.NavigateTo($"/agent-profiles?name={Uri.EscapeDataString(Profile.Name)}");
+        }
+    }
+}

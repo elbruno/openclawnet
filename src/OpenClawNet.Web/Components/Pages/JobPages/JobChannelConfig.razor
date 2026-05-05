@@ -1,0 +1,279 @@
+@using OpenClawNet.Web.Models.Jobs
+@using OpenClawNet.Web.Services
+@inject JobsClient JobsClient
+
+<div class="card mb-2">
+    <div class="card-body">
+        <h6 class="card-subtitle mb-2 text-muted">Delivery Channels</h6>
+        <p class="small text-muted mb-2">
+            Select which channel(s) will receive job completion notifications. At least one channel must be enabled.
+        </p>
+
+        @if (_validationError is not null)
+        {
+            <div class="alert alert-danger py-2 small mb-2">⚠️ @_validationError</div>
+        }
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="channelTeams"
+                   @bind="_teamsEnabled" @oninput="OnChannelChanged" />
+            <label class="form-check-label" for="channelTeams">
+                Microsoft Teams
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="channelSlack"
+                   @bind="_slackEnabled" @oninput="OnChannelChanged" />
+            <label class="form-check-label" for="channelSlack">
+                Slack
+            </label>
+        </div>
+
+        <div class="form-check mb-2">
+            <input class="form-check-input" type="checkbox" id="channelWebhook"
+                   @bind="_webhookEnabled" @oninput="OnChannelChanged" />
+            <label class="form-check-label" for="channelWebhook">
+                Generic Webhook
+            </label>
+        </div>
+
+        @if (_webhookEnabled)
+        {
+            <div class="ms-4 mb-2">
+                <label class="form-label small">Webhook URL <span class="text-danger">*</span></label>
+                <input type="text" class="form-control form-control-sm @(_webhookUrlError ? "is-invalid" : "")"
+                       @bind="_webhookUrl" @oninput="OnWebhookUrlChanged"
+                       placeholder="https://example.com/webhook" />
+                @if (_webhookUrlError)
+                {
+                    <div class="invalid-feedback">Webhook URL is required when Generic Webhook is enabled.</div>
+                }
+                <small class="text-muted">The endpoint that will receive job completion data via POST request.</small>
+            </div>
+        }
+
+        @if (_loadError is not null)
+        {
+            <div class="alert alert-warning py-2 small mb-2">⚠️ Failed to load channel configurations: @_loadError</div>
+        }
+    </div>
+</div>
+
+@code {
+    [Parameter] public Guid? JobId { get; set; }
+    [Parameter] public EventCallback OnConfigChanged { get; set; }
+
+    private bool _teamsEnabled;
+    private bool _slackEnabled;
+    private bool _webhookEnabled;
+    private string _webhookUrl = string.Empty;
+    private bool _webhookUrlError;
+    private string? _validationError;
+    private string? _loadError;
+    private bool _isLoading;
+
+    protected override async Task OnInitializedAsync()
+    {
+        if (JobId.HasValue)
+        {
+            await LoadChannelConfigsAsync();
+        }
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        // If JobId changes, reload configs
+        if (JobId.HasValue && !_isLoading)
+        {
+            await LoadChannelConfigsAsync();
+        }
+    }
+
+    private async Task LoadChannelConfigsAsync()
+    {
+        if (!JobId.HasValue) return;
+
+        _isLoading = true;
+        try
+        {
+            var configs = await JobsClient.GetChannelConfigsAsync(JobId.Value);
+            
+            foreach (var config in configs)
+            {
+                switch (config.ChannelType)
+                {
+                    case "Teams":
+                        _teamsEnabled = config.IsEnabled;
+                        break;
+                    case "Slack":
+                        _slackEnabled = config.IsEnabled;
+                        break;
+                    case "GenericWebhook":
+                        _webhookEnabled = config.IsEnabled;
+                        // Parse webhook URL from config JSON
+                        try
+                        {
+                            var configObj = System.Text.Json.JsonDocument.Parse(config.ChannelConfig);
+                            if (configObj.RootElement.TryGetProperty("webhookUrl", out var urlProp))
+                            {
+                                _webhookUrl = urlProp.GetString() ?? string.Empty;
+                            }
+                        }
+                        catch { /* Invalid JSON */ }
+                        break;
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _loadError = ex.Message;
+        }
+        finally
+        {
+            _isLoading = false;
+        }
+    }
+
+    private void OnChannelChanged(ChangeEventArgs e)
+    {
+        ClearValidation();
+        StateHasChanged();
+        OnConfigChanged.InvokeAsync();
+    }
+
+    private void OnWebhookUrlChanged(ChangeEventArgs e)
+    {
+        _webhookUrl = e.Value?.ToString() ?? string.Empty;
+        _webhookUrlError = false;
+        ClearValidation();
+        OnConfigChanged.InvokeAsync();
+    }
+
+    private void ClearValidation()
+    {
+        _validationError = null;
+        _webhookUrlError = false;
+    }
+
+    public bool Validate()
+    {
+        ClearValidation();
+
+        // At least one channel must be enabled
+        if (!_teamsEnabled && !_slackEnabled && !_webhookEnabled)
+        {
+            _validationError = "At least one delivery channel must be enabled.";
+            return false;
+        }
+
+        // If webhook is enabled, URL is required
+        if (_webhookEnabled && string.IsNullOrWhiteSpace(_webhookUrl))
+        {
+            _webhookUrlError = true;
+            _validationError = "Webhook URL is required when Generic Webhook is enabled.";
+            return false;
+        }
+
+        // Basic URL validation for webhook
+        if (_webhookEnabled && !string.IsNullOrWhiteSpace(_webhookUrl))
+        {
+            if (!Uri.TryCreate(_webhookUrl, UriKind.Absolute, out var uri) || 
+                (uri.Scheme != "http" && uri.Scheme != "https"))
+            {
+                _webhookUrlError = true;
+                _validationError = "Webhook URL must be a valid HTTP or HTTPS URL.";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public async Task<bool> SaveAsync(Guid jobId)
+    {
+        if (!Validate())
+        {
+            return false;
+        }
+
+        try
+        {
+            var request = new SaveJobChannelConfigRequest
+            {
+                Channels = new List<ChannelConfigItem>()
+            };
+
+            if (_teamsEnabled)
+            {
+                request.Channels.Add(new ChannelConfigItem
+                {
+                    ChannelType = "Teams",
+                    IsEnabled = true
+                });
+            }
+
+            if (_slackEnabled)
+            {
+                request.Channels.Add(new ChannelConfigItem
+                {
+                    ChannelType = "Slack",
+                    IsEnabled = true
+                });
+            }
+
+            if (_webhookEnabled)
+            {
+                request.Channels.Add(new ChannelConfigItem
+                {
+                    ChannelType = "GenericWebhook",
+                    IsEnabled = true,
+                    WebhookUrl = _webhookUrl.Trim()
+                });
+            }
+
+            await JobsClient.SaveChannelConfigsAsync(jobId, request);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _validationError = $"Failed to save channel configurations: {ex.Message}";
+            return false;
+        }
+    }
+
+    public List<ChannelConfigItem> GetSelectedChannels()
+    {
+        var channels = new List<ChannelConfigItem>();
+
+        if (_teamsEnabled)
+        {
+            channels.Add(new ChannelConfigItem
+            {
+                ChannelType = "Teams",
+                IsEnabled = true
+            });
+        }
+
+        if (_slackEnabled)
+        {
+            channels.Add(new ChannelConfigItem
+            {
+                ChannelType = "Slack",
+                IsEnabled = true
+            });
+        }
+
+        if (_webhookEnabled && !string.IsNullOrWhiteSpace(_webhookUrl))
+        {
+            channels.Add(new ChannelConfigItem
+            {
+                ChannelType = "GenericWebhook",
+                IsEnabled = true,
+                WebhookUrl = _webhookUrl.Trim()
+            });
+        }
+
+        return channels;
+    }
+}

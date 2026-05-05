@@ -5,10 +5,14 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <DefineConstants>$(DefineConstants);K1B_LANDED</DefineConstants>
+    <!-- Copy all package DLLs to output to fix transitive dependency resolution -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="bunit" Version="1.32.7" />
+    <PackageReference Include="bunit.web" Version="1.32.7" />
     <PackageReference Include="coverlet.collector" Version="8.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -17,12 +21,24 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
+    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.5" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.5" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
+    <PackageReference Include="MudBlazor" Version="9.3.0" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.3" />
+    <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
+    <PackageReference Include="OllamaSharp" Version="5.4.25" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.83.1" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
+    <PackageReference Include="YamlDotNet" Version="16.2.1" />
+    <!-- Explicit transitive dependencies to ensure they're copied to output -->
+    <PackageReference Include="AngleSharp.Diffing" Version="0.18.2" />
+    <PackageReference Include="Azure.Core" Version="1.53.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -37,10 +53,9 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.MarkItDown\OpenClawNet.Tools.MarkItDown.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.Adapters.Teams\OpenClawNet.Adapters.Teams.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.Channels\OpenClawNet.Channels.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Services.Scheduler\OpenClawNet.Services.Scheduler.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Gateway\OpenClawNet.Gateway.csproj" />
@@ -57,7 +72,17 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Calculator\OpenClawNet.Tools.Calculator.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Memory\OpenClawNet.Tools.Memory.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Web\OpenClawNet.Web.csproj">
+      <!-- Copy all Web project satellite assemblies to test output -->
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
+    <ProjectReference Include="..\..\src\OpenClawNet.Channels\OpenClawNet.Channels.csproj">
+      <!-- Copy all Channels project satellite assemblies to test output -->
+      <Private>true</Private>
+      <CopyLocalSatelliteAssemblies>true</CopyLocalSatelliteAssemblies>
+    </ProjectReference>
   </ItemGroup>
 
 </Project>

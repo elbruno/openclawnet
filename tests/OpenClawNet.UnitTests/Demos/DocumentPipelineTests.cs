@@ -6,7 +6,6 @@ using OpenClawNet.Services.Scheduler;
 using OpenClawNet.Storage.Entities;
 using OpenClawNet.Tools.Abstractions;
 using OpenClawNet.Tools.FileSystem;
-using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Demos;
 
@@ -17,10 +16,19 @@ namespace OpenClawNet.UnitTests.Demos;
 /// </summary>
 public sealed class DocumentPipelineTests : IDisposable
 {
-    private readonly PerTestTempDirectory _temp = new("doc-pipeline");
-    private string _tempDir => _temp.Path;
+    private readonly string _tempDir;
 
-    public void Dispose() => _temp.Dispose();
+    public DocumentPipelineTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), $"doc-pipeline-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 

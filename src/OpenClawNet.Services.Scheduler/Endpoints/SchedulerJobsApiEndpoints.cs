@@ -187,6 +187,36 @@ public static class SchedulerJobsApiEndpoints
         })
         .WithName("CancelJob")
         .WithDescription("Permanently cancel a job. This is a terminal state.");
+
+        // POST /api/scheduler/jobs/{jobId}/runs/{runId}/cancel
+        // Marks a single in-flight JobRun as failed. Use this to clear UI rows
+        // stuck at "running" — typically after the in-process Task.Run that owns
+        // the run died (process restart, crash) without updating the row.
+        // Note: this does NOT abort the underlying agent invocation if it is
+        // genuinely still executing in another process; it just unblocks the UI.
+        group.MapPost("/{jobId:guid}/runs/{runId:guid}/cancel", async (
+            Guid jobId, Guid runId, IDbContextFactory<OpenClawDbContext> dbFactory) =>
+        {
+            await using var db = await dbFactory.CreateDbContextAsync();
+            var run = await db.JobRuns.FindAsync(runId);
+            if (run is null || run.JobId != jobId) return Results.NotFound();
+            if (!string.Equals(run.Status, "running", StringComparison.OrdinalIgnoreCase))
+            {
+                return Results.Conflict(new
+                {
+                    error = $"Run is not running (current status: '{run.Status}')."
+                });
+            }
+
+            run.Status = "failed";
+            run.Error = "Run cancelled by user.";
+            run.CompletedAt = DateTime.UtcNow;
+            await db.SaveChangesAsync();
+
+            return Results.Ok(new { runId = run.Id, status = run.Status });
+        })
+        .WithName("CancelRun")
+        .WithDescription("Mark a stuck in-flight run as failed so the UI is unblocked.");
     }
 
     private static async Task<IResult> TransitionJobAsync(

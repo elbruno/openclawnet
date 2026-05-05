@@ -10,7 +10,6 @@ using OpenClawNet.Gateway.Services;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
-using OpenClawNet.UnitTests.Fixtures;
 using Xunit;
 
 namespace OpenClawNet.UnitTests.Services;
@@ -19,8 +18,13 @@ public sealed class JobExecutorTests : IAsyncLifetime
 {
     private SqliteConnection _connection = null!;
     private IDbContextFactory<OpenClawDbContext> _dbFactory = null!;
-    private readonly PerTestTempDirectory _temp = new("ocn-jobexec");
-    private string _tempDir => _temp.Path;
+    private readonly string _tempDir;
+
+    public JobExecutorTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), "ocn-test-" + Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_tempDir);
+    }
 
     public async Task InitializeAsync()
     {
@@ -41,7 +45,8 @@ public sealed class JobExecutorTests : IAsyncLifetime
     public async Task DisposeAsync()
     {
         await _connection.DisposeAsync();
-        _temp.Dispose();
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
     }
 
     private RuntimeModelSettings CreateTestRuntimeSettings(string provider = "ollama", string? model = "llama3.2:3b")
@@ -265,6 +270,13 @@ public sealed class JobExecutorTests : IAsyncLifetime
         Assert.NotNull(run);
         Assert.Equal("failed", run.Status);
         Assert.NotNull(run.Error);
+
+        // Bug fix: persist the FULL exception chain (ex.ToString()) on JobRun.Error
+        // so the Channels detail page and live console can show stack traces.
+        // ex.ToString() always begins with the exception type's full name.
+        Assert.Contains("System.InvalidOperationException", run.Error);
+        Assert.Contains("Simulated execution failure", run.Error);
+        Assert.Contains("at ", run.Error); // stack-trace marker
     }
 
     [Fact]
@@ -466,6 +478,308 @@ public sealed class JobExecutorTests : IAsyncLifetime
         Assert.Contains("[truncated", toolEvent.ResultJson);
         // Each is bounded: original size + truncation suffix
         Assert.True(toolEvent.ArgumentsJson!.Length < huge.Length);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // Phase 2 Story 6: Multi-Channel Delivery Integration Tests
+    // ═══════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task ExecuteJobAsync_NoChannelConfigs_CompletesWithoutCallingDeliveryService()
+    {
+        // Arrange
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var job = new ScheduledJob
+        {
+            Name = "No Channel Job",
+            Prompt = "Test",
+            Status = JobStatus.Active,
+            TriggerType = TriggerType.Manual
+        };
+        db.Jobs.Add(job);
+        await db.SaveChangesAsync();
+
+        var mockRuntime = new MockAgentRuntime("Success");
+        var mockDeliveryService = new Mock<OpenClawNet.Channels.Services.IChannelDeliveryService>();
+        var executor = new JobExecutor(
+            _dbFactory,
+            CreateMockRuntimeAgentProvider(),
+            mockRuntime,
+            CreateMockProfileStore(),
+            CreateTestRuntimeSettings(),
+            NullLogger<JobExecutor>.Instance,
+            invocationLogger: null,
+            deliveryService: mockDeliveryService.Object);
+
+        // Act
+        var result = await executor.ExecuteJobAsync(job.Id);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        // Delivery service should NOT be called (no configs)
+        mockDeliveryService.Verify(
+            s => s.DeliverAsync(It.IsAny<ScheduledJob>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task ExecuteJobAsync_WithEnabledChannels_CallsDeliveryService()
+    {
+        // Arrange
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var job = new ScheduledJob
+        {
+            Name = "Channel Job",
+            Prompt = "Test",
+            Status = JobStatus.Active,
+            TriggerType = TriggerType.Manual
+        };
+        db.Jobs.Add(job);
+        
+        // Add 2 enabled channel configurations
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "GenericWebhook",
+            ChannelConfig = "{\"webhookUrl\":\"https://example.com/webhook1\"}",
+            IsEnabled = true
+        });
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "Teams",
+            ChannelConfig = "{\"webhookUrl\":\"https://teams.example.com/webhook\"}",
+            IsEnabled = true
+        });
+        await db.SaveChangesAsync();
+
+        var mockRuntime = new MockAgentRuntime("Job completed successfully");
+        var deliveryResult = new OpenClawNet.Channels.Dtos.DeliveryResult
+        {
+            JobId = job.Id.ToString(),
+            TotalAttempted = 2,
+            SuccessCount = 2,
+            FailureCount = 0,
+            Duration = TimeSpan.FromMilliseconds(100),
+            CompletedAt = DateTime.UtcNow
+        };
+
+        var mockDeliveryService = new Mock<OpenClawNet.Channels.Services.IChannelDeliveryService>();
+        mockDeliveryService
+            .Setup(s => s.DeliverAsync(
+                It.Is<ScheduledJob>(j => j.Id == job.Id),
+                It.IsAny<Guid>(),
+                "text",
+                "Job completed successfully",
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(deliveryResult);
+
+        var executor = new JobExecutor(
+            _dbFactory,
+            CreateMockRuntimeAgentProvider(),
+            mockRuntime,
+            CreateMockProfileStore(),
+            CreateTestRuntimeSettings(),
+            NullLogger<JobExecutor>.Instance,
+            invocationLogger: null,
+            deliveryService: mockDeliveryService.Object);
+
+        // Act
+        var result = await executor.ExecuteJobAsync(job.Id);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        // Verify delivery service called with correct parameters
+        mockDeliveryService.Verify(
+            s => s.DeliverAsync(
+                It.Is<ScheduledJob>(j => j.Id == job.Id),
+                It.Is<Guid>(id => id == result.RunId),
+                "text",
+                "Job completed successfully",
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task ExecuteJobAsync_DeliveryServiceThrows_JobStillSucceeds()
+    {
+        // Arrange
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var job = new ScheduledJob
+        {
+            Name = "Delivery Failure Job",
+            Prompt = "Test",
+            Status = JobStatus.Active,
+            TriggerType = TriggerType.Manual
+        };
+        db.Jobs.Add(job);
+        
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "GenericWebhook",
+            ChannelConfig = "{\"webhookUrl\":\"https://broken.example.com\"}",
+            IsEnabled = true
+        });
+        await db.SaveChangesAsync();
+
+        var mockRuntime = new MockAgentRuntime("Job output");
+        var mockDeliveryService = new Mock<OpenClawNet.Channels.Services.IChannelDeliveryService>();
+        mockDeliveryService
+            .Setup(s => s.DeliverAsync(It.IsAny<ScheduledJob>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Delivery system unavailable"));
+
+        var executor = new JobExecutor(
+            _dbFactory,
+            CreateMockRuntimeAgentProvider(),
+            mockRuntime,
+            CreateMockProfileStore(),
+            CreateTestRuntimeSettings(),
+            NullLogger<JobExecutor>.Instance,
+            invocationLogger: null,
+            deliveryService: mockDeliveryService.Object);
+
+        // Act
+        var result = await executor.ExecuteJobAsync(job.Id);
+
+        // Assert - Fire-and-forget: job still succeeds despite delivery failure
+        Assert.True(result.IsSuccess);
+        Assert.NotNull(result.RunId);
+        
+        // Verify job run marked as completed
+        await using var dbVerify = await _dbFactory.CreateDbContextAsync();
+        var run = await dbVerify.JobRuns.FirstOrDefaultAsync(r => r.Id == result.RunId);
+        Assert.NotNull(run);
+        Assert.Equal("completed", run.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteJobAsync_PartialDeliveryFailure_JobStillSucceeds()
+    {
+        // Arrange
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var job = new ScheduledJob
+        {
+            Name = "Partial Delivery Job",
+            Prompt = "Test",
+            Status = JobStatus.Active,
+            TriggerType = TriggerType.Manual
+        };
+        db.Jobs.Add(job);
+        
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "GenericWebhook",
+            ChannelConfig = "{\"webhookUrl\":\"https://example.com/webhook\"}",
+            IsEnabled = true
+        });
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "Teams",
+            ChannelConfig = "{\"webhookUrl\":\"https://teams.example.com/webhook\"}",
+            IsEnabled = true
+        });
+        await db.SaveChangesAsync();
+
+        var mockRuntime = new MockAgentRuntime("Output");
+        var deliveryResult = new OpenClawNet.Channels.Dtos.DeliveryResult
+        {
+            JobId = job.Id.ToString(),
+            TotalAttempted = 2,
+            SuccessCount = 1,
+            FailureCount = 1,
+            Failures = new List<OpenClawNet.Channels.Dtos.DeliveryFailure>
+            {
+                new() { ChannelType = "Teams", ErrorMessage = "Timeout" }
+            },
+            Duration = TimeSpan.FromMilliseconds(200),
+            CompletedAt = DateTime.UtcNow
+        };
+
+        var mockDeliveryService = new Mock<OpenClawNet.Channels.Services.IChannelDeliveryService>();
+        mockDeliveryService
+            .Setup(s => s.DeliverAsync(It.IsAny<ScheduledJob>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(deliveryResult);
+
+        var executor = new JobExecutor(
+            _dbFactory,
+            CreateMockRuntimeAgentProvider(),
+            mockRuntime,
+            CreateMockProfileStore(),
+            CreateTestRuntimeSettings(),
+            NullLogger<JobExecutor>.Instance,
+            invocationLogger: null,
+            deliveryService: mockDeliveryService.Object);
+
+        // Act
+        var result = await executor.ExecuteJobAsync(job.Id);
+
+        // Assert - Job succeeds even with partial delivery failure
+        Assert.True(result.IsSuccess);
+        
+        await using var dbVerify = await _dbFactory.CreateDbContextAsync();
+        var run = await dbVerify.JobRuns.FirstOrDefaultAsync(r => r.Id == result.RunId);
+        Assert.NotNull(run);
+        Assert.Equal("completed", run.Status);
+    }
+
+    [Fact]
+    public async Task ExecuteJobAsync_OnlyEnabledChannels_AreUsedForDelivery()
+    {
+        // Arrange
+        await using var db = await _dbFactory.CreateDbContextAsync();
+        var job = new ScheduledJob
+        {
+            Name = "Mixed Channel Job",
+            Prompt = "Test",
+            Status = JobStatus.Active,
+            TriggerType = TriggerType.Manual
+        };
+        db.Jobs.Add(job);
+        
+        // Add 1 enabled and 1 disabled channel
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "GenericWebhook",
+            ChannelConfig = "{\"webhookUrl\":\"https://example.com/webhook\"}",
+            IsEnabled = true
+        });
+        db.JobChannelConfigurations.Add(new JobChannelConfiguration
+        {
+            JobId = job.Id,
+            ChannelType = "Teams",
+            ChannelConfig = "{\"webhookUrl\":\"https://teams.example.com/webhook\"}",
+            IsEnabled = false  // Disabled
+        });
+        await db.SaveChangesAsync();
+
+        var mockRuntime = new MockAgentRuntime("Output");
+        var mockDeliveryService = new Mock<OpenClawNet.Channels.Services.IChannelDeliveryService>();
+
+        var executor = new JobExecutor(
+            _dbFactory,
+            CreateMockRuntimeAgentProvider(),
+            mockRuntime,
+            CreateMockProfileStore(),
+            CreateTestRuntimeSettings(),
+            NullLogger<JobExecutor>.Instance,
+            invocationLogger: null,
+            deliveryService: mockDeliveryService.Object);
+
+        // Act
+        var result = await executor.ExecuteJobAsync(job.Id);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+        
+        // Verify delivery service called (1 enabled channel found)
+        mockDeliveryService.Verify(
+            s => s.DeliverAsync(It.IsAny<ScheduledJob>(), It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 
     // ═══════════════════════════════════════════════════════════════

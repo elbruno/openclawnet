@@ -1,0 +1,109 @@
+@using OpenClawNet.Web.Services
+
+@if (Visible && FolderName is not null)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="userFolderDeleteTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content border-danger">
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title" id="userFolderDeleteTitle">
+                        <span class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></span>Delete user folder
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="OnCancelAsync" disabled="@_busy"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-2">
+                        Type the folder name <code>@FolderName</code> to confirm deletion.
+                    </p>
+                    <p class="text-danger fw-bold mb-3">This cannot be undone.</p>
+                    <input id="userFolderDeleteConfirm"
+                           type="text"
+                           class="form-control"
+                           placeholder="@FolderName"
+                           @bind="_typed"
+                           @bind:event="oninput"
+                           disabled="@_busy"
+                           autocomplete="off"
+                           spellcheck="false" />
+                    @if (_serverError is not null)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0" role="alert">
+                            <strong>Delete failed:</strong> @_serverError
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="OnCancelAsync" disabled="@_busy">Cancel</button>
+                    <button type="button" class="btn btn-danger" @onclick="OnSubmitAsync" disabled="@(!CanSubmit)" data-testid="delete-confirm">
+                        @if (_busy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Delete folder
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string? FolderName { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<string> OnDeleted { get; set; }
+    [Parameter, EditorRequired] public UserFolderClient? Client { get; set; }
+
+    private string _typed = string.Empty;
+    private string? _serverError;
+    private bool _busy;
+
+    /// <summary>
+    /// Drummond W-4 P0 #3 — the typed string MUST match the folder name exactly
+    /// (ordinal, case-sensitive) before the destructive action is enabled.
+    /// </summary>
+    private bool CanSubmit => !_busy
+        && FolderName is not null
+        && string.Equals(_typed, FolderName, StringComparison.Ordinal);
+
+    protected override void OnParametersSet()
+    {
+        if (!Visible)
+        {
+            _typed = string.Empty;
+            _serverError = null;
+            _busy = false;
+        }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (!CanSubmit || Client is null || FolderName is null) return;
+        _busy = true;
+        _serverError = null;
+        try
+        {
+            await Client.DeleteAsync(FolderName);
+            await OnDeleted.InvokeAsync(FolderName);
+        }
+        catch (UserFolderClientException ex)
+        {
+            _serverError = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _serverError = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task OnCancelAsync()
+    {
+        if (_busy) return;
+        await OnCancel.InvokeAsync();
+    }
+}

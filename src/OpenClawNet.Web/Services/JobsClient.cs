@@ -208,6 +208,27 @@ public sealed class JobsClient
 
     private sealed record TranslateCronOk(string Cron, string? Explanation);
     private sealed record TranslateCronErr(string? Error);
+
+    // ── Channel Configuration ──
+
+    public async Task<List<JobChannelConfigDto>> GetChannelConfigsAsync(Guid jobId, CancellationToken ct = default)
+    {
+        var response = await _gatewayClient.GetAsync($"api/jobs/{jobId}/channels", ct);
+        if (!response.IsSuccessStatusCode) return [];
+        return await response.Content.ReadFromJsonAsync<List<JobChannelConfigDto>>(ct) ?? [];
+    }
+
+    public async Task SaveChannelConfigsAsync(Guid jobId, SaveJobChannelConfigRequest request, CancellationToken ct = default)
+    {
+        var response = await _gatewayClient.PostAsJsonAsync($"api/jobs/{jobId}/channels", request, ct);
+        response.EnsureSuccessStatusCode();
+    }
+
+    public async Task<bool> DeleteChannelConfigAsync(Guid jobId, string channelType, CancellationToken ct = default)
+    {
+        var response = await _gatewayClient.DeleteAsync($"api/jobs/{jobId}/channels/{channelType}", ct);
+        return response.IsSuccessStatusCode;
+    }
 }
 
 public sealed record AgentProfileDto(

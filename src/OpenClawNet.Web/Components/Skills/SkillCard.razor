@@ -1,0 +1,173 @@
+@using OpenClawNet.Web.Models.Skills
+@using OpenClawNet.Web.Services
+@inject SkillsClient SkillsClient
+
+@*
+    K-3 single dense row in the Skills.razor table (spec §1.4). Renders the
+    📚 icon (D-1 — uniform per skill, layer badge does the differentiation),
+    name, description, layer badge, per-agent enable toggle, last-updated, and
+    View / Delete actions. The page owns selection of the agent context; this
+    component just renders.
+*@
+
+<tr @key="Skill.Name" class="@(_busy ? "opacity-50" : null)">
+    <td>
+        <span class="bi bi-book me-2" aria-hidden="true" title="Skill"></span>
+        <code>@Skill.Name</code>
+        @if (!string.Equals(Skill.Source, "built-in", StringComparison.OrdinalIgnoreCase))
+        {
+            <span class="badge bg-light text-dark ms-2" title="Source">@Skill.Source</span>
+        }
+    </td>
+    <td class="text-muted small">@(Skill.Description ?? string.Empty)</td>
+    <td>
+        <span class="badge @LayerBadgeClass" title="@LayerTooltip">@LayerLabel</span>
+    </td>
+    <td data-testid="enabled-agents">
+        @{
+            var enabledAgents = Skill.EnabledByAgent
+                .Where(kv => kv.Value)
+                .Select(kv => kv.Key)
+                .OrderBy(n => n, StringComparer.Ordinal)
+                .ToList();
+        }
+        @if (enabledAgents.Count == 0)
+        {
+            <span class="text-muted small">—</span>
+        }
+        else
+        {
+            <div class="d-flex flex-wrap gap-1" style="max-width: 240px;">
+                @foreach (var agent in enabledAgents)
+                {
+                    <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle"
+                          title="Skill enabled for agent @agent">
+                        <span class="bi bi-person-fill me-1" aria-hidden="true"></span>@agent
+                    </span>
+                }
+            </div>
+        }
+    </td>
+    <td>
+        @if (string.IsNullOrEmpty(SelectedAgent))
+        {
+            <span class="text-muted small" title="Pick an agent to toggle">
+                @EnabledCount / @AgentNames.Count agents
+            </span>
+        }
+        else
+        {
+            <div class="form-check form-switch mb-0">
+                <input class="form-check-input"
+                       type="checkbox"
+                       role="switch"
+                       data-testid="enabled-switch"
+                       checked="@IsEnabledForSelected"
+                       disabled="@_busy"
+                       @onchange="OnToggleAsync" />
+            </div>
+        }
+    </td>
+    <td class="text-muted small">@FormatRelative(Skill.UpdatedUtc)</td>
+    <td class="text-end">
+        <div class="d-inline-flex gap-1">
+            <button class="btn btn-outline-secondary btn-sm" type="button"
+                    data-testid="view-skill"
+                    @onclick="OnViewClicked">
+                <span class="bi bi-eye me-1" aria-hidden="true"></span>View
+            </button>
+            @if (CanDelete)
+            {
+                <button class="btn btn-outline-danger btn-sm" type="button"
+                        data-testid="delete-skill"
+                        @onclick="OnDeleteClicked"
+                        disabled="@_busy"
+                        title="Delete (Installed only)">
+                    <span class="bi bi-trash" aria-hidden="true"></span>
+                </button>
+            }
+        </div>
+    </td>
+</tr>
+
+@code {
+    [Parameter, EditorRequired] public SkillDto Skill { get; set; } = default!;
+    /// <summary>Agents available for the per-row toggle. When empty, the toggle column shows the aggregate count.</summary>
+    [Parameter] public IReadOnlyList<string> AgentNames { get; set; } = Array.Empty<string>();
+    /// <summary>Currently picked agent (page-level). Empty/null → row shows aggregate, hides switch.</summary>
+    [Parameter] public string? SelectedAgent { get; set; }
+    [Parameter] public EventCallback<SkillDto> OnView { get; set; }
+    [Parameter] public EventCallback<SkillDto> OnDelete { get; set; }
+    /// <summary>Optimistic-UI hook — page re-loads the row on success.</summary>
+    [Parameter] public EventCallback<(string Skill, string Agent, bool Enabled)> OnEnabledChanged { get; set; }
+
+    private bool _busy;
+
+    private bool CanDelete => string.Equals(Skill.Layer, "installed", StringComparison.OrdinalIgnoreCase);
+
+    private bool IsEnabledForSelected =>
+        !string.IsNullOrEmpty(SelectedAgent)
+        && Skill.EnabledByAgent.TryGetValue(SelectedAgent, out var v) && v;
+
+    private int EnabledCount => Skill.EnabledByAgent.Count(kv => kv.Value);
+
+    private string LayerLabel => Skill.Layer switch
+    {
+        "system"    => "System",
+        "installed" => "Installed",
+        "agent"     => $"Agent:{Skill.AgentScope ?? "?"}",
+        _           => Skill.Layer
+    };
+
+    private string LayerBadgeClass => Skill.Layer switch
+    {
+        "system"    => "bg-secondary",
+        "installed" => "bg-primary",
+        "agent"     => "bg-success",
+        _           => "bg-light text-dark"
+    };
+
+    private string LayerTooltip =>
+        !string.Equals(Skill.Layer, Skill.EffectiveLayer, StringComparison.OrdinalIgnoreCase)
+            ? $"Effective layer: {Skill.EffectiveLayer} (override)"
+            : LayerLabel;
+
+    private async Task OnToggleAsync(ChangeEventArgs e)
+    {
+        if (string.IsNullOrEmpty(SelectedAgent)) return;
+        var newValue = e.Value is bool b && b;
+        _busy = true;
+        try
+        {
+            // Optimistic — apply locally first, page will reconcile after PATCH succeeds.
+            Skill.EnabledByAgent[SelectedAgent] = newValue;
+            await SkillsClient.SetEnabledAsync(Skill.Name, SelectedAgent, newValue);
+            await OnEnabledChanged.InvokeAsync((Skill.Name, SelectedAgent, newValue));
+        }
+        catch (Exception)
+        {
+            // Revert optimistic update; page surfaces the error via OnEnabledChanged failure path.
+            // Broad catch is intentional — SkillsClientException, HttpRequestException, and any
+            // unexpected failure must all roll back the UI rather than leave it desynced.
+            Skill.EnabledByAgent[SelectedAgent] = !newValue;
+            await OnEnabledChanged.InvokeAsync((Skill.Name, SelectedAgent, !newValue));
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private Task OnViewClicked() => OnView.InvokeAsync(Skill);
+    private Task OnDeleteClicked() => OnDelete.InvokeAsync(Skill);
+
+    private static string FormatRelative(DateTimeOffset when)
+    {
+        var delta = DateTimeOffset.UtcNow - when;
+        if (delta.TotalSeconds < 60) return "just now";
+        if (delta.TotalMinutes < 60) return $"{(int)delta.TotalMinutes}m ago";
+        if (delta.TotalHours   < 48) return $"{(int)delta.TotalHours}h ago";
+        if (delta.TotalDays    < 30) return $"{(int)delta.TotalDays}d ago";
+        return when.UtcDateTime.ToString("yyyy-MM-dd");
+    }
+}

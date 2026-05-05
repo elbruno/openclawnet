@@ -1,0 +1,134 @@
+@using System.Text.RegularExpressions
+@using OpenClawNet.Web.Services
+
+@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="newUserFolderTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newUserFolderTitle">
+                        <span class="bi bi-folder-plus me-2" aria-hidden="true"></span>New user folder
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close" @onclick="OnCancelAsync" disabled="@_busy"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="newUserFolderName" class="form-label">Folder name</label>
+                        <input id="newUserFolderName"
+                               type="text"
+                               class="form-control @(_clientError is not null ? "is-invalid" : null)"
+                               @bind="_name"
+                               @bind:event="oninput"
+                               disabled="@_busy"
+                               autocomplete="off"
+                               spellcheck="false" />
+                        @if (_clientError is not null)
+                        {
+                            <div class="invalid-feedback d-block">@_clientError</div>
+                        }
+                        <div class="form-text">
+                            Lowercase letters, digits, dot, hyphen, underscore. Maximum 64 characters. Must start with a letter or digit.
+                        </div>
+                    </div>
+                    @if (_serverError is not null)
+                    {
+                        <div class="alert alert-danger mb-0" role="alert">
+                            <strong>Couldn't create folder:</strong> @_serverError
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" @onclick="OnCancelAsync" disabled="@_busy">Cancel</button>
+                    <button type="button" class="btn btn-primary" @onclick="OnSubmitAsync" disabled="@(!CanSubmit)">
+                        @if (_busy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Create
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    // Mirrors OpenClawNetPaths.UserFolderName regex (Drummond W-4 P0 #1).
+    // Server is the source of truth; this is a UX nicety that also prevents wasted round-trips.
+    private static readonly Regex NamePattern = new("^[a-z0-9][a-z0-9._-]{0,63}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<UserFolderClient> _ignored { get; set; } // keep generic param happy if extended
+    [Parameter] public EventCallback<string> OnCreated { get; set; }
+    [Parameter, EditorRequired] public UserFolderClient? Client { get; set; }
+
+    private string _name = string.Empty;
+    private string? _clientError;
+    private string? _serverError;
+    private bool _busy;
+
+    private bool CanSubmit => !_busy && _clientError is null && !string.IsNullOrWhiteSpace(_name);
+
+    protected override void OnParametersSet()
+    {
+        if (!Visible)
+        {
+            // Reset state when the host hides us so the next open is fresh.
+            _name = string.Empty;
+            _clientError = null;
+            _serverError = null;
+            _busy = false;
+        }
+        else
+        {
+            ValidateClient();
+        }
+    }
+
+    private void ValidateClient()
+    {
+        if (string.IsNullOrEmpty(_name))
+        {
+            _clientError = null;
+            return;
+        }
+        _clientError = NamePattern.IsMatch(_name)
+            ? null
+            : "Name doesn't match the allowed pattern.";
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        ValidateClient();
+        if (!CanSubmit || Client is null) return;
+
+        _busy = true;
+        _serverError = null;
+        try
+        {
+            await Client.CreateAsync(_name);
+            await OnCreated.InvokeAsync(_name);
+        }
+        catch (UserFolderClientException ex)
+        {
+            _serverError = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _serverError = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task OnCancelAsync()
+    {
+        if (_busy) return;
+        await OnCancel.InvokeAsync();
+    }
+}

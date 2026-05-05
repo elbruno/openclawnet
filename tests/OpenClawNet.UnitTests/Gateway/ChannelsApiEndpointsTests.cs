@@ -8,7 +8,6 @@ using Moq;
 using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
-using OpenClawNet.UnitTests.Fixtures;
 using System.Net;
 
 namespace OpenClawNet.UnitTests.Gateway;
@@ -17,8 +16,7 @@ public sealed class ChannelsApiEndpointsTests : IDisposable
 {
     private readonly SqliteConnection _connection;
     private readonly DbContextOptions<OpenClawDbContext> _options;
-    private readonly PerTestTempDirectory _temp = new("openclaw-test");
-    private string _testArtifactRoot => _temp.Path;
+    private readonly string _testArtifactRoot;
 
     public ChannelsApiEndpointsTests()
     {
@@ -28,12 +26,16 @@ public sealed class ChannelsApiEndpointsTests : IDisposable
         _options = new DbContextOptionsBuilder<OpenClawDbContext>()
             .UseSqlite(_connection)
             .Options;
+
+        _testArtifactRoot = Path.Combine(Path.GetTempPath(), $"openclaw-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_testArtifactRoot);
     }
 
     public void Dispose()
     {
         _connection?.Dispose();
-        _temp.Dispose();
+        if (Directory.Exists(_testArtifactRoot))
+            Directory.Delete(_testArtifactRoot, recursive: true);
     }
 
     [Fact]
@@ -69,9 +71,9 @@ public sealed class ChannelsApiEndpointsTests : IDisposable
 
         channels.Should().HaveCount(2);
         channels[0].JobName.Should().Be("Job 2");
-        channels[0].ArtifactCount.Should().Be(2);
+        channels[0].TotalArtifacts.Should().Be(2);
         channels[1].JobName.Should().Be("Job 1");
-        channels[1].ArtifactCount.Should().Be(1);
+        channels[1].TotalArtifacts.Should().Be(1);
     }
 
     [Fact]
@@ -455,7 +457,7 @@ public sealed class ChannelsApiEndpointsTests : IDisposable
         );
 
         return Results.Created($"/api/channels/{jobId}/runs/{latestRun.Id}/artifacts/{artifact.Id}",
-            new { artifactId = artifact.Id });
+            (object)new { artifactId = artifact.Id });
     }
 
     private bool IsLoopbackRequest(HttpContext httpContext)

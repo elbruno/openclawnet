@@ -38,12 +38,17 @@ public sealed class FoundryLocalModelClient : IModelClient, IAsyncDisposable
             if (_initialized) return;
 
             var config = new Configuration { AppName = _options.AppName };
-            await FoundryLocalManager.CreateAsync(config, logger: null, ct);
+#pragma warning disable CS8625 // SDK accepts null logger; signature is non-nullable
+            await FoundryLocalManager.CreateAsync(config, logger: null!, ct);
+#pragma warning restore CS8625
             _manager = FoundryLocalManager.Instance;
 
             var catalog = await _manager.GetCatalogAsync(ct);
-            var model = await catalog.GetModelAsync(_options.Model, ct);
-            await model.DownloadAsync(null, ct);
+            var model = await catalog.GetModelAsync(_options.Model, ct)
+                ?? throw new InvalidOperationException($"Foundry Local model '{_options.Model}' not found in catalog.");
+#pragma warning disable CS8625 // SDK accepts null progress; signature is non-nullable but tolerates null at runtime
+            await model.DownloadAsync(null!, ct);
+#pragma warning restore CS8625
             await model.LoadAsync(ct);
 
             _chatClient = await model.GetChatClientAsync(ct);

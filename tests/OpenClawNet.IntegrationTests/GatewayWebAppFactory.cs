@@ -7,6 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 
+using OpenClawNet.Gateway;
 using ModelToolCall = OpenClawNet.Models.Abstractions.ToolCall;
 
 namespace OpenClawNet.IntegrationTests;
@@ -15,7 +16,7 @@ namespace OpenClawNet.IntegrationTests;
 /// WebApplicationFactory that wires up the Gateway with in-memory dependencies
 /// so tests run without Aspire, Ollama, or real SQLite.
 /// </summary>
-public sealed class GatewayWebAppFactory : WebApplicationFactory<Program>
+public class GatewayWebAppFactory : WebApplicationFactory<GatewayProgramMarker>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
@@ -66,7 +67,7 @@ public sealed class GatewayWebAppFactory : WebApplicationFactory<Program>
 /// WebApplicationFactory variant that registers the tool-calling fake model client
 /// so integration tests can exercise the streaming tool-call pipeline.
 /// </summary>
-public sealed class GatewayToolCallWebAppFactory : WebApplicationFactory<Program>
+public sealed class GatewayToolCallWebAppFactory : WebApplicationFactory<GatewayProgramMarker>
 {
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {

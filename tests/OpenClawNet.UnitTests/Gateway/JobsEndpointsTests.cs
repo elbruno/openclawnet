@@ -15,7 +15,6 @@ using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Gateway.Services;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
-using OpenClawNet.UnitTests.Fixtures;
 using Xunit;
 
 namespace OpenClawNet.UnitTests.Gateway;
@@ -142,6 +141,32 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
     }
 
     [Fact]
+    public async Task RunNowJob_CreatesJobRun_AndReturnsResult()
+    {
+        // Arrange
+        var jobId = await CreateTestJobAsync();
+
+        // Act
+        var response = await _client.PostAsync($"/api/jobs/{jobId}/run-now", null);
+
+        // Assert
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var result = await response.Content.ReadFromJsonAsync<JobExecutionResponse>();
+        Assert.NotNull(result);
+        Assert.True(result.Success);
+        Assert.NotNull(result.RunId);
+        Assert.False(result.WasDryRun);
+        Assert.NotEmpty(result.Output!);
+    }
+
+    [Fact]
+    public async Task RunNowJob_UnknownJob_ReturnsNotFound()
+    {
+        var response = await _client.PostAsync($"/api/jobs/{Guid.NewGuid()}/run-now", null);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task DryRunJob_ExecutesWithoutCreatingJobRun()
     {
         // Arrange
@@ -205,6 +230,138 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
     }
 
     // ═══════════════════════════════════════════════════════════════
+    // PATCH /api/jobs/{id} — inline-rename happy path + validation.
+    // PATCH is allowed in any status (including Active), unlike PUT.
+    // ═══════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task PatchJob_RenamesActiveJob_AndPersistsChange()
+    {
+        // Arrange — Active job (PUT would 409 here, PATCH must succeed)
+        var jobId = await CreateTestJobAsync(name: "Old Name", status: JobStatus.Active);
+
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/jobs/{jobId}",
+            new { Name = "New Name" });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.NotNull(dto);
+        Assert.Equal("New Name", dto.Name);
+        Assert.Equal("active", dto.Status);
+
+        // Verify persisted
+        await using var db = _factory.Services.GetRequiredService<IDbContextFactory<OpenClawDbContext>>()
+            .CreateDbContext();
+        var stored = await db.Jobs.FindAsync(jobId);
+        Assert.NotNull(stored);
+        Assert.Equal("New Name", stored!.Name);
+    }
+
+    [Fact]
+    public async Task PatchJob_TrimsWhitespaceAroundName()
+    {
+        var jobId = await CreateTestJobAsync(status: JobStatus.Active);
+
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/jobs/{jobId}",
+            new { Name = "  Trimmed  " });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.Equal("Trimmed", dto!.Name);
+    }
+
+    [Fact]
+    public async Task PatchJob_EmptyName_ReturnsBadRequest()
+    {
+        var jobId = await CreateTestJobAsync(status: JobStatus.Active);
+
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/jobs/{jobId}",
+            new { Name = "   " });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task PatchJob_NoFields_IsNoOp_ReturnsCurrentDto()
+    {
+        var jobId = await CreateTestJobAsync(name: "Stay", status: JobStatus.Active);
+
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/jobs/{jobId}",
+            new { });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.Equal("Stay", dto!.Name);
+    }
+
+    [Fact]
+    public async Task PatchJob_UnknownId_ReturnsNotFound()
+    {
+        var response = await _client.PatchAsJsonAsync(
+            $"/api/jobs/{Guid.NewGuid()}",
+            new { Name = "x" });
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // POST /api/jobs — default-agent-profile snapshotting
+    // (regression test: jobs created from a template were created with
+    // AgentProfileName=null, so the UI showed "—" and JobExecutor fell
+    // back to RuntimeModelSettings instead of the user's default profile.)
+    // ═══════════════════════════════════════════════════════════════
+
+    [Fact]
+    public async Task CreateJob_WithoutAgentProfile_AssignsDefaultProfileName()
+    {
+        var response = await _client.PostAsJsonAsync("/api/jobs", new CreateJobRequest
+        {
+            Name = "Job without explicit profile",
+            Prompt = "Hello"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.NotNull(dto);
+        Assert.Equal("openclawnet-agent", dto!.AgentProfileName);
+    }
+
+    [Fact]
+    public async Task CreateJob_WithExplicitAgentProfile_PreservesIt()
+    {
+        var response = await _client.PostAsJsonAsync("/api/jobs", new CreateJobRequest
+        {
+            Name = "Job with explicit profile",
+            Prompt = "Hello",
+            AgentProfileName = "my-custom-profile"
+        });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.Equal("my-custom-profile", dto!.AgentProfileName);
+    }
+
+    [Fact]
+    public async Task CreateJobFromTemplate_WithoutAgentProfile_AssignsDefaultProfileName()
+    {
+        var response = await _client.PostAsJsonAsync("/api/jobs/from-template/website-watcher/activate",
+            new CreateJobRequest
+            {
+                Name = "Watcher from template",
+                Prompt = "Watch https://example.com"
+            });
+
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+        var dto = await response.Content.ReadFromJsonAsync<JobDto>();
+        Assert.NotNull(dto);
+        Assert.Equal("openclawnet-agent", dto!.AgentProfileName);
+        Assert.Equal("website-watcher", dto.SourceTemplateName);
+    }
+
+    // ═══════════════════════════════════════════════════════════════
     // Helpers
     // ═══════════════════════════════════════════════════════════════
 
@@ -235,7 +392,6 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
     private sealed class WebApplicationFactory : IAsyncDisposable
     {
         private readonly WebApplication _app;
-        private readonly PerTestTempDirectory _temp = new("ocn-jobtest");
         private Task? _runTask;
         public IServiceProvider Services => _app.Services;
         private readonly string _baseUrl = "http://localhost:15998"; // Random high port
@@ -252,6 +408,8 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
             builder.Services.AddSingleton<IAgentRuntime, MockAgentRuntime>();
             
             // Create RuntimeModelSettings for tests
+            var tempDir = Path.Combine(Path.GetTempPath(), "ocn-jobtest-" + Guid.NewGuid().ToString());
+            Directory.CreateDirectory(tempDir);
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -260,7 +418,7 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
                 })
                 .Build();
             var mockEnv = new Mock<IHostEnvironment>();
-            mockEnv.Setup(e => e.ContentRootPath).Returns(_temp.Path);
+            mockEnv.Setup(e => e.ContentRootPath).Returns(tempDir);
             var runtimeSettings = new RuntimeModelSettings(config, mockEnv.Object, NullLogger<RuntimeModelSettings>.Instance);
             builder.Services.AddSingleton(runtimeSettings);
             
@@ -268,6 +426,15 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
             var mockProfileStore = new Mock<OpenClawNet.Storage.IAgentProfileStore>();
             mockProfileStore.Setup(s => s.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                 .ReturnsAsync((OpenClawNet.Models.Abstractions.AgentProfile?)null);
+            mockProfileStore.Setup(s => s.GetDefaultAsync(It.IsAny<CancellationToken>()))
+                .ReturnsAsync(new OpenClawNet.Models.Abstractions.AgentProfile
+                {
+                    Name = "openclawnet-agent",
+                    DisplayName = "OpenClawNet Agent",
+                    IsDefault = true,
+                    IsEnabled = true,
+                    Provider = "ollama-default"
+                });
             builder.Services.AddSingleton(mockProfileStore.Object);
             
             // RuntimeAgentProvider with mocks
@@ -295,7 +462,6 @@ public sealed class JobsEndpointsTests : IAsyncLifetime
             if (_runTask is not null)
                 await _runTask;
             await _app.DisposeAsync();
-            _temp.Dispose();
         }
     }
 

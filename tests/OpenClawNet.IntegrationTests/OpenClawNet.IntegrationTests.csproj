@@ -5,9 +5,11 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <DefineConstants>$(DefineConstants);K1B_LANDED</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.2.3" />
     <PackageReference Include="coverlet.collector" Version="8.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
@@ -17,7 +19,8 @@
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.5" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.5" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.4.0" />
-    <PackageReference Include="Moq" Version="4.20.72" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.52.0" />
+    <PackageReference Include="WireMock.Net" Version="2.4.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
@@ -31,12 +34,15 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\src\OpenClawNet.Gateway\OpenClawNet.Gateway.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Abstractions\OpenClawNet.Mcp.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Core\OpenClawNet.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Web\OpenClawNet.Mcp.Web.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
   </ItemGroup>
 
 </Project>

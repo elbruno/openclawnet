@@ -1,0 +1,250 @@
+using Microsoft.Playwright;
+using Xunit;
+
+namespace OpenClawNet.PlaywrightTests.Demos;
+
+/// <summary>
+/// ⚠️ DEMO-ONLY BASE CLASS — NOT FOR CI OR REGRESSION TESTING ⚠️
+///
+/// This base class is for E2E tests that ATTACH to an already-running Aspire instance
+/// (`aspire start src\OpenClawNet.AppHost`) instead of booting Aspire in-process via
+/// `DistributedApplicationTestingBuilder`.
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                              WHY THIS EXISTS                                  │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ 1. Demo speed        — Aspire already running; test attaches in 2–3s vs 30–60s│
+/// │ 2. Demo visibility   — Aspire dashboard stays visible to the audience         │
+/// │ 3. Voice-over friendly — Combined with PLAYWRIGHT_SLOWMO, smooth presenter loop│
+/// │ 4. NOT for CI        — These assume live Aspire + LLM; excluded from CI runs  │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                           WHEN TO USE THIS                                    │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ ✅ Live conference demos / voice-over recording                              │
+/// │ ✅ Fast iteration during presenter rehearsal                                 │
+/// │ ✅ Any scenario where the dashboard must stay visible                        │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                         WHEN NOT TO USE THIS                                  │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ ❌ CI/CD pipelines       — use AppHostFixture-based tests instead            │
+/// │ ❌ Regression testing    — use AppHostFixture-based tests instead            │
+/// │ ❌ Automated validation  — use AppHostFixture-based tests instead            │
+/// │                                                                                │
+/// │ For standard in-process E2E tests, see:                                       │
+/// │   tests\OpenClawNet.PlaywrightTests\*JourneyE2ETests.cs                      │
+/// │   tests\OpenClawNet.PlaywrightTests\AppHostFixture.cs                        │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                            USAGE PATTERN                                      │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ 1. Terminal 1: aspire start src\OpenClawNet.AppHost                          │
+/// │ 2. Wait for green health checks + dashboard (http://localhost:15178)         │
+/// │ 3. Terminal 2: Set env vars and run test:                                    │
+/// │                                                                                │
+/// │    $env:NUGET_PACKAGES = "$env:USERPROFILE\.nuget\packages2"                │
+/// │    $env:PLAYWRIGHT_HEADED = "true"                                           │
+/// │    $env:PLAYWRIGHT_SLOWMO = "1500"  # 800=fast, 1500=default, 2500=slow     │
+/// │                                                                                │
+/// │    # Optional: override URLs if your ports differ                             │
+/// │    $env:OPENCLAW_WEB_URL = "https://localhost:7294"                          │
+/// │    $env:OPENCLAW_GATEWAY_URL = "https://localhost:7067"                      │
+/// │                                                                                │
+/// │    dotnet test tests\OpenClawNet.PlaywrightTests `                           │
+/// │      --filter "Category=DemoLive&FullyQualifiedName~PirateJourneyAttachedTests" │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                         ENVIRONMENT VARIABLES                                 │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ OPENCLAW_WEB_URL (optional)                                                  │
+/// │   Default: https://localhost:7294                                             │
+/// │   The Blazor frontend URL (aspire show-links to find actual URL)             │
+/// │                                                                                │
+/// │ OPENCLAW_GATEWAY_URL (optional)                                              │
+/// │   Default: https://localhost:7067                                             │
+/// │   The Gateway API URL (for HttpClient calls)                                 │
+/// │                                                                                │
+/// │ PLAYWRIGHT_HEADED (read by this base)                                        │
+/// │   ALWAYS "true" — these tests run headed by design                           │
+/// │                                                                                │
+/// │ PLAYWRIGHT_SLOWMO (read by this base)                                        │
+/// │   Default: 1500ms                                                             │
+/// │   Inter-step delay for voice-over pacing                                     │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// ┌──────────────────────────────────────────────────────────────────────────────┐
+/// │                             TRAIT CONVENTION                                  │
+/// ├──────────────────────────────────────────────────────────────────────────────┤
+/// │ All test classes that inherit this base MUST be marked:                      │
+/// │   [Trait("Category", "DemoLive")]                                            │
+/// │                                                                                │
+/// │ This trait excludes them from default CI runs:                               │
+/// │   dotnet test --filter "Category!=Live"                                      │
+/// │                                                                                │
+/// │ Demo runs explicitly opt-in:                                                 │
+/// │   dotnet test --filter "Category=DemoLive"                                   │
+/// └──────────────────────────────────────────────────────────────────────────────┘
+///
+/// <seealso cref="AppHostFixture"/> — In-process Aspire test infrastructure for CI
+/// </summary>
+public abstract class AttachedAspireTestBase : IAsyncLifetime
+{
+    private IPlaywright? _playwright;
+    private IBrowser? _browser;
+    private IPage? _page;
+
+    /// <summary>
+    /// The Blazor Web frontend URL (e.g., https://localhost:7294).
+    /// Read from OPENCLAW_WEB_URL or defaults to the standard launch profile URL.
+    /// Use `aspire show-links` to discover the actual runtime URL if ports differ.
+    /// </summary>
+    protected string WebBaseUrl { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// The Gateway API URL (e.g., https://localhost:7067).
+    /// Read from OPENCLAW_GATEWAY_URL or defaults to the standard launch profile URL.
+    /// Use `aspire show-links` to discover the actual runtime URL if ports differ.
+    /// </summary>
+    protected string GatewayBaseUrl { get; private set; } = string.Empty;
+
+    /// <summary>
+    /// The active Playwright page. Tests can use this directly for navigation and assertions.
+    /// Disposed automatically when the test class completes.
+    /// </summary>
+    protected IPage Page => _page ?? throw new InvalidOperationException("Page not initialized");
+
+    public async Task InitializeAsync()
+    {
+        // Read URLs from environment or fall back to launch profile defaults.
+        // Aspire dynamic port assignment means the user MUST export these if ports differ.
+        // Use `aspire show-links` to discover the actual runtime URLs.
+        WebBaseUrl = Environment.GetEnvironmentVariable("OPENCLAW_WEB_URL")
+            ?? "https://localhost:7294";
+
+        GatewayBaseUrl = Environment.GetEnvironmentVariable("OPENCLAW_GATEWAY_URL")
+            ?? "https://localhost:7067";
+
+        // Initialize Playwright — ALWAYS headed for demo tests.
+        _playwright = await Playwright.CreateAsync();
+
+        // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
+        // Match the AppHostFixture pattern (lines ~141–160) for consistency.
+        var defaultSlowMo = 1500;
+        var slowMo = defaultSlowMo;
+        var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
+        if (!string.IsNullOrWhiteSpace(slowMoRaw)
+            && int.TryParse(slowMoRaw, out var parsedSlowMo)
+            && parsedSlowMo >= 0)
+        {
+            slowMo = parsedSlowMo;
+        }
+
+        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        {
+            Headless = false, // ALWAYS headed for demo visibility
+            SlowMo = slowMo
+        });
+
+        // Create a new page for this test class.
+        _page = await _browser.NewPageAsync();
+    }
+
+    public async Task DisposeAsync()
+    {
+        if (_page is not null)
+        {
+            await _page.CloseAsync();
+        }
+        if (_browser is not null)
+        {
+            await _browser.CloseAsync();
+        }
+        _playwright?.Dispose();
+    }
+
+    /// <summary>
+    /// Creates an HttpClient configured for the Gateway endpoint with SSL validation disabled.
+    /// Matches the AppHostFixture pattern for API calls.
+    /// </summary>
+    protected HttpClient CreateGatewayHttpClient()
+    {
+        var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+        return new HttpClient(handler) { BaseAddress = new Uri(GatewayBaseUrl) };
+    }
+
+    /// <summary>
+    /// Helper to log step progress to xUnit output. Override in derived classes to capture output.
+    /// </summary>
+    protected virtual Task LogStepAsync(string message)
+    {
+        // Base implementation does nothing; derived classes can inject ITestOutputHelper.
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Helper to wait for a locator with periodic "still waiting..." ticks.
+    /// Matches the pattern from SkillsPirateJourneyE2ETests.
+    /// </summary>
+    protected async Task WaitForWithTicksAsync(ILocator locator, int timeoutMs, string description)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        var tickInterval = TimeSpan.FromSeconds(5);
+        var nextTick = DateTime.UtcNow.Add(tickInterval);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                await locator.WaitForAsync(new LocatorWaitForOptions
+                {
+                    State = WaitForSelectorState.Visible,
+                    Timeout = 1000
+                });
+                return; // Success
+            }
+            catch (TimeoutException)
+            {
+                if (DateTime.UtcNow >= nextTick)
+                {
+                    await LogStepAsync($"⏱ Still waiting for {description}...");
+                    nextTick = DateTime.UtcNow.Add(tickInterval);
+                }
+            }
+        }
+
+        // Final attempt with full timeout error
+        await locator.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 5000
+        });
+    }
+
+    /// <summary>
+    /// Captures a screenshot on assertion failure. Useful for debugging demo runs.
+    /// </summary>
+    protected async Task WithScreenshotOnFailure(Func<Task> action)
+    {
+        try
+        {
+            await action();
+        }
+        catch (Exception ex)
+        {
+            var screenshotPath = Path.Combine(
+                Path.GetTempPath(),
+                $"demo-failure-{DateTime.UtcNow:yyyyMMddHHmmss}.png");
+            await Page.ScreenshotAsync(new PageScreenshotOptions { Path = screenshotPath });
+            await LogStepAsync($"❌ Test failed. Screenshot saved: {screenshotPath}");
+            throw new Exception($"Test failed. Screenshot: {screenshotPath}", ex);
+        }
+    }
+}

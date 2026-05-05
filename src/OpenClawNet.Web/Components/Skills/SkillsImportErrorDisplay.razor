@@ -1,0 +1,104 @@
+@*
+    K-4 Skills import error display component. Shows user-friendly error messages
+    from the import API endpoint, with dismiss and retry options.
+*@
+
+@if (Error is not null)
+{
+    <div class="alert @AlertClass alert-dismissible mt-3" role="alert">
+        <div class="d-flex align-items-start">
+            <span class="bi @IconClass me-2" style="font-size: 1.2rem;" aria-hidden="true"></span>
+            <div class="flex-grow-1">
+                <strong>@ErrorTitle</strong>
+                <p class="mb-0 mt-1">@ErrorMessage</p>
+                @if (!string.IsNullOrEmpty(Error.Value.Detail))
+                {
+                    <small class="d-block text-muted mt-2">
+                        <code>@Error.Value.Detail</code>
+                    </small>
+                }
+                <div class="mt-2">
+                    @if (OnRetry.HasDelegate)
+                    {
+                        <button type="button" class="btn btn-sm btn-outline-danger me-2" @onclick="OnRetry">
+                            <span class="bi bi-arrow-clockwise me-1" aria-hidden="true"></span>Retry
+                        </button>
+                    }
+                    <button type="button" class="btn btn-sm btn-link text-danger p-0" @onclick="OnDismiss">
+                        Dismiss
+                    </button>
+                </div>
+            </div>
+            <button type="button" class="btn-close" aria-label="Close" @onclick="OnDismiss"></button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter]
+    public (string Reason, string? Detail, int StatusCode)? Error { get; set; }
+
+    [Parameter]
+    public EventCallback OnDismiss { get; set; }
+
+    [Parameter]
+    public EventCallback OnRetry { get; set; }
+
+    private string AlertClass => Error?.StatusCode switch
+    {
+        409 => "alert-warning",  // Conflict: skill already exists
+        403 => "alert-warning",  // Forbidden: repo not allowed
+        410 => "alert-danger",   // Gone: preview expired
+        404 => "alert-warning",  // Not found
+        502 => "alert-danger",   // Bad Gateway: GitHub fetch failed
+        _ => "alert-danger"      // Default to danger
+    };
+
+    private string IconClass => Error?.StatusCode switch
+    {
+        409 => "bi-exclamation-triangle",
+        403 => "bi-shield-exclamation",
+        410 => "bi-clock-history",
+        404 => "bi-search",
+        502 => "bi-cloud-slash",
+        _ => "bi-exclamation-circle"
+    };
+
+    private string ErrorTitle => Error?.Reason switch
+    {
+        "SkillAlreadyExists" => "Skill Already Exists",
+        "RepoNotAllowed" => "Repository Not Allowed",
+        "PreviewExpired" => "Preview Token Expired",
+        "NotFound" => "Skill Not Found",
+        "FetchFailed" => "Failed to Fetch from GitHub",
+        "InvalidSha" => "Invalid Commit SHA",
+        "InvalidPath" => "Invalid Path",
+        "UnsupportedExtension" => "Unsupported File Type",
+        "BodyTooLarge" => "File Too Large",
+        "MalformedSkill" => "Malformed Skill",
+        "InvalidName" => "Invalid Skill Name",
+        "InvalidRequest" => "Invalid Request",
+        "UploadFailed" => "Upload Failed",
+        "UploadException" => "Upload Error",
+        _ => "Import Failed"
+    };
+
+    private string ErrorMessage => Error?.Reason switch
+    {
+        "SkillAlreadyExists" => "A skill with this name already exists. Please rename the skill or delete the existing one first.",
+        "RepoNotAllowed" => "This repository is not in the allowed list. Contact an administrator to add it.",
+        "PreviewExpired" => "The import preview token has expired. Please try importing again.",
+        "NotFound" => "The requested skill or file could not be found.",
+        "FetchFailed" => "Failed to fetch the skill from GitHub. Please check your network connection and try again.",
+        "InvalidSha" => "The commit SHA is invalid. Please provide a valid 7-40 character hex string.",
+        "InvalidPath" => "The path is invalid. Please check the file path and try again.",
+        "UnsupportedExtension" => "Only .md and .zip files are supported.",
+        "BodyTooLarge" => "The skill file is too large (max 256 KB). Please reduce the file size.",
+        "MalformedSkill" => "The skill file format is invalid. Check the YAML frontmatter and markdown syntax.",
+        "InvalidName" => "The skill name is invalid. Names must start with a letter or digit, contain only lowercase letters, numbers, hyphens, and underscores, and be no longer than 64 characters.",
+        "InvalidRequest" => "The request format is invalid. Please check and try again.",
+        "UploadFailed" => "The file upload failed. Please try again.",
+        "UploadException" => "An error occurred during upload.",
+        _ => Error?.Detail ?? "An unexpected error occurred. Please try again."
+    };
+}

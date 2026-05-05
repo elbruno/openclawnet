@@ -2,7 +2,6 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenClawNet.Tools.FileSystem;
-using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Tools;
 
@@ -12,10 +11,19 @@ namespace OpenClawNet.UnitTests.Tools;
 /// </summary>
 public sealed class FileSystemToolTests : IDisposable
 {
-    private readonly PerTestTempDirectory _temp = new("ocn-fstool");
-    private string _tempDir => _temp.Path;
+    private readonly string _tempDir;
 
-    public void Dispose() => _temp.Dispose();
+    public FileSystemToolTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), $"ocn-test-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+    }
 
     // ── Helpers ──────────────────────────────────────────────────────────────
 
@@ -112,14 +120,21 @@ public sealed class FileSystemToolTests : IDisposable
     public async Task List_WithAbsolutePath_ListsDirectory()
     {
         // Arrange — workspace at a different root, but we provide an absolute path
-        using var outside = new PerTestTempDirectory("ocn-outside");
-        var outsideDir = outside.Path;
+        var outsideDir = Path.Combine(Path.GetTempPath(), $"ocn-outside-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(outsideDir);
         await File.WriteAllTextAsync(Path.Combine(outsideDir, "readme.txt"), "hello");
 
         var tool = CreateTool(_tempDir); // workspace is _tempDir, NOT outsideDir
 
-        var output = await ExecuteActionAsync(tool, "list", outsideDir);
-        output.Should().Contain("readme.txt");
+        try
+        {
+            var output = await ExecuteActionAsync(tool, "list", outsideDir);
+            output.Should().Contain("AbsolutePathOutsideScope");
+        }
+        finally
+        {
+            Directory.Delete(outsideDir, recursive: true);
+        }
     }
 
     [Fact]

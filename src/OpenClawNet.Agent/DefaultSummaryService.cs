@@ -1,5 +1,6 @@
 using System.Net.Http.Json;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using OpenClawNet.Memory;
 using OpenClawNet.Models.Abstractions;
 
@@ -14,6 +15,7 @@ public sealed class DefaultSummaryService : ISummaryService
     private readonly IMemoryService _memoryService;
     private readonly IModelClient _modelClient;
     private readonly IHttpClientFactory _httpClientFactory;
+    private readonly IOptions<SummaryOptions> _summaryOptions;
     private readonly ILogger<DefaultSummaryService> _logger;
 
     private const int SummarizationThreshold = 20;
@@ -22,11 +24,13 @@ public sealed class DefaultSummaryService : ISummaryService
         IMemoryService memoryService,
         IModelClient modelClient,
         IHttpClientFactory httpClientFactory,
+        IOptions<SummaryOptions> summaryOptions,
         ILogger<DefaultSummaryService> logger)
     {
         _memoryService = memoryService;
         _modelClient = modelClient;
         _httpClientFactory = httpClientFactory;
+        _summaryOptions = summaryOptions ?? throw new ArgumentNullException(nameof(summaryOptions));
         _logger = logger;
     }
 
@@ -67,9 +71,16 @@ public sealed class DefaultSummaryService : ISummaryService
         try
         {
             var conversationText = string.Join("\n", messages.Select(m => $"{m.Role}: {m.Content}"));
+            // Issue #107: model name is now sourced from SummaryOptions (Summary:Model in config),
+            // defaulting to "llama3.2" via SummaryOptions.Model. No tagged variants are used.
+            var model = _summaryOptions.Value.Model;
+            if (string.IsNullOrWhiteSpace(model))
+            {
+                model = new SummaryOptions().Model;
+            }
             var summaryRequest = new ChatRequest
             {
-                Model = "llama3.2",
+                Model = model,
                 Messages =
                 [
                     new ChatMessage { Role = ChatMessageRole.System, Content = "You are a conversation summarizer. Summarize the following conversation concisely. Keep the summary under 500 words." },

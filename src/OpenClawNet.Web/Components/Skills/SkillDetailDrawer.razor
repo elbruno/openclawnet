@@ -1,0 +1,140 @@
+@using OpenClawNet.Web.Models.Skills
+@using OpenClawNet.Web.Services
+@inject SkillsClient SkillsClient
+
+@*
+    K-3 detail off-canvas drawer (spec §1.5). Shown when a skill row is
+    clicked. Loads full SkillDto via /api/skills/{name}, renders the body as
+    a styled <pre> (Markdig hardened pipeline lands in K-2), shows source /
+    layer / per-agent matrix.
+*@
+
+@if (Visible)
+{
+    <div class="offcanvas offcanvas-end show" tabindex="-1"
+         style="visibility: visible; width: 560px;"
+         aria-modal="true" role="dialog">
+        <div class="offcanvas-header border-bottom">
+            <h5 class="offcanvas-title">
+                <span class="bi bi-book me-2" aria-hidden="true"></span>
+                <code>@SkillName</code>
+            </h5>
+            <button type="button" class="btn-close" aria-label="Close"
+                    @onclick="OnClose"></button>
+        </div>
+        <div class="offcanvas-body">
+            @if (_loading)
+            {
+                <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading…</div>
+            }
+            else if (_error is not null)
+            {
+                <div class="alert alert-danger">@_error</div>
+            }
+            else if (_skill is not null)
+            {
+                <section class="mb-4">
+                    <h6 class="text-uppercase text-muted small">Source</h6>
+                    <dl class="row mb-0 small">
+                        <dt class="col-4">Layer</dt><dd class="col-8">@_skill.Layer</dd>
+                        <dt class="col-4">Source</dt><dd class="col-8">@_skill.Source</dd>
+                        @if (!string.IsNullOrEmpty(_skill.SourceCommitSha))
+                        {
+                            <dt class="col-4">Commit</dt><dd class="col-8"><code>@_skill.SourceCommitSha</code></dd>
+                        }
+                        @if (!string.IsNullOrEmpty(_skill.BundleSha256))
+                        {
+                            <dt class="col-4">Bundle SHA</dt><dd class="col-8 text-truncate" title="@_skill.BundleSha256"><code>@_skill.BundleSha256</code></dd>
+                        }
+                        <dt class="col-4">Updated</dt><dd class="col-8">@_skill.UpdatedUtc.UtcDateTime.ToString("yyyy-MM-dd HH:mm 'UTC'")</dd>
+                    </dl>
+                </section>
+
+                @if (!string.IsNullOrWhiteSpace(_skill.Description))
+                {
+                    <section class="mb-4">
+                        <h6 class="text-uppercase text-muted small">Description</h6>
+                        <p class="mb-0">@_skill.Description</p>
+                    </section>
+                }
+
+                <section class="mb-4">
+                    <h6 class="text-uppercase text-muted small">Per-agent enablement</h6>
+                    <SkillEnableMatrix Skill="_skill" Agents="Agents" />
+                </section>
+
+                <section class="mb-4">
+                    <h6 class="text-uppercase text-muted small">Body</h6>
+                    <div class="border rounded p-3 bg-light" style="max-height: 24rem; overflow-y: auto;">
+                        @if (string.IsNullOrWhiteSpace(_body))
+                        {
+                            <em class="text-muted">No body content available.</em>
+                        }
+                        else
+                        {
+                            <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.85rem;">@_body</pre>
+                        }
+                    </div>
+                </section>
+            }
+        </div>
+    </div>
+    <div class="offcanvas-backdrop fade show" @onclick="OnClose"></div>
+}
+
+@code {
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public string? SkillName { get; set; }
+    [Parameter] public IReadOnlyList<string>? Agents { get; set; }
+    [Parameter] public EventCallback OnClose { get; set; }
+
+    private SkillDto? _skill;
+    private string? _body;
+    private string? _error;
+    private bool _loading;
+    private string? _lastLoadedName;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (Visible && !string.IsNullOrEmpty(SkillName) && SkillName != _lastLoadedName)
+        {
+            await LoadAsync();
+        }
+        if (!Visible)
+        {
+            // Reset state when hidden so a re-open of the same skill re-fetches fresh.
+            _skill = null;
+            _body = null;
+            _error = null;
+            _lastLoadedName = null;
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _skill = await SkillsClient.GetAsync(SkillName!);
+            _lastLoadedName = SkillName;
+            // The SkillDto wire shape doesn't carry the body in this stub; the
+            // body field will be populated by Petey's K-1b /api/skills/{name}
+            // implementation. For now, render the description as a placeholder
+            // when no body endpoint is wired.
+            _body = _skill.Description;
+        }
+        catch (SkillsClientException ex)
+        {
+            _error = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+}

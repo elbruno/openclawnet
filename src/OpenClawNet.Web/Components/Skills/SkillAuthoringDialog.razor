@@ -1,0 +1,256 @@
+@using System.Text.RegularExpressions
+@using OpenClawNet.Web.Models.Skills
+@using OpenClawNet.Web.Services
+@inject SkillsClient SkillsClient
+
+@*
+    K-3 in-app authoring dialog (L-5 / spec §2). Bootstrap modal-xl with split
+    pane: form on the left, live preview on the right. Body editor is a plain
+    <textarea> for v1 (rich editor deferred per brief). Preview pane shows the
+    raw markdown in a styled <pre> until Markdig pipeline lands in K-2.
+
+    Validation:
+      • Name → H-5 allowlist regex; rejects S-4 reserved (memory, doc-processor)
+      • Description → required
+      • Body → required, ≤ 256 KB (S-11)
+    Submit disabled until all pass. Server 400 → Bootstrap alert with Reason.
+*@
+
+@if (Visible)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="newSkillTitle">
+        <div class="modal-dialog modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="newSkillTitle">
+                        <span class="bi bi-book me-2" aria-hidden="true"></span>New skill
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close"
+                            @onclick="OnCancelAsync" disabled="@_busy"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-lg-6">
+                            <div class="mb-3">
+                                <label for="skillName" class="form-label">Name</label>
+                                <input id="skillName"
+                                       type="text"
+                                       class="form-control @(_nameError is not null && _nameTouched ? "is-invalid" : null)"
+                                       data-testid="skill-name"
+                                       @bind="_name"
+                                       @bind:event="oninput"
+                                       @onblur="() => _nameTouched = true"
+                                       autocomplete="off"
+                                       spellcheck="false"
+                                       disabled="@_busy" />
+                                @if (_nameError is not null && _nameTouched)
+                                {
+                                    <div class="invalid-feedback d-block">@_nameError</div>
+                                }
+                                <div class="form-text">
+                                    Letters, digits, dot, hyphen, underscore. Max 64 chars.
+                                    Must start with a letter or digit. Cannot reuse a built-in name.
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="skillDesc" class="form-label">Description</label>
+                                <textarea id="skillDesc"
+                                          class="form-control"
+                                          data-testid="skill-description"
+                                          rows="2"
+                                          maxlength="500"
+                                          @bind="_description"
+                                          @bind:event="oninput"
+                                          disabled="@_busy"></textarea>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="skillVersion" class="form-label">Version <small class="text-muted">(optional)</small></label>
+                                <input id="skillVersion"
+                                       type="text"
+                                       class="form-control"
+                                       placeholder="1.0.0"
+                                       data-testid="skill-version"
+                                       @bind="_version"
+                                       disabled="@_busy" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="skillTags" class="form-label">Tags <small class="text-muted">(comma-separated, optional)</small></label>
+                                <input id="skillTags"
+                                       type="text"
+                                       class="form-control"
+                                       placeholder="git, tutoring"
+                                       data-testid="skill-tags"
+                                       @bind="_tagsRaw"
+                                       disabled="@_busy" />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="skillBody" class="form-label">Markdown body</label>
+                                <textarea id="skillBody"
+                                          class="form-control font-monospace"
+                                          data-testid="skill-body"
+                                          rows="14"
+                                          @bind="_body"
+                                          @bind:event="oninput"
+                                          disabled="@_busy"></textarea>
+                                <div class="form-text d-flex justify-content-between">
+                                    <span>@($"{_bodyBytes:N0} / 262,144 bytes")</span>
+                                    @if (_bodyError is not null)
+                                    {
+                                        <span class="text-danger">@_bodyError</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-lg-6">
+                            <label class="form-label">Preview</label>
+                            <div class="border rounded p-3 bg-light" style="min-height: 28rem; max-height: 32rem; overflow-y: auto;">
+                                @if (string.IsNullOrWhiteSpace(_body))
+                                {
+                                    <em class="text-muted">Markdown preview appears here.</em>
+                                }
+                                else
+                                {
+                                    @* v1: raw rendering — Markdig pipeline lands when Drummond's K-2 hardened renderer is ready. *@
+                                    <pre class="mb-0" style="white-space: pre-wrap; font-size: 0.9rem;">@_body</pre>
+                                }
+                            </div>
+                        </div>
+                    </div>
+
+                    @if (_serverError is not null)
+                    {
+                        <div class="alert alert-danger mt-3 mb-0" role="alert" data-testid="server-error">
+                            <strong>Couldn't save skill:</strong> @_serverError
+                        </div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary"
+                            @onclick="OnCancelAsync" disabled="@_busy">Cancel</button>
+                    <button type="button" class="btn btn-primary"
+                            data-testid="skill-submit"
+                            @onclick="OnSubmitAsync"
+                            disabled="@(!CanSubmit)">
+                        @if (_busy)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Save skill
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+}
+
+@code {
+    // H-5 allowlist regex (mirrors server). Server is the source of truth;
+    // this is a UX nicety + saves a round-trip.
+    private static readonly Regex NamePattern = new(
+        "^[A-Za-z0-9][A-Za-z0-9._-]{0,63}$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    // S-4 reserved (built-in skill names per K-D-2). Authoring path cannot collide.
+    private static readonly HashSet<string> ReservedNames = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "memory", "doc-processor"
+    };
+
+    private const int MaxBodyBytes = 256 * 1024;
+
+    [Parameter] public bool Visible { get; set; }
+    [Parameter] public EventCallback OnCancel { get; set; }
+    [Parameter] public EventCallback<SkillDto> OnCreated { get; set; }
+
+    private string _name = string.Empty;
+    private string _description = string.Empty;
+    private string _version = string.Empty;
+    private string _tagsRaw = string.Empty;
+    private string _body = string.Empty;
+    private bool _nameTouched;
+    private bool _busy;
+    private string? _serverError;
+
+    private string? _nameError =>
+        string.IsNullOrWhiteSpace(_name)
+            ? "Name is required."
+            : !NamePattern.IsMatch(_name)
+                ? "Name doesn't match the allowed pattern."
+                : ReservedNames.Contains(_name)
+                    ? $"'{_name}' is a built-in skill name."
+                    : null;
+
+    private string? _bodyError =>
+        _bodyBytes > MaxBodyBytes
+            ? $"Body exceeds {MaxBodyBytes:N0} bytes."
+            : null;
+
+    private int _bodyBytes => string.IsNullOrEmpty(_body) ? 0 : System.Text.Encoding.UTF8.GetByteCount(_body);
+
+    private bool CanSubmit =>
+        !_busy
+        && _nameError is null
+        && !string.IsNullOrWhiteSpace(_description)
+        && !string.IsNullOrWhiteSpace(_body)
+        && _bodyError is null;
+
+    protected override void OnParametersSet()
+    {
+        if (!Visible)
+        {
+            // Reset on hide so the next open is fresh.
+            _name = _description = _version = _tagsRaw = _body = string.Empty;
+            _nameTouched = false;
+            _busy = false;
+            _serverError = null;
+        }
+    }
+
+    private async Task OnSubmitAsync()
+    {
+        if (!CanSubmit) return;
+        _busy = true;
+        _serverError = null;
+        try
+        {
+            var tags = string.IsNullOrWhiteSpace(_tagsRaw)
+                ? null
+                : _tagsRaw.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+            var request = new CreateSkillRequest(
+                Name: _name.Trim(),
+                Description: _description.Trim(),
+                Version: string.IsNullOrWhiteSpace(_version) ? null : _version.Trim(),
+                Layer: "installed",
+                AgentScope: null,
+                Tags: tags,
+                Body: _body);
+
+            var created = await SkillsClient.CreateAsync(request);
+            await OnCreated.InvokeAsync(created);
+        }
+        catch (SkillsClientException ex)
+        {
+            _serverError = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _serverError = ex.Message;
+        }
+        finally
+        {
+            _busy = false;
+        }
+    }
+
+    private async Task OnCancelAsync()
+    {
+        if (_busy) return;
+        await OnCancel.InvokeAsync();
+    }
+}

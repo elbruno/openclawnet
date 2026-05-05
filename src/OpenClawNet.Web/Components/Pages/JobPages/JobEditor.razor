@@ -142,6 +142,8 @@
             }
         </div>
 
+        <JobChannelConfig @ref="_channelConfig" JobId="@JobId" />
+
         @if (_submitError is not null)
         {
             <div class="alert alert-danger py-2 small mb-2">⚠️ @_submitError</div>
@@ -170,6 +172,7 @@
     private JobDetailDto? _job;
     private List<AgentProfileDto> _agentProfiles = [];
     private bool _loadingProfiles = true;
+    private JobChannelConfig? _channelConfig;
 
     // Form fields
     private string _name = string.Empty;
@@ -322,6 +325,12 @@
     {
         if (!Validate()) return;
 
+        // Validate channel config
+        if (_channelConfig is not null && !_channelConfig.Validate())
+        {
+            return;
+        }
+
         _submitting = true;
         _submitError = null;
         StateHasChanged();
@@ -340,13 +349,27 @@
                 NaturalLanguageSchedule = string.IsNullOrWhiteSpace(_nlSchedule) ? null : _nlSchedule.Trim()
             };
 
+            Guid savedJobId;
             if (JobId.HasValue)
             {
                 await JobsClient.UpdateAsync(JobId.Value, request);
+                savedJobId = JobId.Value;
             }
             else
             {
-                await JobsClient.CreateAsync(request);
+                var createdJob = await JobsClient.CreateAsync(request);
+                savedJobId = createdJob.Id;
+            }
+
+            // Save channel configurations
+            if (_channelConfig is not null)
+            {
+                var channelSaveSuccess = await _channelConfig.SaveAsync(savedJobId);
+                if (!channelSaveSuccess)
+                {
+                    _submitError = "Job saved but failed to save channel configurations. Please try editing the job again.";
+                    return;
+                }
             }
 
             Navigation.NavigateTo("/jobs");

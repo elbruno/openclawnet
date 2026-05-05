@@ -5,16 +5,20 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using OpenClawNet.Services.Scheduler.Models;
 using OpenClawNet.Services.Scheduler.Services;
-using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Scheduler;
 
 public sealed class SchedulerSettingsServiceTests : IDisposable
 {
-    private readonly PerTestTempDirectory _temp = new("scheduler-tests");
-    private string _tempDir => _temp.Path;
+    private readonly string _tempDir;
 
-    public void Dispose() => _temp.Dispose();
+    public SchedulerSettingsServiceTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), $"scheduler-tests-{Guid.NewGuid():N}");
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose() => Directory.Delete(_tempDir, recursive: true);
 
     private SchedulerSettingsService Create(IConfiguration? config = null)
     {

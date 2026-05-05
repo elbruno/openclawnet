@@ -5,16 +5,24 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OpenClawNet.Gateway.Services;
-using OpenClawNet.UnitTests.Fixtures;
 
 namespace OpenClawNet.UnitTests.Gateway;
 
 public class RuntimeModelSettingsTests : IDisposable
 {
-    private readonly PerTestTempDirectory _temp = new("rmsettings");
-    private string _tempDir => _temp.Path;
+    private readonly string _tempDir;
 
-    public void Dispose() => _temp.Dispose();
+    public RuntimeModelSettingsTests()
+    {
+        _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_tempDir);
+    }
+
+    public void Dispose()
+    {
+        if (Directory.Exists(_tempDir))
+            Directory.Delete(_tempDir, recursive: true);
+    }
 
     // ── Load tests ────────────────────────────────────────────────────────────
 

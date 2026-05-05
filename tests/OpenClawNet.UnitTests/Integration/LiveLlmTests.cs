@@ -237,9 +237,6 @@ public sealed class LiveLlmTests : IDisposable
         var toolRegistry = BuildEmptyRegistry();
         var summaryService = BuildNoOpSummary();
         var loggerFactory = NullLoggerFactory.Instance;
-        var skillsProvider = new AgentSkillsProvider(
-            Path.Combine(AppContext.BaseDirectory, "skills"), null, null, null, loggerFactory);
-
         return new DefaultAgentRuntime(
             realModelClient,
             promptComposer,
@@ -247,7 +244,6 @@ public sealed class LiveLlmTests : IDisposable
             toolRegistry,
             store,
             summaryService,
-            skillsProvider,
             new OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator(
                 NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance),
             loggerFactory,
@@ -260,8 +256,14 @@ public sealed class LiveLlmTests : IDisposable
         workspaceLoader.Setup(w => w.LoadAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BootstrapContext(null, null, null));
 
+        var skillService = new Mock<ISkillService>();
+        skillService.Setup(s => s.FindRelevantSkillsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<SkillSummary>());
+
         return new DefaultPromptComposer(
             workspaceLoader.Object,
+            skillService.Object,
+            NullLogger<DefaultPromptComposer>.Instance,
             Options.Create(new WorkspaceOptions()));
     }
 

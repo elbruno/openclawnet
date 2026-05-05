@@ -115,7 +115,7 @@ public sealed class McpServerEndpointsTests : IClassFixture<GatewayWebAppFactory
 
     private sealed record RegistryResponse(McpRegistryEntry[] Entries, string? NextCursor);
 
-    private sealed class GatewayWebAppFactoryWithStubRegistry : Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<Program>
+    private sealed class GatewayWebAppFactoryWithStubRegistry : Microsoft.AspNetCore.Mvc.Testing.WebApplicationFactory<OpenClawNet.Gateway.GatewayProgramMarker>
     {
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {

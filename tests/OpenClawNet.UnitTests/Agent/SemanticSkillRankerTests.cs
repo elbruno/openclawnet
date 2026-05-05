@@ -1,196 +1,289 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using FluentAssertions;
-using OpenClawNet.UnitTests.Fixtures;
+using Microsoft.Extensions.Logging;
+using Moq;
+using OpenClawNet.Agent;
 
-namespace OpenClawNet.UnitTests.Agent;
+namespace OpenClawNet.Agent.Tests;
 
-/// <summary>
-/// Test suite for SemanticSkillRanker - tests timeout handling, fallback behavior, and ranking logic.
-/// This scaffold demonstrates the test structure for when SemanticSkillRanker is implemented.
-/// </summary>
-public sealed class SemanticSkillRankerTests
+[Trait("Category", "Unit")]
+public class SemanticSkillRankerTests
 {
-    [Fact]
-    public async Task RankWithOllamaAvailable_ReturnsResultsWithinTimeout()
+    private readonly Mock<IHybridSearchService> _mockHybridSearch;
+    private readonly Mock<ILogger<SemanticSkillRanker>> _mockLogger;
+    private readonly SemanticSkillRanker _ranker;
+
+    public SemanticSkillRankerTests()
     {
-        // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "File Reader", [0.1f, 0.2f, 0.3f, 0.4f], "Read files");
-        fixture.InsertVector("skill-2", "File Writer", [0.2f, 0.3f, 0.4f, 0.5f], "Write files");
-
-        // Act
-        var isAvailable = await mockClient.Object.IsAvailableAsync(CancellationToken.None);
-
-        // Assert
-        isAvailable.Should().BeTrue();
-        fixture.All.Should().HaveCount(2);
+        _mockHybridSearch = new Mock<IHybridSearchService>();
+        _mockLogger = new Mock<ILogger<SemanticSkillRanker>>();
+        _ranker = new SemanticSkillRanker(_mockHybridSearch.Object, _mockLogger.Object);
     }
 
     [Fact]
-    public async Task RankWithTimeoutScenario_FallsBackGracefully()
+    public async Task RerankAsync_WithEmptySkills_ReturnsEmpty()
     {
         // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "Reader", [0.1f, 0.2f]);
-        fixture.InsertVector("skill-2", "Writer", [0.3f, 0.4f]);
+        var skills = Array.Empty<SkillSummary>();
 
-        // Act: Simulate timeout using CancellationToken with 100ms deadline (as per Phase 2B SLA)
-        var fallbackResult = await TimeoutScenarios.TryExecuteWithFallbackAsync(
-            async (ct) => 
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().BeEmpty();
+        _mockHybridSearch.Verify(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RerankAsync_WithNoSemanticResults_ReturnsFallbackToKeywordRanking()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] },
+            new() { Name = "skill-b", Description = "Test b", Keywords = ["keyword-b"], Confidence = ConfidenceLevel.Medium, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HybridSearchResult>());
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().BeEquivalentTo(skills);
+    }
+
+    [Fact]
+    public async Task RerankAsync_WithSemanticResults_ReranksByRFFScore()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] },
+            new() { Name = "skill-b", Description = "Test b", Keywords = ["keyword-b"], Confidence = ConfidenceLevel.Medium, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] },
+            new() { Name = "skill-c", Description = "Test c", Keywords = ["keyword-c"], Confidence = ConfidenceLevel.Low, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        var semanticResults = new List<HybridSearchResult>
+        {
+            new() { Id = "skill-c", Score = 0.95 },
+            new() { Id = "skill-a", Score = 0.87 },
+            new() { Id = "skill-b", Score = 0.72 }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(semanticResults);
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(3);
+        result.Should().AllSatisfy(skill => skill.Should().NotBeNull());
+    }
+
+    [Fact]
+    public async Task RerankAsync_WithTimeout_FallsBackToKeywordRanking()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("skill-a");
+    }
+
+    [Fact]
+    public async Task RerankAsync_WithSemanticException_FallsBackToKeywordRanking()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new InvalidOperationException("Semantic search failed"));
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("skill-a");
+    }
+
+    [Fact]
+    public async Task RerankAsync_WithPartialSemanticResults_IncludesUnrankedSkills()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] },
+            new() { Name = "skill-b", Description = "Test b", Keywords = ["keyword-b"], Confidence = ConfidenceLevel.Medium, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        var semanticResults = new List<HybridSearchResult>
+        {
+            new() { Id = "skill-a", Score = 0.90 }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(semanticResults);
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().AllSatisfy(skill => skill.Should().NotBeNull());
+    }
+
+    [Fact]
+    public async Task RerankAsync_PreservesSkillMetadata()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new()
             {
-                var available = await mockClient.Object.IsAvailableAsync(ct);
-                return available;
-            },
-            fallbackValue: false,
-            timeoutMs: 100
-        );
+                Name = "skill-a",
+                Description = "Test skill",
+                Keywords = ["keyword-a"],
+                Confidence = ConfidenceLevel.High,
+                ExtractedDate = "2024-01-15",
+                ValidatedBy = ["agent-1"]
+            }
+        };
 
-        // Assert: Should complete without throwing and return fallback value on timeout
-        fallbackResult.Should().Be(true);
-    }
+        var semanticResults = new List<HybridSearchResult>
+        {
+            new() { Id = "skill-a", Score = 0.90 }
+        };
 
-    [Fact]
-    public async Task RankWithOllamaUnavailable_FallsBackToKeywordResults()
-    {
-        // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(false); // Ollama not available
-
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "File Reader", [0.1f, 0.2f]);
-        fixture.InsertVector("skill-2", "Database Query", [0.9f, 0.8f]);
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(semanticResults);
 
         // Act
-        var isAvailable = await mockClient.Object.IsAvailableAsync(CancellationToken.None);
-        var keywordFallback = !isAvailable;
-
-        // Assert: Should use keyword fallback when Ollama unavailable
-        isAvailable.Should().BeFalse();
-        keywordFallback.Should().BeTrue();
-    }
-
-    [Fact]
-    public async Task RankWithEmptyVectorStore_HandlesGracefully()
-    {
-        // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-        var emptyFixture = new SkillVectorFixture();
-
-        // Act
-        var isAvailable = await mockClient.Object.IsAvailableAsync(CancellationToken.None);
+        var result = await _ranker.RerankAsync("test query", skills);
 
         // Assert
-        isAvailable.Should().BeTrue();
-        emptyFixture.All.Should().BeEmpty();
+        var rerankResult = result.First();
+        rerankResult.Name.Should().Be("skill-a");
+        rerankResult.Description.Should().Be("Test skill");
+        rerankResult.Keywords.Should().ContainSingle().Which.Should().Be("keyword-a");
+        rerankResult.Confidence.Should().Be(ConfidenceLevel.High);
+        rerankResult.ExtractedDate.Should().Be("2024-01-15");
+        rerankResult.ValidatedBy.Should().Contain("agent-1");
     }
 
     [Fact]
-    public async Task RankRespectsSLA_100msTimeout()
+    public async Task RerankAsync_CallsHybridSearchWithCorrectParameters()
     {
         // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "File Reader", [0.1f, 0.2f]);
+        var taskDescription = "find file operations skills";
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
 
-        // Act: 100ms timeout as per Phase 2B SLA (200ms total enrichment budget)
-        var stopwatch = System.Diagnostics.Stopwatch.StartNew();
-        var available = await TimeoutScenarios.TryExecuteWithFallbackAsync(
-            mockClient.Object.IsAvailableAsync,
-            fallbackValue: false,
-            timeoutMs: 100
-        );
-        stopwatch.Stop();
-
-        // Assert: Should complete within SLA
-        stopwatch.ElapsedMilliseconds.Should().BeLessThan(200);
-        available.Should().Be(true);
-    }
-
-    [Fact]
-    public void VectorQueryReturnsSortedBySimilarity()
-    {
-        // Arrange: Vector fixture with dissimilar vectors
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "File Reader", [0.1f, 0.2f, 0.3f, 0.4f]);
-        fixture.InsertVector("skill-2", "File Writer", [0.2f, 0.3f, 0.4f, 0.5f]);
-        fixture.InsertVector("skill-3", "Database Query", [0.9f, 0.8f, 0.7f, 0.6f]);
-
-        var queryEmbedding = new[] { 0.1f, 0.2f, 0.3f, 0.4f };
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HybridSearchResult>());
 
         // Act
-        var results = fixture.QueryByEmbedding(queryEmbedding, topK: 3);
-
-        // Assert: Results should be sorted by similarity (descending)
-        results.Should().HaveCount(3);
-        results[0].Vector.SkillId.Should().Be("skill-1"); // Most similar
-        results[0].Similarity.Should().BeGreaterThan(0.99f);
-        results[2].Vector.SkillId.Should().Be("skill-3"); // Least similar
-    }
-
-    [Fact]
-    public async Task MultipleHealthChecksWithTransientFailure_EventuallySucceeds()
-    {
-        // Arrange: Simulate transient failure recovery scenario
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-
-        // Act
-        var check1 = await mockClient.Object.IsAvailableAsync(CancellationToken.None);
-        var check2 = await mockClient.Object.IsAvailableAsync(CancellationToken.None);
-
-        // Assert: Both checks should succeed
-        check1.Should().BeTrue();
-        check2.Should().BeTrue();
-    }
-
-    [Fact]
-    public void UpsertVectorUpdatesExistingWithoutDuplicating()
-    {
-        // Arrange
-        var fixture = new SkillVectorFixture();
-        fixture.InsertVector("skill-1", "Original", [0.1f, 0.2f]);
-
-        var originalCount = fixture.All.Count;
-
-        // Act
-        fixture.UpsertVector("skill-1", "Updated", [0.3f, 0.4f]);
-
-        // Assert: Should update, not duplicate
-        fixture.All.Count.Should().Be(originalCount);
-        fixture.GetVector("skill-1")!.SkillName.Should().Be("Updated");
-    }
-
-    [Fact]
-    public async Task ConcurrentTimeoutOperations_AllRespectDeadline()
-    {
-        // Arrange
-        var mockClient = new MockOllamaClient();
-        mockClient.SetupAvailable(true);
-
-        // Act: Simulate concurrent operations with 100ms timeout each
-        var tasks = Enumerable.Range(0, 5)
-            .Select(async _ =>
-            {
-                var cts = new CancellationTokenSource(100);
-                return await mockClient.Object.IsAvailableAsync(cts.Token);
-            })
-            .ToList();
-
-        var results = await Task.WhenAll(tasks);
+        await _ranker.RerankAsync(taskDescription, skills);
 
         // Assert
-        results.Should().HaveCountGreaterThanOrEqualTo(5);
-        results.All(r => r == true).Should().BeTrue();
+        _mockHybridSearch.Verify(
+            x => x.SearchAsync(
+                taskDescription,
+                "skills",
+                skills.Count,
+                It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task RerankAsync_HandlesEmptySemanticResultsGracefully()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] },
+            new() { Name = "skill-b", Description = "Test b", Keywords = ["keyword-b"], Confidence = ConfidenceLevel.Medium, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<HybridSearchResult>());
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert
+        result.Should().HaveCount(2);
+        result.Should().BeEquivalentTo(skills);
+    }
+
+    [Fact]
+    public async Task RerankAsync_SupportsEmbedderFailureRecovery()
+    {
+        // Arrange - Simulate embedder failure during semantic search
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new Exception("Embedder unavailable"));
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills);
+
+        // Assert - Should gracefully fall back to keyword ranking
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("skill-a");
+    }
+
+    [Fact]
+    public async Task RerankAsync_RespectsCancellationToken()
+    {
+        // Arrange
+        var skills = new List<SkillSummary>
+        {
+            new() { Name = "skill-a", Description = "Test a", Keywords = ["keyword-a"], Confidence = ConfidenceLevel.High, ExtractedDate = "2024-01-15", ValidatedBy = ["agent-1"] }
+        };
+
+        using var cts = new CancellationTokenSource();
+        cts.CancelAfter(TimeSpan.FromMilliseconds(1));
+
+        _mockHybridSearch
+            .Setup(x => x.SearchAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new OperationCanceledException());
+
+        // Act
+        var result = await _ranker.RerankAsync("test query", skills, cts.Token);
+
+        // Assert - Should handle cancellation gracefully
+        result.Should().HaveCount(1);
+        result.First().Name.Should().Be("skill-a");
     }
 }

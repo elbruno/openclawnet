@@ -141,6 +141,15 @@ public sealed class ChatEndpointProfileTests
         builder.Services.AddSingleton(profileStore);
         builder.Services.AddSingleton(definitionStore);
 
+        // Add logging and HTTP context accessor
+        builder.Services.AddLogging();
+        builder.Services.AddHttpContextAccessor();
+
+        // Register ChatNamingService (needed by PostAutoRename endpoint)
+        var mockModelClient = new Mock<IModelClient>();
+        builder.Services.AddSingleton(mockModelClient.Object);
+        builder.Services.AddSingleton<ChatNamingService>();
+
         // Register ProviderResolver with a real RuntimeModelSettings backed by in-memory config
         var config = new ConfigurationBuilder()
             .AddInMemoryCollection(new Dictionary<string, string?>

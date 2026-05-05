@@ -1,0 +1,177 @@
+@page "/user-folders"
+@rendermode InteractiveServer
+@using OpenClawNet.Web.Components.UserFolders
+@using OpenClawNet.Web.Models.UserFolders
+@using OpenClawNet.Web.Services
+@inject UserFolderClient Client
+
+<PageTitle>OpenClaw .NET - User folders</PageTitle>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">
+            <span class="bi bi-folder2-open me-2" aria-hidden="true"></span>User folders
+        </h3>
+        <p class="text-muted mb-0">
+            Operator-managed folders under the configured user-storage root. Used for sample files, prompts, and uploads consumed by agents.
+        </p>
+    </div>
+    <button class="btn btn-primary" @onclick="ShowCreate" disabled="@_loading">
+        <span class="bi bi-folder-plus me-1" aria-hidden="true"></span>New folder
+    </button>
+</div>
+
+@if (_pageError is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Couldn't load user folders:</strong> @_pageError
+        <button class="btn btn-link p-0 ms-2 align-baseline" @onclick="LoadAsync">Retry</button>
+    </div>
+}
+
+@if (_loading)
+{
+    <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading folders…</div>
+}
+else if (_folders.Count == 0 && _pageError is null)
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="display-6 mb-3"><span class="bi bi-folder2-open text-muted"></span></div>
+            <h5 class="mb-2">No user folders yet</h5>
+            <p class="text-muted mb-3">User folders hold sample files and prompts your agents can read and write.</p>
+            <button class="btn btn-primary" @onclick="ShowCreate">
+                <span class="bi bi-folder-plus me-1" aria-hidden="true"></span>Create your first folder
+            </button>
+        </div>
+    </div>
+}
+else if (_folders.Count > 0)
+{
+    <div class="table-responsive">
+        <table class="table table-striped align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col" class="text-end">Size</th>
+                    <th scope="col">Last modified</th>
+                    <th scope="col" class="text-end" style="width: 1%; white-space: nowrap;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var folder in _folders)
+                {
+                    <tr>
+                        <td>
+                            <span class="bi bi-folder-fill text-warning me-2" aria-hidden="true"></span>
+                            <code>@folder.Name</code>
+                        </td>
+                        <td class="text-end">@FormatBytes(folder.SizeBytes)</td>
+                        <td>@folder.LastWriteTimeUtc.ToString("yyyy-MM-dd HH:mm 'UTC'")</td>
+                        <td class="text-end">
+                            <div class="d-inline-flex gap-2">
+                                <UserFolderUploadButton FolderName="@folder.Name"
+                                                        Client="Client"
+                                                        OnUploaded="OnUploaded" />
+                                <button class="btn btn-outline-danger btn-sm" @onclick="() => ShowDelete(folder.Name)">
+                                    <span class="bi bi-trash me-1" aria-hidden="true"></span>Delete
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<NewUserFolderDialog Visible="_showCreate"
+                     Client="Client"
+                     OnCancel="HideCreate"
+                     OnCreated="OnCreatedAsync" />
+
+<UserFolderDeleteDialog Visible="_showDelete"
+                        FolderName="@_deleteTarget"
+                        Client="Client"
+                        OnCancel="HideDelete"
+                        OnDeleted="OnDeletedAsync" />
+
+@code {
+    private List<UserFolderDto> _folders = new();
+    private bool _loading;
+    private string? _pageError;
+    private bool _showCreate;
+    private bool _showDelete;
+    private string? _deleteTarget;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _pageError = null;
+        try
+        {
+            var list = await Client.ListAsync();
+            _folders = list.OrderBy(f => f.Name, StringComparer.Ordinal).ToList();
+        }
+        catch (UserFolderClientException ex)
+        {
+            _pageError = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _pageError = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+    }
+
+    private void ShowCreate() => _showCreate = true;
+    private void HideCreate() => _showCreate = false;
+
+    private void ShowDelete(string name)
+    {
+        _deleteTarget = name;
+        _showDelete = true;
+    }
+
+    private void HideDelete()
+    {
+        _showDelete = false;
+        _deleteTarget = null;
+    }
+
+    private async Task OnCreatedAsync(string _)
+    {
+        _showCreate = false;
+        await LoadAsync();
+    }
+
+    private async Task OnDeletedAsync(string _)
+    {
+        _showDelete = false;
+        _deleteTarget = null;
+        await LoadAsync();
+    }
+
+    private void OnUploaded(UserFolderUploadResult result)
+    {
+        var idx = _folders.FindIndex(f => f.Name == result.Name);
+        if (idx >= 0)
+        {
+            _folders[idx] = new UserFolderDto(result.Name, result.SizeBytes, result.LastWriteTimeUtc);
+            StateHasChanged();
+        }
+    }
+
+    private static string FormatBytes(long bytes)
+    {
+        if (bytes < 1024) return $"{bytes} B";
+        if (bytes < 1024 * 1024) return $"{bytes / 1024.0:F1} KB";
+        if (bytes < 1024L * 1024 * 1024) return $"{bytes / (1024.0 * 1024):F1} MB";
+        return $"{bytes / (1024.0 * 1024 * 1024):F2} GB";
+    }
+}

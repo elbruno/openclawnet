@@ -1,0 +1,33 @@
+@page "/audit"
+@rendermode InteractiveServer
+
+<PageTitle>Audit Logs - OpenClaw .NET</PageTitle>
+
+<h3>Audit Logs</h3>
+
+<p class="text-muted">
+    Comprehensive audit trails for job state changes, tool approvals, and adapter deliveries.
+</p>
+
+<div class="card">
+    <div class="card-header">
+        <MudTabs Elevation="0" Rounded="false" Centered="false" Color="Color.Primary">
+            <MudTabPanel Text="Job State Changes" Icon="@Icons.Material.Filled.SwapHoriz">
+                <div class="card-body">
+                    <JobStateChangesTabComponent />
+                </div>
+            </MudTabPanel>
+            <MudTabPanel Text="Tool Approvals" Icon="@Icons.Material.Filled.VerifiedUser">
+                <div class="card-body">
+                    <ToolApprovalsTabComponent />
+                </div>
+            </MudTabPanel>
+            <MudTabPanel Text="Adapter Deliveries" Icon="@Icons.Material.Filled.SendToMobile">
+                <div class="card-body">
+                    <AdapterDeliveriesTabComponent />
+                </div>
+            </MudTabPanel>
+        </MudTabs>
+    </div>
+</div>
+

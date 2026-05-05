@@ -1,0 +1,178 @@
+@using System.Net.Http.Json
+@using OpenClawNet.Web.Models.Audit
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-3">
+            <MudDatePicker Label="From Date" @bind-Date="_sinceFilter" Clearable="true" />
+        </div>
+        <div class="col-md-3">
+            <MudDatePicker Label="To Date" @bind-Date="_untilFilter" Clearable="true" />
+        </div>
+        <div class="col-md-3">
+            <MudTextField @bind-Value="_jobIdFilter" Label="Job ID (GUID)" Clearable="true" />
+        </div>
+        <div class="col-md-3 d-flex align-items-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFilterChanged" FullWidth="true">
+                Apply Filters
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @_error
+    </div>
+}
+else if (_changes.Count == 0)
+{
+    <div class="text-center py-5 text-muted">
+        <p class="mb-0">No state changes found.</p>
+    </div>
+}
+else
+{
+    <MudDataGrid T="AuditJobStateChangeDto"
+                 Items="_changes"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 FilterMode="DataGridFilterMode.Simple"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="60vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_changes.Count state change(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.ChangedAt" Title="Timestamp" InitialDirection="SortDirection.Descending">
+                <CellTemplate>
+                    @context.Item.ChangedAt.ToLocalTime().ToString("g")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.JobName" Title="Job">
+                <CellTemplate>
+                    @if (context.Item.JobName is not null)
+                    {
+                        <a href="/jobs/@context.Item.JobId">@context.Item.JobName</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted">@context.Item.JobId.ToString().Substring(0, 8)</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.FromStatus" Title="From Status">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@GetStatusChipColor(context.Item.FromStatus)"
+                             Variant="Variant.Filled">@context.Item.FromStatus.ToUpperInvariant()</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ToStatus" Title="To Status">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@GetStatusChipColor(context.Item.ToStatus)"
+                             Variant="Variant.Filled">@context.Item.ToStatus.ToUpperInvariant()</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ChangedBy" Title="Changed By">
+                <CellTemplate>
+                    @(context.Item.ChangedBy ?? "—")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Reason" Title="Reason" Filterable="true">
+                <CellTemplate>
+                    @(context.Item.Reason ?? "—")
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+    </MudDataGrid>
+}
+
+@code {
+    private List<AuditJobStateChangeDto> _changes = [];
+    private bool _loading = true;
+    private string? _error;
+    private bool _dense = true;
+    private DateTime? _sinceFilter;
+    private DateTime? _untilFilter;
+    private string? _jobIdFilter;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var queryParams = new List<string> { "limit=500" };
+
+            if (_sinceFilter.HasValue)
+                queryParams.Add($"since={_sinceFilter.Value:yyyy-MM-dd}");
+            
+            if (_untilFilter.HasValue)
+                queryParams.Add($"until={_untilFilter.Value:yyyy-MM-dd}");
+
+            if (!string.IsNullOrWhiteSpace(_jobIdFilter) && Guid.TryParse(_jobIdFilter, out var jobId))
+                queryParams.Add($"jobId={jobId}");
+
+            var queryString = string.Join("&", queryParams);
+            var response = await client.GetAsync($"api/audit/job-state-changes?{queryString}");
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<AuditJobStateChangesResponse>();
+            _changes = result?.Changes ?? [];
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load job state changes: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFilterChanged()
+    {
+        await LoadDataAsync();
+    }
+
+    private static Color GetStatusChipColor(string? status) => status?.ToLowerInvariant() switch
+    {
+        "draft" => Color.Secondary,
+        "active" => Color.Success,
+        "paused" => Color.Warning,
+        "cancelled" => Color.Error,
+        "completed" => Color.Info,
+        _ => Color.Default
+    };
+}

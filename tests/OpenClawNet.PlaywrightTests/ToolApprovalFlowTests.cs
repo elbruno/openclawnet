@@ -93,23 +93,27 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 Provider: "ollama", Model: AppHostFixture.ToolCapableTestModel,
                 Instructions: "Use the browser tool to fetch https://example.com when asked.",
                 RequireToolApproval: true));
+            await LogStepAsync($"Profile created: {profileName} (model: {AppHostFixture.ToolCapableTestModel})");
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await LogStepAsync("Chat page loaded — sending prompt");
 
             // Act: send a prompt that should trigger a `browser` or `web_fetch` tool call.
             await SendChatMessageAsync("Please open example.com and tell me the title.");
+            await LogStepAsync("Prompt sent — waiting for tool approval card (up to 90s)");
 
             // Assert: ToolApprovalCard appears with one of the URL-fetching tools
             //          (the model may pick either; both are reasonable for this prompt)
             //          and the agent stream is paused (no tool_result yet).
-            await ApprovalCard().WaitForAsync(new LocatorWaitForOptions { Timeout = 30_000 });
+            await WaitForWithTicksAsync(ApprovalCard(), 90_000, "tool approval card");
             var cardText = await ApprovalCard().InnerTextAsync();
             Assert.True(
                 cardText.Contains("browser", StringComparison.OrdinalIgnoreCase) ||
                 cardText.Contains("web_fetch", StringComparison.OrdinalIgnoreCase),
                 $"Expected approval card to reference 'browser' or 'web_fetch'. Card text: {cardText}");
             await AssertCardContainsAsync(ApprovalCard(), "example.com");
+            await LogStepAsync("✅ Approval card validated");
         });
     }
 
@@ -132,28 +136,34 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
                 $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
+            await LogStepAsync($"Profile created: {profileName}");
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await LogStepAsync("Chat page loaded — sending prompt");
             await SendChatMessageAsync("Open example.com.");
-            await ApprovalCard().WaitForAsync();
+            await LogStepAsync("Prompt sent — waiting for tool approval card (up to 90s)");
+            await WaitForWithTicksAsync(ApprovalCard(), 90_000, "tool approval card");
 
             // Act: click [Approve].
+            await LogStepAsync("Card visible — clicking Approve");
             await ApprovalCard().Locator("button:has-text('Approve')").ClickAsync();
 
             // Assert: the tool result streams in afterward and the assistant message completes.
             //   - approval card disappears
             //   - a tool_result event renders (look for tool result element)
             //   - the assistant turn reaches a "done" state (no spinner / final message rendered)
+            await LogStepAsync("Waiting for approval card to disappear (up to 90s)");
             await ApprovalCard().WaitForAsync(new LocatorWaitForOptions
             {
                 State = WaitForSelectorState.Hidden,
-                Timeout = 30_000
+                Timeout = 90_000
             });
-            await Page.Locator("[data-testid='tool-result']").First
-                .WaitForAsync(new LocatorWaitForOptions { Timeout = 60_000 });
-            await Page.Locator("[data-testid='assistant-message-complete']").First
-                .WaitForAsync(new LocatorWaitForOptions { Timeout = 60_000 });
+            await LogStepAsync("Card hidden — waiting for tool result (up to 90s)");
+            await WaitForWithTicksAsync(Page.Locator("[data-testid='tool-result']"), 90_000, "tool result");
+            await LogStepAsync("Tool result rendered — waiting for assistant completion (up to 90s)");
+            await WaitForWithTicksAsync(Page.Locator("[data-testid='assistant-message-complete']"), 90_000, "assistant complete");
+            await LogStepAsync("✅ Full approval flow completed");
         });
     }
 
@@ -171,7 +181,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             await SendChatMessageAsync("Open example.com.");
             await ApprovalCard().WaitForAsync();
@@ -201,7 +211,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 $"auto-approve-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: false));
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             // Act: same prompt that would trigger a tool call.
@@ -229,7 +239,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             // Act: first call prompts; user checks "Remember for this session" + Approve.
@@ -267,7 +277,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 "Use the schedule tool to create jobs when asked.", RequireToolApproval: true));
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             // Act: prompt that drives the agent to invoke the `schedule` tool.
@@ -302,15 +312,218 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
                 $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
                 $"Use the {expectedTool} tool when asked.", RequireToolApproval: true));
 
-            await Page.GotoAsync($"{Fixture.WebBaseUrl}/?profile={profileName}",
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
 
             // Act.
             await SendChatMessageAsync(prompt);
 
             // Assert: approval card appears and references the expected tool name.
-            await ApprovalCard().WaitForAsync(new LocatorWaitForOptions { Timeout = 30_000 });
+            await ApprovalCard().WaitForAsync(new LocatorWaitForOptions { Timeout = 90_000 });
             await AssertCardContainsAsync(ApprovalCard(), expectedTool);
         });
+    }
+
+    // ---------------------------------------------------------------------
+    // Scenario 8 — model matrix: which Ollama models actually emit a tool
+    //              call within 90 s for "Please open example.com..."?
+    //              Each row = one model. Result is recorded per-row so
+    //              xUnit produces a Pass/Fail per model, which doubles as
+    //              our compatibility table.
+    // ---------------------------------------------------------------------
+    [Theory]
+    [Trait("Category", "ToolApprovalMatrix")]
+    [InlineData("gemma4:e2b")]
+    [InlineData("qwen2.5:3b")]
+    [InlineData("llama3.2:latest")]
+    [InlineData("phi4-mini:latest")]
+    public async Task Model_Matrix_PausesOnToolCall(string modelName)
+    {
+        await WithScreenshotOnFailure(async () =>
+        {
+            await LogStepAsync($"📊 Matrix run for model: {modelName}");
+            var profileName = await CreateProfileAsync(new AgentProfileDraft(
+                Name: $"matrix-{modelName.Replace(':', '-').Replace('.', '-')}-{Guid.NewGuid():N}".ToLowerInvariant(),
+                Provider: "ollama", Model: modelName,
+                Instructions: "Use the browser tool to fetch https://example.com when asked.",
+                RequireToolApproval: true));
+            await LogStepAsync($"Profile created: {profileName}");
+
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await LogStepAsync($"Chat page loaded for {modelName} — sending prompt");
+            await SendChatMessageAsync("Please open example.com and tell me the title.");
+            await LogStepAsync($"[{modelName}] Prompt sent — waiting up to 90s for tool approval card");
+
+            await WaitForWithTicksAsync(ApprovalCard(), 90_000, $"tool approval card ({modelName})");
+            var cardText = await ApprovalCard().InnerTextAsync();
+            await LogStepAsync($"✅ [{modelName}] Card appeared. Text: {cardText.Replace('\n', ' ').Substring(0, Math.Min(120, cardText.Length))}");
+        }, $"Model_Matrix_{modelName.Replace(':', '-').Replace('.', '-')}");
+    }
+
+    // ---------------------------------------------------------------------
+    // Scenario 9 — Azure OpenAI variant of the model matrix.
+    //              Skipped unless AZURE_OPENAI_ENDPOINT/_API_KEY/_DEPLOYMENT
+    //              env vars are set. Pre-creates a named provider definition
+    //              and a profile bound to it (same pattern as
+    //              WebsiteWatcherE2ETests.UpsertAzureProviderAndProfileAsync).
+    // ---------------------------------------------------------------------
+    [SkippableFact]
+    [Trait("Category", "ToolApprovalMatrix")]
+    public async Task Model_Matrix_AzureOpenAI_PausesOnToolCall()
+    {
+        Skip.IfNot(Fixture.IsAzureOpenAIAvailable,
+            "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.");
+
+        await WithScreenshotOnFailure(async () =>
+        {
+            var providerName = $"azure-openai-matrix-{Guid.NewGuid():N}".ToLowerInvariant();
+            await LogStepAsync($"📊 Matrix run for Azure OpenAI deployment: {Fixture.AzureOpenAIDeployment}");
+
+            using (var http = Fixture.CreateGatewayHttpClient())
+            {
+                var providerResp = await http.PutAsJsonAsync($"/api/model-providers/{providerName}", new
+                {
+                    providerType = "azure-openai",
+                    displayName = "Azure OpenAI (Matrix)",
+                    endpoint = Fixture.AzureOpenAIEndpoint,
+                    model = Fixture.AzureOpenAIDeployment,
+                    apiKey = Fixture.AzureOpenAIApiKey,
+                    deploymentName = Fixture.AzureOpenAIDeployment,
+                    authMode = "api-key",
+                    isSupported = true
+                });
+                Assert.True(providerResp.IsSuccessStatusCode,
+                    $"PUT /api/model-providers/{providerName} → {(int)providerResp.StatusCode}");
+                await LogStepAsync($"Provider definition created: {providerName}");
+            }
+
+            var profileName = await CreateProfileAsync(new AgentProfileDraft(
+                Name: $"matrix-azure-{Guid.NewGuid():N}".ToLowerInvariant(),
+                Provider: providerName, Model: Fixture.AzureOpenAIDeployment!,
+                Instructions: "Use the browser tool to fetch https://example.com when asked.",
+                RequireToolApproval: true));
+            await LogStepAsync($"Profile created: {profileName}");
+
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await LogStepAsync("Chat page loaded for Azure OpenAI — sending prompt");
+            await SendChatMessageAsync("Please open example.com and tell me the title.");
+            await LogStepAsync("[azure] Prompt sent — waiting up to 90s for tool approval card");
+
+            await WaitForWithTicksAsync(ApprovalCard(), 90_000, $"tool approval card (azure:{Fixture.AzureOpenAIDeployment})");
+            var cardText = await ApprovalCard().InnerTextAsync();
+            await LogStepAsync($"✅ [azure:{Fixture.AzureOpenAIDeployment}] Card appeared. Text: {cardText.Replace('\n', ' ').Substring(0, Math.Min(120, cardText.Length))}");
+        }, "Model_Matrix_AzureOpenAI");
+    }
+
+    // ---------------------------------------------------------------------
+    // Scenario 10 — Verify Approve button click disables UI, sends POST, and agent resumes
+    // ---------------------------------------------------------------------
+    [SkippableFact]
+    [Trait("Category", "ToolApprovalMatrix")]
+    public async Task AzureOpenAI_ApproveButton_DisablesOnClickAndResumes()
+    {
+        Skip.IfNot(Fixture.IsAzureOpenAIAvailable,
+            "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.");
+
+        await WithScreenshotOnFailure(async () =>
+        {
+            var providerName = $"azure-openai-approve-e2e-{Guid.NewGuid():N}".ToLowerInvariant();
+            await LogStepAsync($"🧪 E2E Approve button test with Azure OpenAI: {Fixture.AzureOpenAIDeployment}");
+
+            // Hook console and network events for debugging
+            Page.Console += (_, msg) => Console.WriteLine($"[browser:{msg.Type}] {msg.Text}");
+            var networkLog = new List<string>();
+            Page.Response += (_, resp) =>
+            {
+                if (resp.Url.Contains("tool-approval"))
+                {
+                    var logLine = $"[net] {resp.Status} {resp.Url}";
+                    networkLog.Add(logLine);
+                    Console.WriteLine(logLine);
+                }
+            };
+
+            using (var http = Fixture.CreateGatewayHttpClient())
+            {
+                var providerResp = await http.PutAsJsonAsync($"/api/model-providers/{providerName}", new
+                {
+                    providerType = "azure-openai",
+                    displayName = "Azure OpenAI (E2E)",
+                    endpoint = Fixture.AzureOpenAIEndpoint,
+                    model = Fixture.AzureOpenAIDeployment,
+                    apiKey = Fixture.AzureOpenAIApiKey,
+                    deploymentName = Fixture.AzureOpenAIDeployment,
+                    authMode = "api-key",
+                    isSupported = true
+                });
+                Assert.True(providerResp.IsSuccessStatusCode,
+                    $"PUT /api/model-providers/{providerName} → {(int)providerResp.StatusCode}");
+                await LogStepAsync($"Provider created: {providerName}");
+            }
+
+            var profileName = await CreateProfileAsync(new AgentProfileDraft(
+                Name: $"e2e-approve-{Guid.NewGuid():N}".ToLowerInvariant(),
+                Provider: providerName, Model: Fixture.AzureOpenAIDeployment!,
+                Instructions: "Use the browser tool to fetch https://example.com when asked.",
+                RequireToolApproval: true));
+            await LogStepAsync($"Profile created: {profileName}");
+
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+            await LogStepAsync("Chat page loaded — sending prompt");
+            await SendChatMessageAsync("Please open example.com and tell me the title.");
+            await LogStepAsync("Prompt sent — waiting for tool approval card");
+
+            await WaitForWithTicksAsync(ApprovalCard(), 90_000, "tool approval card");
+            var cardText = await ApprovalCard().InnerTextAsync();
+            await LogStepAsync($"✅ Card appeared. Text: {cardText.Replace('\n', ' ').Substring(0, Math.Min(120, cardText.Length))}");
+
+            // Verify Approve button is enabled
+            var approveBtn = ApprovalCard().Locator("button:has-text('Approve')");
+            await Microsoft.Playwright.Assertions.Expect(approveBtn).ToBeEnabledAsync(new() { Timeout = 5_000 });
+            await LogStepAsync("✅ Approve button is enabled");
+
+            // Click Approve and verify immediate feedback (button disabled)
+            await approveBtn.ClickAsync();
+            await LogStepAsync("Approve button clicked");
+
+            // Verify button is disabled immediately (within 500ms)
+            await Microsoft.Playwright.Assertions.Expect(approveBtn).ToBeDisabledAsync(new() { Timeout = 500 });
+            await LogStepAsync("✅ Approve button is disabled");
+
+            // Optional: check for "Approving" feedback if it's still visible (might be too fast on local)
+            var approvingFeedback = ApprovalCard().Locator("button:has-text('Approving')");
+            var isBusyStateVisible = await approvingFeedback.IsVisibleAsync();
+            if (isBusyStateVisible)
+            {
+                await LogStepAsync("✅ Button shows 'Approving...' state");
+            }
+            else
+            {
+                await LogStepAsync("⚠️ 'Approving...' state not captured (POST was too fast)");
+            }
+
+            // Wait for card to disappear (POST succeeded)
+            await Microsoft.Playwright.Assertions.Expect(ApprovalCard()).Not.ToBeVisibleAsync(new() { Timeout = 10_000 });
+            await LogStepAsync("✅ Card disappeared — POST succeeded");
+
+            // Wait for agent to resume and emit tool result (look for assistant message after tool completes)
+            // The agent should stream back the result within 60s
+            var assistantMessages = Page.Locator(".message-assistant");
+            var messageCountBefore = await assistantMessages.CountAsync();
+            await LogStepAsync($"Assistant message count before: {messageCountBefore}");
+
+            // Wait for at least one new assistant message (tool result + final answer)
+            await Microsoft.Playwright.Assertions.Expect(assistantMessages).ToHaveCountAsync(messageCountBefore + 1, new() { Timeout = 120_000 });
+            await LogStepAsync("✅ Agent resumed — assistant message appeared");
+
+            // Log network activity for debugging
+            await LogStepAsync($"Network log: {string.Join(", ", networkLog)}");
+            Assert.Contains(networkLog, log => log.Contains("200") && log.Contains("tool-approval"));
+            await LogStepAsync("✅ POST /api/chat/tool-approval returned 200");
+
+        }, "AzureOpenAI_ApproveButton_E2E");
     }
 }

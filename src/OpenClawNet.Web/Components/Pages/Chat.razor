@@ -2,11 +2,12 @@
 @using System.IO
 @using System.Text.Json
 @using OpenClawNet.Web.Components
+@using OpenClawNet.Web.Components.Chat
 @inject IConfiguration Configuration
 @inject IHttpClientFactory HttpClientFactory
-@inject ILogger<Chat> Logger
-@inject NavigationManager Navigation
 @inject IJSRuntime JS
+@inject NavigationManager Navigation
+@inject MudBlazor.ISnackbar Snackbar
 @rendermode InteractiveServer
 @implements IAsyncDisposable
 
@@ -19,47 +20,19 @@
         <button class="btn btn-primary btn-sm mb-2 w-100" @onclick="NewSession" disabled="@_isStreaming">
             + New Chat
         </button>
-        
-        @* Filter input *@
-        <div class="input-group input-group-sm mb-2">
-            <input type="text" class="form-control" placeholder="Filter chats…" 
-                   @bind="_chatFilter" @onkeydown="HandleFilterKeyDown" />
-            @if (!string.IsNullOrEmpty(_chatFilter))
-            {
-                <button class="btn btn-outline-secondary" type="button" @onclick="ClearFilter" title="Clear filter">✕</button>
-            }
-        </div>
-        
         @if (_loadingSessions)
         {
             <div class="text-muted small text-center py-2">Loading…</div>
         }
         else
         {
-            var displayedSessions = string.IsNullOrEmpty(_chatFilter) 
-                ? _sessions 
-                : _sessions.Where(s => ChatMatchesFilter(s)).ToList();
-            
-            @if (displayedSessions.Count == 0 && !string.IsNullOrEmpty(_chatFilter))
+            @foreach (var s in _sessions)
             {
-                <div class="text-muted small text-center py-2">No chats found</div>
-            }
-            else
-            {
-                @foreach (var s in displayedSessions)
-                {
-                    <div class="session-item rounded px-2 py-1 mb-1 @(s.Id == _currentSession?.Id ? "bg-primary text-white" : "bg-light")"
-                         style="cursor:pointer" @onclick="() => SwitchSession(s)">
-                        <div class="small fw-semibold text-truncate" title="@s.Title">@s.Title</div>
-                        @if (!string.IsNullOrEmpty(s.Provider))
-                        {
-                            <div class="small opacity-75 text-truncate" title="Agent: @s.Provider">
-                                (Agent: @s.Provider@(string.IsNullOrEmpty(s.Model) ? "" : $" · {s.Model}"))
-                            </div>
-                        }
-                        <div class="small opacity-75">@s.UpdatedAt.ToLocalTime().ToString("MMM d, HH:mm")</div>
-                    </div>
-                }
+                <div class="session-item rounded px-2 py-1 mb-1 @(s.Id == _currentSession?.Id ? "bg-primary text-white" : "bg-light")"
+                     style="cursor:pointer" @onclick="() => SwitchSession(s)">
+                    <div class="small fw-semibold text-truncate" title="@s.Title">@s.Title</div>
+                    <div class="small opacity-75">@s.UpdatedAt.ToLocalTime().ToString("MMM d, HH:mm")</div>
+                </div>
             }
         }
     </div>
@@ -82,18 +55,7 @@
                 {
                     <span class="fw-semibold">@_currentSession.Title</span>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="StartRename" title="Rename session">✏️</button>
-                    <button class="btn btn-sm btn-outline-secondary py-0" @onclick="AutoRenameChat" 
-                            disabled="@_isAutoRenaming" title="Auto-rename chat based on content">
-                        @if (_isAutoRenaming)
-                        {
-                            <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>
-                        }
-                        else
-                        {
-                            <span>✨</span>
-                        }
-                    </button>
-                    <button class="btn btn-sm btn-outline-secondary py-0" @onclick="ShareSession" title="Copy shareable link">🔗</button>
+                    <button class="btn btn-sm btn-outline-secondary py-0" @onclick="CopyShareLinkAsync" title="Copy shareable session link">🔗</button>
                 }
             </div>
         }
@@ -147,51 +109,19 @@
 
             @foreach (var msg in _messages)
             {
-                @if (msg.Tool is { } tool)
+                @if (msg.MessageType == "ToolApproval")
                 {
-                    <div class="mb-2" data-testid="tool-history-entry">
-                        <div class="card border-0 shadow-sm tool-history-card @(tool.Approved ? "border-start border-success border-3" : "border-start border-danger border-3")"
-                             style="max-width:80%;background:#f8f9fa;">
-                            <div class="card-body py-2 px-3">
-                                <div class="d-flex align-items-center gap-2 flex-wrap">
-                                    <span aria-hidden="true">@(tool.Approved ? "✅" : "❌")</span>
-                                    <strong class="small">@(tool.Approved ? "Approved" : "Denied")</strong>
-                                    <span class="badge bg-secondary">@tool.ToolName</span>
-                                    @if (tool.Completed == true)
-                                    {
-                                        <span class="badge bg-success-subtle text-success-emphasis border border-success-subtle">
-                                            done@(tool.DurationMs is { } d ? $" · {d} ms" : "")
-                                        </span>
-                                    }
-                                    else if (tool.Completed == false)
-                                    {
-                                        <span class="badge bg-danger-subtle text-danger-emphasis border border-danger-subtle">error</span>
-                                    }
-                                    else if (tool.Approved)
-                                    {
-                                        <span class="badge bg-info-subtle text-info-emphasis border border-info-subtle">running…</span>
-                                    }
-                                    <span class="small text-muted ms-auto">@tool.DecidedAt.ToString("HH:mm:ss")</span>
-                                </div>
-                                @if (!string.IsNullOrWhiteSpace(tool.ArgsPreview))
-                                {
-                                    <details class="mt-1">
-                                        <summary class="small text-muted">arguments</summary>
-                                        <pre class="bg-white border rounded p-2 small mb-0 mt-1"
-                                             style="white-space:pre-wrap;word-break:break-word;max-height:160px;overflow:auto;">@tool.ArgsPreview</pre>
-                                    </details>
-                                }
-                                @if (!string.IsNullOrWhiteSpace(tool.Outcome))
-                                {
-                                    <div class="small text-muted mt-1">@tool.Outcome</div>
-                                }
-                            </div>
-                        </div>
-                    </div>
+                    <ToolApprovalBubble ToolName="@msg.ToolName"
+                                       Decision="@msg.ToolDecision"
+                                       ArgsJson="@msg.ToolArgsJson"
+                                       DecidedBy="@msg.ToolDecidedBy"
+                                       DecidedAt="@msg.ToolDecidedAt" />
                 }
                 else
                 {
-                    <div class="mb-3 @(msg.Role == "user" ? "text-end" : "")">
+                    <div class="mb-3 @(msg.Role == "user" ? "text-end" : "")"
+                         data-testid="@(msg.Role == "user" ? "user-message" : "assistant-message")"
+                         data-role="@msg.Role">
                         <div class="d-inline-block p-2 rounded @(msg.Role == "user" ? "bg-primary text-white" : "bg-white border")"
                              style="max-width:80%;word-wrap:break-word;white-space:pre-wrap;">
                             @msg.Content
@@ -234,7 +164,7 @@
                         }
                         @if (string.IsNullOrEmpty(_streamingContent) && string.IsNullOrEmpty(_currentToolName) && string.IsNullOrEmpty(_pendingApprovalTool))
                         {
-                            <span class="text-muted">Thinking…</span>
+                            <span class="text-muted thinking-indicator">Thinking<span class="thinking-dot">.</span><span class="thinking-dot">.</span><span class="thinking-dot">.</span></span>
                         }
                         else if (!string.IsNullOrEmpty(_streamingContent))
                         {
@@ -258,9 +188,6 @@
             }
         </div>
 
-        @* Agent Console Panel *@
-        <AgentConsolePanel @ref="_consolePanel" />
-
         @* Input *@
         <div class="d-flex gap-2">
             <textarea class="form-control" rows="2" placeholder="Type your message…"
@@ -274,6 +201,9 @@
                 Send
             </button>
         </div>
+
+        @* Agent Activity Console *@
+        <AgentConsolePanel @ref="_consolePanel" />
     </div>
 </div>
 
@@ -296,7 +226,6 @@
     private string _streamingContent = string.Empty;
     private string _currentToolName = string.Empty;
     private string _pendingApprovalTool = string.Empty;
-    
     private AgentConsolePanel? _consolePanel;
 
     // Wave 5 PR-B (Vasquez): hidden sentinels Playwright can WaitForAsync on.
@@ -311,14 +240,6 @@
     // a request id. Stays null in PR-1 — Dallas wires the producer side in PR-2.
     private PendingApprovalRequest? PendingApproval;
 
-    // Tool history (audit trail) — populated by SubmitToolDecisionAsync,
-    // updated by the tool_complete branch of the NDJSON loop. The queue
-    // gives us FIFO matching for tool_complete events that don't carry a
-    // request id; the dictionary covers the case where they do.
-    private readonly Queue<ToolHistoryEntry> _pendingToolHistory = new();
-    private readonly Dictionary<Guid, ToolHistoryEntry> _toolHistoryByRequest = new();
-    private readonly Dictionary<Guid, long> _toolHistoryStartTicks = new();
-
     private sealed record PendingApprovalRequest(
         Guid RequestId,
         string ToolName,
@@ -326,18 +247,10 @@
         string? ToolArgsJson);
 
     private Task HandleToolApprove(bool rememberForSession)
-    {
-        Logger.LogInformation("[APPROVE-FLOW] HandleToolApprove invoked on Chat page. Pending={Pending} Remember={Remember}",
-            PendingApproval?.RequestId.ToString() ?? "<null>", rememberForSession);
-        return SubmitToolDecisionAsync(approved: true, rememberForSession: rememberForSession);
-    }
+        => SubmitToolDecisionAsync(approved: true, rememberForSession: rememberForSession);
 
     private Task HandleToolDeny()
-    {
-        Logger.LogInformation("[APPROVE-FLOW] HandleToolDeny invoked on Chat page. Pending={Pending}",
-            PendingApproval?.RequestId.ToString() ?? "<null>");
-        return SubmitToolDecisionAsync(approved: false, rememberForSession: false);
-    }
+        => SubmitToolDecisionAsync(approved: false, rememberForSession: false);
 
     // Wave 4 PR-2 (Dallas) contract:
     //   POST /api/chat/tool-approval
@@ -345,41 +258,8 @@
     private async Task SubmitToolDecisionAsync(bool approved, bool rememberForSession)
     {
         var pending = PendingApproval;
-        Logger.LogInformation("[APPROVE-FLOW] SubmitToolDecisionAsync ENTER approved={Approved} pending={Pending}",
-            approved, pending?.RequestId.ToString() ?? "<null>");
-
-        // Persist the decision in the chat history BEFORE clearing the
-        // floating approval slot so Bruno keeps an audit trail of every
-        // approved/denied tool — even when subsequent approvals stack.
-        ToolHistoryEntry? historyEntry = null;
-        if (pending is not null)
-        {
-            historyEntry = new ToolHistoryEntry
-            {
-                RequestId = pending.RequestId,
-                ToolName = pending.ToolName,
-                ArgsPreview = pending.ToolArgsJson,
-                Approved = approved,
-                DecidedAt = DateTime.Now,
-                Completed = approved ? null : false,
-                Outcome = approved ? null : "Denied by user — tool was not executed."
-            };
-            _messages.Add(new ChatDisplayMessage("tool", string.Empty, historyEntry.DecidedAt, historyEntry));
-            if (approved)
-            {
-                _pendingToolHistory.Enqueue(historyEntry);
-                _toolHistoryByRequest[pending.RequestId] = historyEntry;
-                _toolHistoryStartTicks[pending.RequestId] = Environment.TickCount64;
-            }
-        }
-
-        PendingApproval = null;
-        _pendingApprovalTool = string.Empty;
-        await InvokeAsync(StateHasChanged);
-
         if (pending is null || pending.RequestId == Guid.Empty)
         {
-            Logger.LogInformation("[APPROVE-FLOW] No pending approval — bail out");
             return;
         }
 
@@ -392,27 +272,24 @@
                 approved,
                 rememberForSession
             };
-            Logger.LogInformation("[APPROVE-FLOW] POSTing to api/chat/tool-approval base={Base} reqId={ReqId}",
-                client.BaseAddress, pending.RequestId);
             var response = await client.PostAsJsonAsync("api/chat/tool-approval", payload);
-            Logger.LogInformation("[APPROVE-FLOW] POST returned status={Status}", (int)response.StatusCode);
             
             if (!response.IsSuccessStatusCode)
             {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _connectionError = $"Failed to submit tool decision (HTTP {(int)response.StatusCode}): {errorContent}";
-                _consolePanel?.AddError($"Tool approval submission failed: {errorContent}");
+                var errorBody = await response.Content.ReadAsStringAsync();
+                _connectionError = $"Tool approval failed ({(int)response.StatusCode}): {errorBody}";
+                await InvokeAsync(StateHasChanged);
+                return;
             }
-            else
-            {
-                _consolePanel?.AddLog("SUCCESS", $"✓ Tool {(approved ? "approved" : "denied")}");
-            }
+
+            // Only clear approval state after POST succeeds
+            PendingApproval = null;
+            _pendingApprovalTool = string.Empty;
             await InvokeAsync(StateHasChanged);
         }
         catch (Exception ex)
         {
             _connectionError = $"Failed to submit tool decision: {ex.Message}";
-            _consolePanel?.AddError($"Tool approval error: {ex.Message}");
             await InvokeAsync(StateHasChanged);
         }
     }
@@ -423,14 +300,11 @@
     private List<SessionDto> _sessions = [];
     private ElementReference _messagesContainer;
     private string _gatewayUrl = string.Empty;
+    private int _lastScrollSignature;
 
     // Rename
     private bool _isRenaming;
     private string _renameTitle = string.Empty;
-    private bool _isAutoRenaming;
-
-    // Filter
-    private string _chatFilter = string.Empty;
 
     // Agent profiles
     private List<AgentProfileDto> _agentProfiles = [];
@@ -469,6 +343,34 @@
 
         // 3. No sessions at all — create a fresh one
         await NewSession();
+    }
+
+    /// <summary>
+    /// Auto-scroll the messages container to bottom whenever new content
+    /// arrives — new messages, streaming tokens, completed turns. Uses a
+    /// cheap signature so we only call JS interop when something changed.
+    /// </summary>
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        var sig = HashCode.Combine(
+            _messages.Count,
+            _streamingContent?.Length ?? 0,
+            _isStreaming,
+            _assistantCompleteCount,
+            _toolCompleteCount);
+
+        if (sig == _lastScrollSignature && !firstRender) return;
+        _lastScrollSignature = sig;
+
+        try
+        {
+            await JS.InvokeVoidAsync("eval",
+                "(() => { var el = document.getElementById('messages-container'); if (el) el.scrollTop = el.scrollHeight; })()");
+        }
+        catch
+        {
+            // Pre-render or JS interop unavailable — ignore.
+        }
     }
 
     // ── Session management ────────────────────────────────────────────────
@@ -555,7 +457,16 @@
             if (msgs is not null)
             {
                 foreach (var m in msgs)
-                    _messages.Add(new ChatDisplayMessage(m.Role, m.Content, m.CreatedAt.ToLocalTime()));
+                    _messages.Add(new ChatDisplayMessage(
+                        m.Role, 
+                        m.Content, 
+                        m.CreatedAt.ToLocalTime(),
+                        m.MessageType,
+                        m.ToolName,
+                        m.ToolArgsJson,
+                        m.ToolDecision,
+                        m.ToolDecidedBy,
+                        m.ToolDecidedAt));
             }
         }
         catch { /* ignore */ }
@@ -595,89 +506,19 @@
         CancelRename();
     }
 
-    private async Task ShareSession()
+    private async Task CopyShareLinkAsync()
     {
         if (_currentSession is null) return;
         try
         {
-            var uri = Navigation.ToAbsoluteUri($"/chat?sessionId={_currentSession.Id}");
-            await JS.InvokeVoidAsync("navigator.clipboard.writeText", uri.ToString());
-            Logger.LogInformation("Session link copied to clipboard: {Url}", uri);
+            var shareUrl = Navigation.ToAbsoluteUri($"/chat?sessionId={_currentSession.Id}");
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", shareUrl.ToString());
+            Snackbar.Add("Session link copied to clipboard! 📋", MudBlazor.Severity.Success, config => config.VisibleStateDuration = 3000);
         }
         catch (Exception ex)
         {
-            Logger.LogError(ex, "Failed to copy session link to clipboard");
+            Snackbar.Add($"Failed to copy link: {ex.Message}", MudBlazor.Severity.Error);
         }
-    }
-
-    private async Task AutoRenameChat()
-    {
-        if (_currentSession is null) return;
-        if (_isAutoRenaming) return;
-
-        _isAutoRenaming = true;
-        StateHasChanged();
-
-        try
-        {
-            var client = HttpClientFactory.CreateClient("gateway");
-            var response = await client.PostAsync($"api/chat/{_currentSession.Id}/auto-rename", null);
-            
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadFromJsonAsync<AutoRenameResponse>();
-                if (result is not null && !string.IsNullOrEmpty(result.NewName))
-                {
-                    var updated = _currentSession with { Title = result.NewName };
-                    var idx = _sessions.FindIndex(s => s.Id == _currentSession.Id);
-                    if (idx >= 0) _sessions[idx] = updated;
-                    _currentSession = updated;
-                    _consolePanel?.AddLog("SUCCESS", $"✓ Chat renamed to: {result.NewName}");
-                }
-            }
-            else
-            {
-                var errorContent = await response.Content.ReadAsStringAsync();
-                _connectionError = $"Failed to auto-rename chat: {errorContent}";
-                _consolePanel?.AddError($"Auto-rename failed: {errorContent}");
-            }
-        }
-        catch (Exception ex)
-        {
-            _connectionError = $"Failed to auto-rename chat: {ex.Message}";
-            _consolePanel?.AddError($"Auto-rename error: {ex.Message}");
-        }
-        finally
-        {
-            _isAutoRenaming = false;
-            await InvokeAsync(StateHasChanged);
-        }
-    }
-
-    private bool ChatMatchesFilter(SessionDto session)
-    {
-        if (string.IsNullOrEmpty(_chatFilter))
-            return true;
-
-        var filterLower = _chatFilter.ToLowerInvariant();
-        var titleMatches = session.Title.Contains(_chatFilter, StringComparison.OrdinalIgnoreCase);
-        var agentMatches = !string.IsNullOrEmpty(session.Provider) && 
-                          session.Provider.Contains(_chatFilter, StringComparison.OrdinalIgnoreCase);
-        var modelMatches = !string.IsNullOrEmpty(session.Model) && 
-                          session.Model.Contains(_chatFilter, StringComparison.OrdinalIgnoreCase);
-
-        return titleMatches || agentMatches || modelMatches;
-    }
-
-    private void ClearFilter()
-    {
-        _chatFilter = string.Empty;
-    }
-
-    private void HandleFilterKeyDown(KeyboardEventArgs e)
-    {
-        if (e.Key == "Escape")
-            ClearFilter();
     }
 
     // ── Chat (HTTP NDJSON streaming) ──────────────────────────────────────
@@ -719,15 +560,10 @@
             using var stream = await response.Content.ReadAsStreamAsync(_streamCts.Token);
             using var reader = new StreamReader(stream);
 
-            // ⚠️ Do NOT use `reader.EndOfStream` here. It triggers a *synchronous*
-            // Stream.Read() on the HTTP body and, while the NDJSON producer is paused
-            // (e.g. agent waiting for tool approval), it BLOCKS the Blazor circuit's
-            // dispatcher thread — making every @onclick on the page completely dead
-            // until the next byte arrives. Use the async ReadLineAsync loop instead.
-            string? line;
-            while (!_streamCts.Token.IsCancellationRequested
-                   && (line = await reader.ReadLineAsync(_streamCts.Token)) is not null)
+            while (!_streamCts.Token.IsCancellationRequested)
             {
+                var line = await reader.ReadLineAsync(_streamCts.Token);
+                if (line is null) break; // EOF — stream closed by server
                 if (string.IsNullOrWhiteSpace(line)) continue;
 
                 ChatStreamEvent? evt;
@@ -767,55 +603,64 @@
                                 evt.ToolDescription,
                                 evt.ToolArgsJson);
                         }
+                        if (_consolePanel != null)
+                        {
+                            var approvalDetails = $"Tool: {evt.ToolName}\n" +
+                                $"Description: {evt.ToolDescription}\n" +
+                                $"RequestId: {evt.RequestId}\n" +
+                                $"Args:\n{evt.ToolArgsJson}";
+                            await _consolePanel.AddEntry($"🔐 Tool approval requested: {evt.ToolName}", "warning", approvalDetails);
+                        }
+                        await InvokeAsync(StateHasChanged);
+                        break;
+                    case "tool_approval_resolved":
+                        // Phase B: Approval resolved — add bubble to messages and clear pending card
+                        _pendingApprovalTool = string.Empty;
+                        PendingApproval = null;
+                        if (evt.ToolName is not null)
+                        {
+                            var decision = evt.Approved == true ? "Approved" : 
+                                (evt.DecisionSource == "Timeout" ? "TimedOut" : "Denied");
+                            _messages.Add(new ChatDisplayMessage(
+                                Role: "system",
+                                Content: $"Tool approval: {evt.ToolName}",
+                                Timestamp: evt.DecidedAt?.ToLocalTime() ?? DateTime.Now,
+                                MessageType: "ToolApproval",
+                                ToolName: evt.ToolName,
+                                ToolArgsJson: evt.ToolArgsJson,
+                                ToolDecision: decision,
+                                ToolDecidedBy: evt.DecisionSource ?? "User",
+                                ToolDecidedAt: evt.DecidedAt));
+                        }
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "tool_start":
                         _pendingApprovalTool = string.Empty;
                         _currentToolName = evt.Content ?? evt.ToolName ?? string.Empty;
-                        _consolePanel?.AddLog("TOOL", $"→ {_currentToolName}");
+                        if (_consolePanel != null)
+                        {
+                            var startDetails = $"Tool: {_currentToolName}\n" +
+                                $"Started: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}";
+                            await _consolePanel.AddEntry($"Calling {_currentToolName}", "tool", startDetails);
+                        }
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "tool_complete":
+                        if (_consolePanel != null)
+                        {
+                            var completeDetails = $"Tool: {_currentToolName}\n" +
+                                $"Completed: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}";
+                            await _consolePanel.AddEntry($"{_currentToolName} completed", "success", completeDetails);
+                        }
                         _currentToolName = string.Empty;
                         _toolCompleteCount++;
-                        // Match this completion to a pending tool-history entry
-                        // so the audit-trail card flips from "running…" to "done".
-                        ToolHistoryEntry? completed = null;
-                        if (evt.RequestId is { } rid && rid != Guid.Empty
-                            && _toolHistoryByRequest.TryGetValue(rid, out var byId))
-                        {
-                            completed = byId;
-                            _toolHistoryByRequest.Remove(rid);
-                        }
-                        else if (_pendingToolHistory.Count > 0)
-                        {
-                            completed = _pendingToolHistory.Dequeue();
-                            _toolHistoryByRequest.Remove(completed.RequestId);
-                        }
-                        if (completed is not null)
-                        {
-                            completed.Completed = true;
-                            if (_toolHistoryStartTicks.Remove(completed.RequestId, out var startTick))
-                            {
-                                completed.DurationMs = Environment.TickCount64 - startTick;
-                            }
-                            var summary = evt.Content;
-                            if (!string.IsNullOrWhiteSpace(summary))
-                            {
-                                completed.Outcome = summary.Length > 240 ? summary[..240] + "…" : summary;
-                            }
-                            else
-                            {
-                                completed.Outcome = "Completed successfully.";
-                            }
-                        }
-                        _consolePanel?.AddLog("SUCCESS", $"✓ Tool completed");
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "error":
+                        if (_consolePanel != null)
+                            await _consolePanel.AddEntry($"Error: {evt.Content}", "error", evt.Content);
                         if (string.IsNullOrEmpty(_streamingContent))
                             _streamingContent = $"⚠️ {evt.Content}";
-                        _consolePanel?.AddError(evt.Content ?? "Unknown error");
                         goto doneStreaming;
                     case "complete":
                         goto doneStreaming;
@@ -886,48 +731,32 @@
     }
 
     // ── Local records ──────────────────────────────────────────────────────
-    private sealed class ChatDisplayMessage
-    {
-        public string Role { get; init; }
-        public string Content { get; set; }
-        public DateTime Timestamp { get; init; }
-        // When non-null, this entry renders as a persistent tool decision card
-        // (audit trail) instead of a regular chat bubble.
-        public ToolHistoryEntry? Tool { get; init; }
-
-        public ChatDisplayMessage(string role, string content, DateTime timestamp, ToolHistoryEntry? tool = null)
-        {
-            Role = role;
-            Content = content;
-            Timestamp = timestamp;
-            Tool = tool;
-        }
-    }
-
-    private sealed class ToolHistoryEntry
-    {
-        public Guid RequestId { get; init; }
-        public string ToolName { get; init; } = string.Empty;
-        public string? ArgsPreview { get; init; }
-        public bool Approved { get; init; }
-        public DateTime DecidedAt { get; init; }
-        // null = pending outcome, true = success, false = error
-        public bool? Completed { get; set; }
-        public string? Outcome { get; set; }
-        public long? DurationMs { get; set; }
-    }
-
-    private sealed record SessionDto(
-        Guid Id, 
-        string Title, 
-        DateTime CreatedAt, 
-        DateTime UpdatedAt,
-        string? Provider = null,
-        string? Model = null);
+    private sealed record ChatDisplayMessage(
+        string Role, 
+        string Content, 
+        DateTime Timestamp,
+        string MessageType = "Chat",
+        string? ToolName = null,
+        string? ToolArgsJson = null,
+        string? ToolDecision = null,
+        string? ToolDecidedBy = null,
+        DateTime? ToolDecidedAt = null);
+    
+    private sealed record SessionDto(Guid Id, string Title, DateTime CreatedAt, DateTime UpdatedAt);
     private sealed record AgentProfileDto(string Name, string? DisplayName, string? Provider, bool IsDefault);
     private sealed record ProviderInfoDto(string Name, string ProviderType, string? DisplayName, string? Model, string? DeploymentName);
-    private sealed record MessageDto(Guid Id, string Role, string Content, DateTime CreatedAt);
-    private sealed record AutoRenameResponse(bool Success, string NewName);
+    private sealed record MessageDto(
+        Guid Id, 
+        string Role, 
+        string Content, 
+        DateTime CreatedAt,
+        string MessageType = "Chat",
+        string? ToolName = null,
+        string? ToolArgsJson = null,
+        string? ToolDecision = null,
+        string? ToolDecidedBy = null,
+        DateTime? ToolDecidedAt = null);
+    
     private sealed record ChatStreamEvent
     {
         public string Type { get; init; } = string.Empty;
@@ -938,5 +767,9 @@
         public Guid? RequestId { get; init; }
         public string? ToolDescription { get; init; }
         public string? ToolArgsJson { get; init; }
+        // Phase B: tool_approval_resolved event carries these.
+        public bool? Approved { get; init; }
+        public string? DecisionSource { get; init; }
+        public DateTime? DecidedAt { get; init; }
     }
 }

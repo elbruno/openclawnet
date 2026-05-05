@@ -35,6 +35,15 @@ public sealed class SchedulerPollingService : BackgroundService
         _logger.LogInformation("Scheduler started — poll={Poll}s, maxConcurrent={Max}, timeout={Timeout}s",
             cfg.PollIntervalSeconds, cfg.MaxConcurrentJobs, cfg.JobTimeoutSeconds);
 
+        // Reclaim runs that were left in 'running' state by a previous process.
+        // The trigger endpoint and dispatcher both fire-and-forget Task.Run blocks,
+        // so any in-flight run is permanently lost when the Scheduler restarts.
+        // Without this sweep, the JobRun row stays at status="running" indefinitely
+        // and the UI shows a perpetual spinner. See bug: "stuck Running for 15+ min
+        // after Aspire restart".
+        try { await ReclaimOrphanedRunsAsync(_scopeFactory, _logger, stoppingToken); }
+        catch (Exception ex) { _logger.LogError(ex, "Orphan-run reclaim failed at startup"); }
+
         while (!stoppingToken.IsCancellationRequested)
         {
             try { await ProcessDueJobsAsync(stoppingToken); }
@@ -263,6 +272,38 @@ public sealed class SchedulerPollingService : BackgroundService
             _runState.Decrement();
             semaphore.Release();
         }
+    }
+
+    /// <summary>
+    /// Reclaims any <c>JobRun</c> rows left in <c>"running"</c> state by a previous
+    /// process. Called once at startup. Safe to run on a fresh DB (no-op).
+    /// Exposed as <c>internal static</c> so unit tests can verify the behaviour
+    /// without standing up a full <c>BackgroundService</c>.
+    /// </summary>
+    internal static async Task ReclaimOrphanedRunsAsync(
+        IServiceScopeFactory scopeFactory,
+        ILogger logger,
+        CancellationToken ct)
+    {
+        using var scope = scopeFactory.CreateScope();
+        var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
+        await using var db = await dbFactory.CreateDbContextAsync(ct);
+
+        var orphans = await db.JobRuns
+            .Where(r => r.Status == "running")
+            .ToListAsync(ct);
+
+        if (orphans.Count == 0) return;
+
+        var now = DateTime.UtcNow;
+        foreach (var run in orphans)
+        {
+            run.Status = "failed";
+            run.Error = "Scheduler restarted while run was in progress; the in-flight task was lost.";
+            run.CompletedAt = now;
+        }
+        await db.SaveChangesAsync(ct);
+        logger.LogWarning("Reclaimed {Count} orphaned JobRun row(s) left in 'running' state by previous process.", orphans.Count);
     }
 }
 

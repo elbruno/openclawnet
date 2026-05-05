@@ -1,0 +1,223 @@
+@using System.Net.Http.Json
+@using OpenClawNet.Web.Models.Audit
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <MudDatePicker Label="From Date" @bind-Date="_sinceFilter" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudDatePicker Label="To Date" @bind-Date="_untilFilter" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudTextField @bind-Value="_jobIdFilter" Label="Job ID (GUID)" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudSelect @bind-Value="_statusFilter" Label="Status" Clearable="true">
+                <MudSelectItem Value="@("")">All</MudSelectItem>
+                <MudSelectItem Value="@("pending")">Pending</MudSelectItem>
+                <MudSelectItem Value="@("success")">Success</MudSelectItem>
+                <MudSelectItem Value="@("failed")">Failed</MudSelectItem>
+            </MudSelect>
+        </div>
+        <div class="col-md-2">
+            <MudTextField @bind-Value="_channelTypeFilter" Label="Channel Type" Clearable="true" />
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFilterChanged" FullWidth="true">
+                Apply Filters
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @_error
+    </div>
+}
+else if (_logs.Count == 0)
+{
+    <div class="text-center py-5 text-muted">
+        <p class="mb-0">No adapter delivery logs found.</p>
+    </div>
+}
+else
+{
+    <MudDataGrid T="AdapterDeliveryLogDto"
+                 Items="_logs"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 FilterMode="DataGridFilterMode.Simple"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="60vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_logs.Count delivery(ies)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.CreatedAt" Title="Timestamp" InitialDirection="SortDirection.Descending">
+                <CellTemplate>
+                    @context.Item.CreatedAt.ToLocalTime().ToString("g")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.JobName" Title="Job">
+                <CellTemplate>
+                    @if (context.Item.JobName is not null)
+                    {
+                        <a href="/jobs/@context.Item.JobId">@context.Item.JobName</a>
+                    }
+                    else
+                    {
+                        <span class="text-muted font-monospace small">@context.Item.JobId.ToString().Substring(0, 8)</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ChannelType" Title="Channel Type">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@context.Item.ChannelType</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Status" Title="Status">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@GetStatusChipColor(context.Item.Status)"
+                             Variant="Variant.Filled">@context.Item.Status.ToUpperInvariant()</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.DeliveredAt" Title="Delivered At">
+                <CellTemplate>
+                    @(context.Item.DeliveredAt?.ToLocalTime().ToString("g") ?? "—")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ResponseCode" Title="Response Code">
+                <CellTemplate>
+                    @if (context.Item.ResponseCode.HasValue)
+                    {
+                        <span class="badge @(context.Item.ResponseCode >= 200 && context.Item.ResponseCode < 300 ? "bg-success" : "bg-danger")">
+                            @context.Item.ResponseCode
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ErrorMessage" Title="Error Message" Filterable="true">
+                <CellTemplate>
+                    @if (!string.IsNullOrWhiteSpace(context.Item.ErrorMessage))
+                    {
+                        <span class="text-danger small" title="@context.Item.ErrorMessage">
+                            @Truncate(context.Item.ErrorMessage, 50)
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="text-muted">—</span>
+                    }
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+    </MudDataGrid>
+}
+
+@code {
+    private List<AdapterDeliveryLogDto> _logs = [];
+    private bool _loading = true;
+    private string? _error;
+    private bool _dense = true;
+    private DateTime? _sinceFilter;
+    private DateTime? _untilFilter;
+    private string? _jobIdFilter;
+    private string? _statusFilter;
+    private string? _channelTypeFilter;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var queryParams = new List<string> { "limit=500" };
+
+            if (_sinceFilter.HasValue)
+                queryParams.Add($"since={_sinceFilter.Value:yyyy-MM-dd}");
+            
+            if (_untilFilter.HasValue)
+                queryParams.Add($"until={_untilFilter.Value:yyyy-MM-dd}");
+
+            if (!string.IsNullOrWhiteSpace(_jobIdFilter) && Guid.TryParse(_jobIdFilter, out var jobId))
+                queryParams.Add($"jobId={jobId}");
+
+            if (!string.IsNullOrWhiteSpace(_statusFilter))
+                queryParams.Add($"status={Uri.EscapeDataString(_statusFilter)}");
+
+            var queryString = string.Join("&", queryParams);
+            var response = await client.GetAsync($"api/audit/adapter-deliveries?{queryString}");
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<AdapterDeliveryLogsResponse>();
+            _logs = result?.Logs ?? [];
+
+            // Apply client-side filter for channel type
+            if (!string.IsNullOrWhiteSpace(_channelTypeFilter))
+                _logs = _logs.Where(l => l.ChannelType.Contains(_channelTypeFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load adapter deliveries: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFilterChanged()
+    {
+        await LoadDataAsync();
+    }
+
+    private static Color GetStatusChipColor(string? status) => status?.ToLowerInvariant() switch
+    {
+        "pending" => Color.Warning,
+        "success" => Color.Success,
+        "failed" => Color.Error,
+        _ => Color.Default
+    };
+
+    private static string Truncate(string text, int maxLength)
+    {
+        if (string.IsNullOrEmpty(text)) return "—";
+        return text.Length <= maxLength ? text : $"{text[..maxLength]}…";
+    }
+}

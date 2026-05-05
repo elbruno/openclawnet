@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using OpenClawNet.Storage;
 using OpenClawNet.Tools.Abstractions;
 
 namespace OpenClawNet.Tools.FileSystem;
@@ -9,21 +10,71 @@ namespace OpenClawNet.Tools.FileSystem;
 public sealed class FileSystemTool : ITool
 {
     private readonly ILogger<FileSystemTool> _logger;
+    private readonly ISafePathResolver _safePathResolver;
     private readonly string _workspaceRoot;
 
     // Block access to sensitive paths
     private static readonly string[] BlockedPaths = [".env", ".git", "appsettings.Production"];
 
-    public FileSystemTool(ILogger<FileSystemTool> logger, IConfiguration configuration)
+    /// <summary>
+    /// W-2 ctor (Drummond P0 #2 / H-2 closure) — accepts an
+    /// <see cref="ISafePathResolver"/>. Workspace root selection:
+    ///   1. <c>Agent:WorkspacePath</c> (validated through the resolver),
+    ///   2. else <c>OpenClawNetPaths.ResolveAgentRoot(Agent:Name)</c>,
+    ///   3. else <c>OpenClawNetPaths.ResolveUserRoot("workspace")</c>
+    ///      (logs WARN — operators should know the agent name was missing).
+    /// </summary>
+    public FileSystemTool(
+        ILogger<FileSystemTool> logger,
+        IConfiguration configuration,
+        ISafePathResolver safePathResolver)
     {
         _logger = logger;
-        // Prefer explicit config, then walk up from the app base directory to find the solution root
+        _safePathResolver = safePathResolver;
+
         var configuredPath = configuration["Agent:WorkspacePath"];
-        _workspaceRoot = !string.IsNullOrWhiteSpace(configuredPath)
-            ? Path.GetFullPath(configuredPath)
-            : FindSolutionRoot();
+        var agentName = configuration["Agent:Name"];
+
+        if (!string.IsNullOrWhiteSpace(configuredPath))
+        {
+            // Honor explicit operator override. Trust it as-is — this is
+            // operator-supplied (not LLM-supplied) so the resolver's
+            // segment-name policy doesn't apply at the root.
+            _workspaceRoot = Path.TrimEndingDirectorySeparator(configuredPath);
+        }
+        else if (!string.IsNullOrWhiteSpace(agentName))
+        {
+            _workspaceRoot = OpenClawNetPaths.ResolveAgentRoot(agentName, _logger);
+        }
+        else
+        {
+            _logger.LogWarning(
+                "FileSystemTool initialized without agent scope — using shared workspace " +
+                "({Root}/workspace). Set Agent:Name or Agent:WorkspacePath to scope per-agent.",
+                "{StorageRoot}");
+            _workspaceRoot = OpenClawNetPaths.ResolveUserRoot("workspace", _logger);
+        }
+
         _logger.LogInformation("FileSystem workspace root: {Root}", _workspaceRoot);
     }
+
+    /// <summary>
+    /// Back-compat 2-arg ctor — preserves the pre-W-2 ctor surface so any
+    /// caller still constructing the tool without ISafePathResolver gets a
+    /// working instance backed by the default <see cref="SafePathResolver"/>.
+    /// New code should use the 3-arg ctor and inject the DI singleton.
+    /// </summary>
+    /// <remarks>
+    /// W-3 sunset (Drummond W-2 deviation #2): this ctor is a fail-OPEN-eligible
+    /// seam in the same way <see cref="SafePathResolver()"/> is. Migrate the
+    /// remaining callers (<c>DocumentPipelineTests</c>, <c>BundledMcpWrapperTests</c>,
+    /// <c>FileSystemToolTests</c>) to the 3-arg ctor + DI singleton; the ctor
+    /// will be removed in W-4. Until removal, the runtime invariant is preserved
+    /// because every check still runs through the default <see cref="SafePathResolver"/>.
+    /// </remarks>
+    [Obsolete("Use 3-arg ctor with ISafePathResolver from DI. Will be removed in W-4.", error: false)]
+    public FileSystemTool(ILogger<FileSystemTool> logger, IConfiguration configuration)
+        : this(logger, configuration, new SafePathResolver()) { }
 
     public string Name => "file_system";
     public string Description => $"Read, write, list files and find .NET projects in the workspace at: {_workspaceRoot}";
@@ -69,11 +120,42 @@ public sealed class FileSystemTool : ITool
                 return ToolResult.Fail(Name, "Both 'action' and 'path' are required", sw.Elapsed);
             }
 
-            // Resolve and validate path
-            var fullPath = ResolvePath(path);
-            if (fullPath is null)
+            // Blocklist check happens BEFORE resolver (operator/admin policy,
+            // not a path-shape question — the resolver doesn't know which
+            // names are "secret-shaped").
+            foreach (var blocked in BlockedPaths)
             {
-                return ToolResult.Fail(Name, $"Path '{path}' is outside the workspace or blocked", sw.Elapsed);
+                if (path.Contains(blocked, StringComparison.OrdinalIgnoreCase))
+                {
+                    _logger.LogWarning("Blocked path access attempt: {Path}", Redact(path));
+                    return ToolResult.Fail(Name, $"Path '{Redact(path)}' is blocked", sw.Elapsed);
+                }
+            }
+
+            // W-2 (Drummond H-2 closure): EVERY path goes through the
+            // resolver. No more inline path normalization / containment logic.
+            string fullPath;
+            try
+            {
+                fullPath = _safePathResolver.ResolveSafePath(_workspaceRoot, path);
+            }
+            catch (UnsafePathException ex)
+            {
+                // H-8 logging hygiene:
+                //   - DEBUG carries the full untrusted input + scope (operators opt in),
+                //   - INFO carries the redacted form (default surface),
+                //   - WARN MUST NOT echo raw input (it's attacker-controlled).
+                _logger.LogDebug(ex,
+                    "FileSystemTool path rejected: scope='{ScopeRoot}', input='{RequestedPath}', reason={Reason}",
+                    _workspaceRoot, path, ex.Reason);
+                _logger.LogInformation(
+                    "FileSystemTool path rejected (reason={Reason}, redacted='{Redacted}')",
+                    ex.Reason, Redact(path));
+
+                return ToolResult.Fail(
+                    Name,
+                    $"Path '{Redact(path)}' rejected by safe-path resolver: {ex.Reason}",
+                    sw.Elapsed);
             }
 
             return action.ToLowerInvariant() switch
@@ -209,6 +291,12 @@ public sealed class FileSystemTool : ITool
     /// containing a .slnx or .sln file — that is the solution root.
     /// Falls back to <see cref="Directory.GetCurrentDirectory"/> if nothing is found.
     /// </summary>
+    /// <remarks>
+    /// W-2: kept for legacy contexts that may still want it (e.g. test
+    /// fixtures). The W-2 ctor no longer calls this — workspace root now
+    /// derives from <see cref="OpenClawNetPaths.ResolveAgentRoot"/> /
+    /// <see cref="OpenClawNetPaths.ResolveUserRoot"/>.
+    /// </remarks>
     private static string FindSolutionRoot()
     {
         var dir = new DirectoryInfo(AppContext.BaseDirectory);
@@ -221,38 +309,14 @@ public sealed class FileSystemTool : ITool
         return Directory.GetCurrentDirectory();
     }
 
-    private string? ResolvePath(string inputPath)
+    /// <summary>
+    /// W-2: redact attacker-controlled path input for user-facing surfaces.
+    /// Paths longer than 32 chars are truncated to first 32 + "...". The
+    /// raw input still goes to DEBUG logs for operators who opt in.
+    /// </summary>
+    private static string Redact(string raw)
     {
-        // Check blocked paths first
-        foreach (var blocked in BlockedPaths)
-        {
-            if (inputPath.Contains(blocked, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogWarning("Blocked path access attempt: {Path}", inputPath);
-                return null;
-            }
-        }
-
-        string fullPath;
-
-        // If an absolute path is provided, use it directly (user explicitly gave a path)
-        if (Path.IsPathRooted(inputPath))
-        {
-            fullPath = Path.GetFullPath(inputPath);
-        }
-        else
-        {
-            // Relative paths are resolved against the workspace root
-            fullPath = Path.GetFullPath(Path.Combine(_workspaceRoot, inputPath));
-
-            // Ensure relative paths stay within workspace (prevent directory traversal)
-            if (!fullPath.StartsWith(_workspaceRoot, StringComparison.OrdinalIgnoreCase))
-            {
-                _logger.LogWarning("Path traversal attempt blocked: {Path} -> {FullPath}", inputPath, fullPath);
-                return null;
-            }
-        }
-
-        return fullPath;
+        if (string.IsNullOrEmpty(raw)) return raw;
+        return raw.Length <= 32 ? raw : raw[..32] + "...";
     }
 }

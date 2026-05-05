@@ -2,25 +2,23 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using ElBruno.LocalEmbeddings;
-using ElBruno.LocalEmbeddings.Extensions;
-using ElBruno.LocalEmbeddings.Options;
+using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
-using OpenClawNet.Storage;
 using OpenClawNet.Tools.Abstractions;
 
 namespace OpenClawNet.Tools.Embeddings;
 
 public sealed class EmbeddingsTool : ITool
 {
-    private readonly StorageOptions _storage;
+    private readonly IEmbeddingGenerator<string, Embedding<float>> _generator;
     private readonly ILogger<EmbeddingsTool> _logger;
-    private LocalEmbeddingGenerator? _generator;
-    private readonly SemaphoreSlim _initLock = new(1, 1);
 
-    public EmbeddingsTool(StorageOptions storage, ILogger<EmbeddingsTool> logger)
+    public EmbeddingsTool(
+        IEmbeddingGenerator<string, Embedding<float>> generator,
+        ILogger<EmbeddingsTool> logger)
     {
-        _storage = storage;
-        _logger = logger;
+        _generator = generator ?? throw new ArgumentNullException(nameof(generator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
     }
 
     public string Name => "embeddings";
@@ -61,8 +59,6 @@ public sealed class EmbeddingsTool : ITool
             if (string.IsNullOrWhiteSpace(text))
                 return ToolResult.Fail(Name, "'text' is required", sw.Elapsed);
 
-            var generator = await EnsureGeneratorAsync(cancellationToken);
-
             if (action == "search")
             {
                 var candidates = input.GetArgument<string[]>("candidates") ?? Array.Empty<string>();
@@ -70,8 +66,8 @@ public sealed class EmbeddingsTool : ITool
                     return ToolResult.Fail(Name, "'candidates' is required for action='search'", sw.Elapsed);
                 var topK = input.GetArgument<int?>("topK") ?? 5;
 
-                var corpus = await generator.GenerateAsync(candidates);
-                var results = await generator.FindClosestAsync(text, candidates, corpus, topK: topK, minScore: 0f);
+                var corpus = await _generator.GenerateAsync(candidates, cancellationToken: cancellationToken);
+                var results = await _generator.FindClosestAsync(text, candidates, corpus, topK: topK, minScore: 0f, cancellationToken: cancellationToken);
                 sw.Stop();
                 var sb = new StringBuilder();
                 sb.AppendLine($"# Top {results.Count} matches for: \"{text}\"");
@@ -80,7 +76,7 @@ public sealed class EmbeddingsTool : ITool
                 return ToolResult.Ok(Name, sb.ToString(), sw.Elapsed);
             }
 
-            var embedding = await generator.GenerateEmbeddingAsync(text);
+            var embedding = await _generator.GenerateEmbeddingAsync(text, cancellationToken: cancellationToken);
             sw.Stop();
             var vec = embedding.Vector.ToArray();
             var preview = string.Join(", ", vec.Take(8).Select(f => f.ToString("F4")));
@@ -93,25 +89,5 @@ public sealed class EmbeddingsTool : ITool
             _logger.LogError(ex, "Embeddings tool error");
             return ToolResult.Fail(Name, ex.Message, sw.Elapsed);
         }
-    }
-
-    private async Task<LocalEmbeddingGenerator> EnsureGeneratorAsync(CancellationToken ct)
-    {
-        if (_generator is not null) return _generator;
-        await _initLock.WaitAsync(ct);
-        try
-        {
-            if (_generator is not null) return _generator;
-            var cacheDir = Path.Combine(_storage.ModelsPath, "embeddings");
-            Directory.CreateDirectory(cacheDir);
-            var options = new LocalEmbeddingsOptions
-            {
-                CacheDirectory = cacheDir,
-                EnsureModelDownloaded = true
-            };
-            _generator = new LocalEmbeddingGenerator(options);
-            return _generator;
-        }
-        finally { _initLock.Release(); }
     }
 }

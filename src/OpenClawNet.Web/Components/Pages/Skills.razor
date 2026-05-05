@@ -1,376 +1,391 @@
 @page "/skills"
 @rendermode InteractiveServer
-@inject IConfiguration Configuration
-@inject IHttpClientFactory HttpClientFactory
+@using OpenClawNet.Web.Components.Skills
+@using OpenClawNet.Web.Models.Skills
+@using OpenClawNet.Web.Services
+@inject SkillsClient SkillsClient
+@inject JobsClient JobsClient
 @inject IJSRuntime JS
-@using System.IO
-@using System.IO.Compression
-@using System.Text.Json
-@using System.Text.Json.Serialization
-@using Microsoft.AspNetCore.Components.Forms
 
 <PageTitle>OpenClaw .NET - Skills</PageTitle>
 
-<h3>Skills</h3>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <div>
+        <h3 class="mb-1">
+            <span class="bi bi-book me-2" aria-hidden="true"></span>Skills
+        </h3>
+        <p class="text-muted mb-0">
+            Markdown-based instructions injected into the agent system prompt.
+            Layered: agent overrides &gt; installed &gt; system.
+        </p>
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-outline-secondary" type="button"
+                @onclick="ShowImport" disabled="@_loading">
+            <span class="bi bi-cloud-download me-1" aria-hidden="true"></span>Import…
+        </button>
+        <button class="btn btn-primary" @onclick="ShowCreate" disabled="@_loading">
+            <span class="bi bi-plus-lg me-1" aria-hidden="true"></span>New skill
+        </button>
+    </div>
+</div>
 
-<p class="text-muted">
-    Skills are markdown-based instructions that customize the agent's behavior.
-    You can enable/disable built-in skills or install skills from the community marketplace.
-</p>
+@if (_pageError is not null)
+{
+    <div class="alert alert-danger" role="alert">
+        <strong>Couldn't load skills:</strong> @_pageError
+        <button class="btn btn-link p-0 ms-2 align-baseline" @onclick="LoadAsync">Retry</button>
+    </div>
+}
 
-@* Tabs *@
+<SkillsSnapshotBanner PinnedSnapshotId="@_pinnedSnapshotId" OnRefresh="LoadAsync" />
+
 <ul class="nav nav-tabs mb-3">
-    <li class="nav-item">
-        <button class="nav-link @(_tab == "installed" ? "active" : "")" @onclick='() => SetTab("installed")'>
-            📦 Installed <span class="badge bg-secondary ms-1">@_skills.Count</span>
-        </button>
-    </li>
-    <li class="nav-item">
-        <button class="nav-link @(_tab == "marketplace" ? "active" : "")" @onclick='() => LoadMarketplace()'>
-            🛒 Marketplace
-            @if (_marketplaceLoading) { <span class="spinner-border spinner-border-sm ms-1"></span> }
-        </button>
-    </li>
+    @foreach (var tab in _tabs)
+    {
+        <li class="nav-item">
+            <button class="nav-link @(tab.Key == _activeTab ? "active" : "")"
+                    type="button"
+                    @onclick="() => SelectTab(tab.Key)">
+                @tab.Label <span class="badge bg-secondary ms-1">@CountFor(tab.Key)</span>
+            </button>
+        </li>
+    }
 </ul>
 
-@if (_tab == "installed")
-{
-    <div class="mb-3 d-flex gap-2">
-        <button class="btn btn-outline-secondary btn-sm" @onclick="ReloadSkills" disabled="@_loading">
-            @if (_loading) { <span class="spinner-border spinner-border-sm me-1"></span> } 🔄 Reload
-        </button>
-        <button class="btn btn-primary btn-sm" @onclick="OnImportClick" disabled="@_importing">
-            @if (_importing) { <span class="spinner-border spinner-border-sm me-1"></span> } ⬇️ Import Skill
-        </button>
-        <InputFile @ref="_fileInput" OnChange="OnFileSelected" style="display:none;" accept=".md,.zip" />
+<div class="row g-2 mb-3">
+    <div class="col-md-5">
+        <div class="input-group">
+            <span class="input-group-text"><span class="bi bi-search" aria-hidden="true"></span></span>
+            <input type="text" class="form-control" placeholder="Search name, description, source…"
+                   data-testid="skills-search"
+                   @bind="_search" @bind:event="oninput" @bind:after="ApplyFilter" />
+        </div>
     </div>
-
-    @* Toast notifications *@
-    @if (!string.IsNullOrEmpty(_toastMessage))
-    {
-        <div class="alert alert-@(_toastIsError ? "danger" : "success") alert-dismissible fade show mb-3" role="alert">
-            @_toastMessage
-            <button type="button" class="btn-close" @onclick="ClearToast"></button>
-        </div>
-    }
-
-    @if (_loading)
-    {
-        <div class="text-muted">Loading skills…</div>
-    }
-    else if (_skills.Count == 0)
-    {
-        <div class="alert alert-info">
-            No skills installed yet. Visit the <button class="btn btn-link p-0 align-baseline" @onclick="LoadMarketplace">Marketplace</button> to install community skills.
-        </div>
-    }
-    else
-    {
-        <div class="row g-3">
-            @foreach (var skill in _skills)
+    <div class="col-md-3">
+        <select class="form-select" @bind="_sourceFilter" @bind:after="ApplyFilter" data-testid="skills-source-filter">
+            <option value="">All sources</option>
+            @foreach (var src in _allSources)
             {
-                <div class="col-md-6">
-                    <div class="card h-100 @(!skill.Enabled ? "border-secondary opacity-75" : "")">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h5 class="card-title">@skill.Name</h5>
-                                <div class="d-flex gap-1 align-items-center">
-                                    <div class="form-check form-switch mb-0">
-                                        <input class="form-check-input" type="checkbox" checked="@skill.Enabled"
-                                               @onchange="() => ToggleSkill(skill)" />
-                                    </div>
-                                    @if (skill.Source == "installed")
-                                    {
-                                        <button class="btn btn-outline-danger btn-sm py-0 px-1" title="Uninstall"
-                                                @onclick="() => UninstallSkill(skill.Name)">🗑</button>
-                                    }
-                                </div>
-                            </div>
-                            <p class="card-text small">@skill.Description</p>
-                            @if (!string.IsNullOrEmpty(skill.Category))
-                            {
-                                <span class="badge bg-secondary me-1">@skill.Category</span>
-                            }
-                            @foreach (var tag in skill.Tags)
-                            {
-                                <span class="badge bg-info me-1">@tag</span>
-                            }
-                        </div>
-                    </div>
-                </div>
+                <option value="@src">@src</option>
             }
-        </div>
-    }
-}
-else if (_tab == "marketplace")
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" @bind="_enabledFilter" @bind:after="ApplyFilter" data-testid="skills-enabled-filter">
+            <option value="any">Any state</option>
+            <option value="enabled">Enabled (any agent)</option>
+            <option value="disabled">Disabled everywhere</option>
+        </select>
+    </div>
+    <div class="col-md-2">
+        <select class="form-select" @bind="_selectedAgent" @bind:after="ApplyFilter" data-testid="skills-agent-picker">
+            <option value="">No agent picked</option>
+            @foreach (var agent in _agentNames)
+            {
+                <option value="@agent">@agent</option>
+            }
+        </select>
+    </div>
+</div>
+
+@if (_loading)
 {
-    @if (_marketplaceError is not null)
-    {
-        <div class="alert alert-danger">@_marketplaceError</div>
-    }
-
-    @if (_marketplaceLoading)
-    {
-        <div class="text-muted">Fetching community skills from GitHub…</div>
-    }
-    else if (_marketplaceSkills.Count == 0 && _marketplaceError is null)
-    {
-        <div class="text-muted">No marketplace skills found.</div>
-    }
-    else
-    {
-        <div class="row g-3">
-            @foreach (var ms in _marketplaceSkills)
-            {
-                var isInstalled = _skills.Any(s => s.Name.Equals(ms.Name, StringComparison.OrdinalIgnoreCase));
-                <div class="col-md-6">
-                    <div class="card h-100">
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-start">
-                                <h5 class="card-title">@ms.Name</h5>
-                                @if (isInstalled)
-                                {
-                                    <span class="badge bg-success">✓ Installed</span>
-                                }
-                                else
-                                {
-                                    <button class="btn btn-sm btn-primary" @onclick="() => InstallMarketplaceSkill(ms)"
-                                            disabled="@_installing.Contains(ms.Name)">
-                                        @if (_installing.Contains(ms.Name))
-                                        { <span class="spinner-border spinner-border-sm me-1"></span> }
-                                        Install
-                                    </button>
-                                }
-                            </div>
-                            <p class="card-text small text-muted">
-                                <a href="@ms.GitHubUrl" target="_blank" rel="noopener">View on GitHub ↗</a>
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            }
+    <div class="text-muted"><span class="spinner-border spinner-border-sm me-2"></span>Loading skills…</div>
+}
+else if (_filtered.Count == 0 && _pageError is null)
+{
+    <div class="card">
+        <div class="card-body text-center py-5">
+            <div class="display-6 mb-3"><span class="bi bi-book text-muted"></span></div>
+            <h5 class="mb-2">No skills match the current filters.</h5>
+            <p class="text-muted mb-3">Try a different layer tab, clear the search, or create a new skill.</p>
+            <button class="btn btn-primary" @onclick="ShowCreate">
+                <span class="bi bi-plus-lg me-1" aria-hidden="true"></span>New skill
+            </button>
         </div>
-    }
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle">
+            <thead>
+                <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Description</th>
+                    <th scope="col">Layer</th>
+                    <th scope="col">Agents</th>
+                    <th scope="col">Enabled</th>
+                    <th scope="col">Updated</th>
+                    <th scope="col" class="text-end" style="width: 1%; white-space: nowrap;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var skill in _filtered)
+                {
+                    <SkillCard Skill="skill"
+                               AgentNames="_agentNames"
+                               SelectedAgent="@_selectedAgent"
+                               OnView="OpenDrawer"
+                               OnDelete="DeleteAsync"
+                               OnEnabledChanged="OnEnabledChangedAsync" />
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+<SkillAuthoringDialog Visible="_showCreate"
+                      OnCancel="HideCreate"
+                      OnCreated="OnCreatedAsync" />
+
+<SkillDetailDrawer Visible="_showDrawer"
+                   SkillName="@_drawerSkillName"
+                   Agents="_agentNames"
+                   OnClose="HideDrawer" />
+
+@* Skills import modal *@
+@if (_showImport)
+{
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="importSkillsTitle">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="importSkillsTitle">
+                        <span class="bi bi-cloud-download me-2" aria-hidden="true"></span>Import Skills
+                    </h5>
+                    <button type="button" class="btn-close" aria-label="Close"
+                            @onclick="HideImport"></button>
+                </div>
+                <div class="modal-body">
+                    <SkillsImportFileHandler OnImportSuccess="OnImportSuccessAsync"
+                                            OnImportError="OnImportErrorAsync" />
+                    <SkillsImportErrorDisplay Error="_importError"
+                                             OnDismiss="() => _importError = null"
+                                             OnRetry="() => _importError = null" />
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
 }
 
 @code {
-    private string _tab = "installed";
-    private List<SkillRow> _skills = [];
-    private List<MarketplaceItem> _marketplaceSkills = [];
-    private HashSet<string> _installing = new(StringComparer.OrdinalIgnoreCase);
-    private bool _loading;
-    private bool _marketplaceLoading;
-    private bool _importing;
-    private string? _marketplaceError;
-    private string _gatewayUrl = string.Empty;
-    private string? _toastMessage;
-    private bool _toastIsError;
-    private InputFile? _fileInput;
-
-    protected override async Task OnInitializedAsync()
+    private record TabDef(string Key, string Label);
+    private static readonly TabDef[] _tabs =
     {
-        _gatewayUrl = Configuration["GatewayUrl"] ?? "https://localhost:7295";
-        await LoadSkillsAsync();
-    }
+        new("system",    "System"),
+        new("installed", "Installed"),
+        new("agent",     "Agent-specific"),
+    };
 
-    private async Task LoadSkillsAsync()
+    private List<SkillDto> _skills = new();
+    private List<SkillDto> _filtered = new();
+    private List<string> _agentNames = new();
+    private List<string> _allSources = new();
+
+    private string _activeTab = "installed";
+    private string _search = string.Empty;
+    private string _sourceFilter = string.Empty;
+    private string _enabledFilter = "any";
+    private string _selectedAgent = string.Empty;
+
+    private bool _loading;
+    private string? _pageError;
+    private string? _pinnedSnapshotId;
+
+    // Modal + drawer state
+    private bool _showCreate;
+    private bool _showDrawer;
+    private string? _drawerSkillName;
+    private bool _showImport;
+    private (string Reason, string? Detail, int StatusCode)? _importError;
+
+    protected override async Task OnInitializedAsync() => await LoadAsync();
+
+    private async Task LoadAsync()
     {
         _loading = true;
+        _pageError = null;
         try
         {
-            var client = HttpClientFactory.CreateClient("gateway");
-            var defs = await client.GetFromJsonAsync<SkillDefinitionDto[]>("api/skills") ?? [];
-            _skills = defs.Select(d => new SkillRow(d.Name, d.Description ?? "", d.Category, d.Enabled, d.Tags ?? [], d.Source ?? "built-in")).ToList();
+            // Pin snapshot before listing so the banner can detect divergence.
+            try
+            {
+                var snap = await SkillsClient.GetSnapshotAsync();
+                _pinnedSnapshotId = snap.Id;
+            }
+            catch
+            {
+                // Snapshot endpoint may be offline (Petey K-1b not yet shipped) — banner stays quiet.
+            }
+
+            var list = await SkillsClient.ListAsync();
+            _skills = list.OrderBy(s => s.Name, StringComparer.Ordinal).ToList();
+
+            // Agent names: union of (a) agents already referenced by any skill's EnabledByAgent
+            // and (b) all configured agent profiles. Without (b) the picker stays empty on a
+            // fresh install, which makes per-agent enablement impossible to trigger from the UI.
+            var fromSkills = _skills.SelectMany(s => s.EnabledByAgent.Keys);
+            IEnumerable<string> fromProfiles = Array.Empty<string>();
+            try
+            {
+                var profiles = await JobsClient.GetAgentProfilesAsync();
+                fromProfiles = profiles.Select(p => p.Name);
+            }
+            catch
+            {
+                // Agent-profile endpoint may be unreachable; degrade to skills-only set.
+            }
+            _agentNames = fromSkills
+                .Concat(fromProfiles)
+                .Where(a => !string.IsNullOrWhiteSpace(a))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(a => a, StringComparer.Ordinal)
+                .ToList();
+            _allSources = _skills
+                .Select(s => s.Source)
+                .Where(s => !string.IsNullOrEmpty(s))
+                .Distinct(StringComparer.Ordinal)
+                .OrderBy(s => s, StringComparer.Ordinal)
+                .ToList();
+            ApplyFilter();
         }
-        catch { /* gateway may be offline */ }
+        catch (SkillsClientException ex)
+        {
+            _pageError = ex.Reason;
+        }
+        catch (Exception ex)
+        {
+            _pageError = ex.Message;
+        }
         finally
         {
             _loading = false;
         }
     }
 
-    private async Task ReloadSkills()
+    protected override void OnParametersSet() => ApplyFilter();
+
+    private void ApplyFilter()
     {
-        _loading = true;
-        try
+        IEnumerable<SkillDto> q = _skills;
+        q = q.Where(s => string.Equals(s.Layer, _activeTab, StringComparison.OrdinalIgnoreCase));
+        if (!string.IsNullOrWhiteSpace(_search))
         {
-            var client = HttpClientFactory.CreateClient("gateway");
-            await client.PostAsync("api/skills/reload", null);
+            var needle = _search.Trim();
+            q = q.Where(s =>
+                s.Name.Contains(needle, StringComparison.OrdinalIgnoreCase)
+                || (s.Description ?? "").Contains(needle, StringComparison.OrdinalIgnoreCase)
+                || (s.Source ?? "").Contains(needle, StringComparison.OrdinalIgnoreCase));
         }
-        catch { }
-        await LoadSkillsAsync();
+        if (!string.IsNullOrEmpty(_sourceFilter))
+        {
+            q = q.Where(s => string.Equals(s.Source, _sourceFilter, StringComparison.Ordinal));
+        }
+        if (_enabledFilter == "enabled")
+        {
+            q = q.Where(s => s.EnabledByAgent.Any(kv => kv.Value));
+        }
+        else if (_enabledFilter == "disabled")
+        {
+            q = q.Where(s => s.EnabledByAgent.All(kv => !kv.Value));
+        }
+        _filtered = q.ToList();
     }
 
-    private async Task ToggleSkill(SkillRow skill)
+    private int CountFor(string layer) =>
+        _skills.Count(s => string.Equals(s.Layer, layer, StringComparison.OrdinalIgnoreCase));
+
+    private void ShowCreate() => _showCreate = true;
+    private void HideCreate() => _showCreate = false;
+
+    private void ShowImport() => _showImport = true;
+    private void HideImport() => _showImport = false;
+
+    private void SelectTab(string key)
     {
-        var client = HttpClientFactory.CreateClient("gateway");
-        var endpoint = skill.Enabled ? $"api/skills/{skill.Name}/disable" : $"api/skills/{skill.Name}/enable";
-        await client.PostAsync(endpoint, null);
-        await LoadSkillsAsync();
+        _activeTab = key;
+        ApplyFilter();
     }
 
-    private async Task UninstallSkill(string name)
+    private async Task OnCreatedAsync(SkillDto created)
     {
-        var client = HttpClientFactory.CreateClient("gateway");
-        await client.DeleteAsync($"api/skills/installed/{Uri.EscapeDataString(name)}");
-        await LoadSkillsAsync();
-    }
+        _showCreate = false;
 
-    private void SetTab(string tab) => _tab = tab;
+        // Switch to the tab the new skill landed in and clear filters so the new
+        // row is guaranteed visible — Bruno reported the row appeared "missing"
+        // after Create until he switched tabs.
+        _activeTab = string.IsNullOrWhiteSpace(created?.Layer) ? "installed" : created!.Layer;
+        _search = string.Empty;
+        _sourceFilter = string.Empty;
+        _enabledFilter = "any";
 
-    private async Task LoadMarketplace()
-    {
-        _tab = "marketplace";
-        if (_marketplaceSkills.Count > 0) return; // already loaded
-
-        _marketplaceLoading = true;
-        _marketplaceError = null;
-        try
-        {
-            var client = HttpClientFactory.CreateClient("gateway");
-            var items = await client.GetFromJsonAsync<MarketplaceItemDto[]>("api/skills/marketplace") ?? [];
-            _marketplaceSkills = items.Select(i => new MarketplaceItem(i.Name, i.ContentUrl, i.GitHubUrl)).ToList();
-        }
-        catch (Exception ex)
-        {
-            _marketplaceError = $"Could not load marketplace: {ex.Message}";
-        }
-        finally
-        {
-            _marketplaceLoading = false;
-        }
-    }
-
-    private async Task InstallMarketplaceSkill(MarketplaceItem ms)
-    {
-        _installing.Add(ms.Name);
-        try
-        {
-            var client = HttpClientFactory.CreateClient("gateway");
-            await client.PostAsJsonAsync("api/skills/install", new { name = ms.Name, contentUrl = ms.ContentUrl });
-            await LoadSkillsAsync();
-        }
-        catch { }
-        finally
-        {
-            _installing.Remove(ms.Name);
-        }
-    }
-
-    private sealed record SkillRow(string Name, string Description, string? Category, bool Enabled, string[] Tags, string Source);
-    private sealed record MarketplaceItem(string Name, string ContentUrl, string GitHubUrl);
-
-    // DTOs matching Gateway JSON
-    private sealed record SkillDefinitionDto(string Name, string? Description, string? Category, bool Enabled, string[]? Tags, string? Source);
-    private sealed record MarketplaceItemDto(string Name, string ContentUrl, string GitHubUrl);
-    private sealed record ImportResponse(bool Success, string SkillName, string Message);
-    private sealed record ErrorResponse(bool Success, string Error);
-
-    private void ClearToast()
-    {
-        _toastMessage = null;
-        _toastIsError = false;
-    }
-
-    private void ShowToast(string message, bool isError = false)
-    {
-        _toastMessage = message;
-        _toastIsError = isError;
+        await LoadAsync();
         StateHasChanged();
-        _ = Task.Delay(5000).ContinueWith(_ =>
-        {
-            ClearToast();
-            StateHasChanged();
-        });
     }
 
-    private async Task OnImportClick()
+    private void OpenDrawer(SkillDto skill)
     {
-        if (_fileInput is null) return;
-        
+        _drawerSkillName = skill.Name;
+        _showDrawer = true;
+    }
+
+    private void HideDrawer()
+    {
+        _showDrawer = false;
+        _drawerSkillName = null;
+    }
+
+    private async Task DeleteAsync(SkillDto skill)
+    {
+        if (!string.Equals(skill.Layer, "installed", StringComparison.OrdinalIgnoreCase)) return;
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Delete skill '{skill.Name}'? This cannot be undone.");
+        if (!confirmed) return;
+
         try
         {
-            // Use the InputFileInterop helper if available
-            // For now, we'll trigger via a workaround using the element reference
-            await JS.InvokeVoidAsync("document.querySelector", "input[accept='.md,.zip']").ConfigureAwait(false);
+            await SkillsClient.DeleteAsync(skill.Name);
+            await LoadAsync();
         }
-        catch
+        catch (SkillsClientException ex)
         {
-            // Fallback: just trigger the input via a simple approach
-        }
-        finally
-        {
-            // Note: The Blazor InputFile component doesn't expose a click method
-            // So we'll use JavaScript to trigger the native input element
-            try
-            {
-                await JS.InvokeVoidAsync("eval", 
-                    "document.querySelector('input[accept=\".md,.zip\"]').click()");
-            }
-            catch (Exception ex)
-            {
-                ShowToast($"❌ Error opening file picker: {ex.Message}", isError: true);
-            }
+            _pageError = ex.Reason;
         }
     }
 
-    private async Task OnFileSelected(InputFileChangeEventArgs e)
+    private async Task OnEnabledChangedAsync((string Skill, string Agent, bool Enabled) e)
     {
-        _importing = true;
-        try
-        {
-            var file = e.File;
-            if (file == null) return;
+        // Lightweight reconcile: re-pull the row's current state by re-listing.
+        // Keeping it cheap — full snapshot diff is K-2 territory.
+        await LoadAsync();
+    }
 
-            // Validate file type
-            if (!file.Name.EndsWith(".md", StringComparison.OrdinalIgnoreCase) && 
-                !file.Name.EndsWith(".zip", StringComparison.OrdinalIgnoreCase))
-            {
-                ShowToast("❌ Please select a .md or .zip file", isError: true);
-                return;
-            }
+    private async Task OnImportSuccessAsync(string skillName)
+    {
+        HideImport();
+        _activeTab = "installed";
+        _search = string.Empty;
+        _sourceFilter = string.Empty;
+        _enabledFilter = "any";
+        await LoadAsync();
+        StateHasChanged();
+    }
 
-            // Read file into memory
-            using var stream = file.OpenReadStream(maxAllowedSize: 5 * 1024 * 1024); // 5MB max
-            using var memoryStream = new MemoryStream();
-            await stream.CopyToAsync(memoryStream);
-            memoryStream.Position = 0;
+    private async Task OnImportErrorAsync((string Reason, string? Detail, int StatusCode) error)
+    {
+        _importError = error;
+        StateHasChanged();
+    }
 
-            ShowToast("⏳ Importing skill...");
-
-            // Create multipart form data
-            var content = new MultipartFormDataContent();
-            content.Add(new StreamContent(memoryStream), "file", file.Name);
-
-            // Upload to API
-            var client = HttpClientFactory.CreateClient("gateway");
-            var response = await client.PostAsync("api/skills/import", content);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonContent = await response.Content.ReadAsStringAsync();
-                var result = JsonSerializer.Deserialize<ImportResponse>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                await LoadSkillsAsync();
-                ShowToast($"✅ Skill imported: {result?.SkillName ?? "Unknown"}");
-            }
-            else
-            {
-                var jsonContent = await response.Content.ReadAsStringAsync();
-                var errorResult = JsonSerializer.Deserialize<ErrorResponse>(jsonContent, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                ShowToast($"❌ Import failed: {errorResult?.Error ?? "Unknown error"}", isError: true);
-            }
-        }
-        catch (HttpRequestException ex)
-        {
-            ShowToast($"❌ Import failed: {ex.Message}", isError: true);
-        }
-        catch (Exception ex)
-        {
-            ShowToast($"❌ Error: {ex.Message}", isError: true);
-        }
-        finally
-        {
-            _importing = false;
-        }
+    // For ApplyFilter to react to bound-input changes immediately:
+    private string SearchProxy
+    {
+        get => _search;
+        set { _search = value; ApplyFilter(); }
     }
 }

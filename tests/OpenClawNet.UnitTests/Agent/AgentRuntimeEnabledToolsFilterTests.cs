@@ -124,16 +124,20 @@ public sealed class AgentRuntimeEnabledToolsFilterTests
         var workspaceLoader = new Mock<IWorkspaceLoader>();
         workspaceLoader.Setup(w => w.LoadAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BootstrapContext(null, null, null));
-        var promptComposer = new DefaultPromptComposer(workspaceLoader.Object, Options.Create(new WorkspaceOptions()));
+        var skillService = new Mock<ISkillService>();
+        skillService.Setup(s => s.FindRelevantSkillsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<SkillSummary>());
+        var promptComposer = new DefaultPromptComposer(
+            workspaceLoader.Object, 
+            skillService.Object,
+            NullLogger<DefaultPromptComposer>.Instance,
+            Options.Create(new WorkspaceOptions()));
 
         var summary = new Mock<ISummaryService>();
         summary.Setup(s => s.SummarizeIfNeededAsync(It.IsAny<Guid>(), It.IsAny<IReadOnlyList<OpenClawNet.Models.Abstractions.ChatMessage>>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((string?)null);
 
         var loggerFactory = NullLoggerFactory.Instance;
-        var skills = new AgentSkillsProvider(
-            Path.Combine(AppContext.BaseDirectory, "skills"), null, null, null, loggerFactory);
-
         ListLogger<DefaultAgentRuntime>? listLogger = useListLogger ? new() : null;
         ILogger<DefaultAgentRuntime> logger = listLogger ?? (ILogger<DefaultAgentRuntime>)NullLogger<DefaultAgentRuntime>.Instance;
 
@@ -144,7 +148,6 @@ public sealed class AgentRuntimeEnabledToolsFilterTests
             registry.Object,
             store,
             summary.Object,
-            skills,
             new OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator(
                 NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance),
             loggerFactory,

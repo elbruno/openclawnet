@@ -1,7 +1,5 @@
-using Microsoft.Agents.AI;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 namespace OpenClawNet.Agent;
 
@@ -21,23 +19,39 @@ public static class AgentServiceCollectionExtensions
                     opts.WorkspacePath = path;
             });
 
-        // AgentSkillsProvider — discovers file-based skills from the configured path
-        services.AddSingleton<AgentSkillsProvider>(sp =>
-        {
-            var cfg = sp.GetRequiredService<IConfiguration>();
-            var loggerFactory = sp.GetRequiredService<ILoggerFactory>();
-            var skillsPath = cfg["Agent:SkillsPath"]
-                ?? Path.Combine(AppContext.BaseDirectory, "skills");
-            return new AgentSkillsProvider(skillsPath, null, null, null, loggerFactory);
-        });
+        // K-1b — ISkillsRegistry + scoped OpenClawNetSkillsProvider are
+        // registered by Skills.AddOpenClawNetSkills() at gateway boot. The
+        // DefaultAgentRuntime takes the scoped provider as an optional ctor
+        // dependency (null in test harnesses that don't call AddOpenClawNetSkills).
 
         services.AddScoped<IPromptComposer, DefaultPromptComposer>();
+        services.AddScoped<ISkillService, DefaultSkillService>();
+
+        // Issue #107 — DefaultSummaryService now reads the local-fallback model name
+        // from the Summary config section instead of hard-coding "llama3.2".
+        services.AddOptions<SummaryOptions>()
+            .Configure<IConfiguration>((opts, cfg) =>
+                cfg.GetSection(SummaryOptions.SectionName).Bind(opts));
         services.AddScoped<ISummaryService, DefaultSummaryService>();
 
         // Tool-approval coordinator — singleton because pending requests bridge across
         // an agent runtime call and an HTTP POST that resolves the user's decision.
         services.AddSingleton<OpenClawNet.Agent.ToolApproval.IToolApprovalCoordinator,
                               OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>();
+
+        // Concept-review §4a — sanitize every tool result before it re-enters the LLM context.
+        // Feature 2 Story 2 — wire up configurable options for enhanced defenses.
+        services.AddOptions<OpenClawNet.Agent.ToolApproval.ToolResultSanitizerOptions>()
+            .Configure<IConfiguration>((opts, cfg) =>
+                cfg.GetSection(OpenClawNet.Agent.ToolApproval.ToolResultSanitizerOptions.SectionName).Bind(opts));
+
+        services.AddSingleton<OpenClawNet.Agent.ToolApproval.IToolResultSanitizer,
+                              OpenClawNet.Agent.ToolApproval.DefaultToolResultSanitizer>();
+
+        // Concept-review §4a (UX) — approval-prompt timeout (default 60s).
+        services.AddOptions<OpenClawNet.Agent.ToolApproval.ToolApprovalOptions>()
+            .Configure<IConfiguration>((opts, cfg) =>
+                cfg.GetSection(OpenClawNet.Agent.ToolApproval.ToolApprovalOptions.SectionName).Bind(opts));
 
         // Internal runtime abstraction (implemented with an Agent Framework host adapter)
         services.AddScoped<IAgentRuntime, DefaultAgentRuntime>();

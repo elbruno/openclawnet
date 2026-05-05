@@ -64,6 +64,46 @@ else
             </div>
         </div>
 
+        @* ── Storage Location Card ───────────────────────────── *@
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Storage Location</span>
+                @if (_storageSaveSuccess.HasValue)
+                {
+                    <span class="badge @(_storageSaveSuccess.Value ? "bg-success" : "bg-danger")">
+                        @(_storageSaveSuccess.Value ? "✔ Saved" : "✘ Error")
+                    </span>
+                }
+            </div>
+            <div class="card-body">
+                @if (_storageError is not null)
+                {
+                    <div class="alert alert-warning py-2 small">@_storageError</div>
+                }
+                @if (_storageSaveSuccess == true)
+                {
+                    <div class="alert alert-warning py-2 small">⚠ Restart required to apply changes</div>
+                }
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">Current Path</label>
+                    <input type="text" class="form-control" readonly value="@_storageLocation?.EffectivePath" />
+                    <div class="form-text">Currently resolved storage directory.</div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold">New Path</label>
+                    <input type="text" class="form-control" @bind="_newStoragePath" />
+                    <div class="form-text">Enter an absolute path (e.g., C:\OpenClawNet\Storage). Changes require restart.</div>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveStorageLocation" disabled="@_storageSaving">
+                    @if (_storageSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    Save Storage Location
+                </button>
+            </div>
+        </div>
+
         @* ── System Info Card ────────────────────────────────── *@
         <div class="card">
             <div class="card-header">System Info</div>
@@ -89,10 +129,20 @@ else
     private bool? _schedulerSaveSuccess;
     private string? _schedulerError;
 
+    // ── Storage Location ──────────────────────────────────────
+    private StorageLocationDto? _storageLocation;
+    private string _newStoragePath = string.Empty;
+    private bool _storageSaving;
+    private bool? _storageSaveSuccess;
+    private string? _storageError;
+
     // ── Lifecycle ────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
-        await LoadSchedulerSettings();
+        await Task.WhenAll(
+            LoadSchedulerSettings(),
+            LoadStorageLocation()
+        );
         _loading = false;
     }
 
@@ -141,11 +191,91 @@ else
         }
     }
 
+    private async Task LoadStorageLocation()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("scheduler");
+            var result = await http.GetFromJsonAsync<StorageLocationDto>("/api/storage/location");
+            if (result is not null)
+            {
+                _storageLocation = result;
+                _newStoragePath = result.RootPath;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load storage location");
+            _storageError = "Storage service unavailable — showing defaults.";
+        }
+    }
+
+    private async Task SaveStorageLocation()
+    {
+        _storageSaving = true;
+        _storageSaveSuccess = null;
+        _storageError = null;
+        StateHasChanged();
+        try
+        {
+            var http = HttpClientFactory.CreateClient("scheduler");
+            var request = new { rootPath = _newStoragePath };
+            var response = await http.PutAsJsonAsync("/api/storage/location", request);
+            
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<StorageUpdateDto>();
+                _storageSaveSuccess = true;
+                if (result?.NewPath is not null)
+                {
+                    _newStoragePath = result.NewPath;
+                }
+            }
+            else
+            {
+                _storageSaveSuccess = false;
+                var errorResult = await response.Content.ReadFromJsonAsync<StorageUpdateDto>();
+                _storageError = errorResult?.Message ?? $"Failed with status {response.StatusCode}";
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save storage location");
+            _storageSaveSuccess = false;
+            _storageError = ex.Message;
+        }
+        finally
+        {
+            _storageSaving = false;
+            StateHasChanged();
+            if (_storageSaveSuccess == true)
+            {
+                await Task.Delay(4000);
+                _storageSaveSuccess = null;
+                StateHasChanged();
+            }
+        }
+    }
+
     private sealed class SchedulerSettingsDto
     {
         public int MaxConcurrentJobs { get; set; } = 3;
         public int JobTimeoutSeconds { get; set; } = 300;
         public int PollIntervalSeconds { get; set; } = 30;
+    }
+
+    private sealed class StorageLocationDto
+    {
+        public string RootPath { get; set; } = string.Empty;
+        public string EffectivePath { get; set; } = string.Empty;
+        public string AgentStoragePath { get; set; } = string.Empty;
+    }
+
+    private sealed class StorageUpdateDto
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+        public string? NewPath { get; set; }
     }
 }
 

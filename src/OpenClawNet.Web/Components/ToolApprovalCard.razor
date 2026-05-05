@@ -3,7 +3,7 @@
    Wave 4 PR-1 (Lambert): UI scaffolding only. Backend NDJSON event wiring lands in Dallas's PR-2.
    See decisions.md "Wave 4 tool approval" + docs/analysis/tool-approval-design.md.
 *@
-<div class="card border-warning shadow-sm mb-3 tool-approval-card" data-testid="tool-approval-card" role="region" aria-label="Tool approval required">
+<div class="card border-warning shadow-sm mb-3 tool-approval-card" data-testid="tool-approval-card" role="region" aria-label="Tool approval required" aria-busy="@_busy">
     <div class="card-header bg-warning bg-opacity-25 d-flex align-items-center">
         <span class="me-2" aria-hidden="true">🛡️</span>
         <strong>Awaiting your approval</strong>
@@ -31,27 +31,39 @@
         </div>
 
         <div class="d-flex gap-2">
-            <button type="button" class="btn btn-success btn-sm"
-                    data-testid="tool-approve-btn"
-                    @onclick="HandleApprove" disabled="@_busy">
-                <span aria-hidden="true">✓</span> Approve
+            <button type="button" class="btn btn-success btn-sm" @onclick="HandleApprove" disabled="@_busy">
+                @if (_busy && _action == "approve")
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    <span>Approving…</span>
+                }
+                else
+                {
+                    <span aria-hidden="true">✓</span>
+                    <span> Approve</span>
+                }
             </button>
-            <button type="button" class="btn btn-outline-danger btn-sm"
-                    data-testid="tool-deny-btn"
-                    @onclick="HandleDeny" disabled="@_busy">
-                <span aria-hidden="true">✗</span> Deny
+            <button type="button" class="btn btn-outline-danger btn-sm" @onclick="HandleDeny" disabled="@_busy">
+                @if (_busy && _action == "deny")
+                {
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                    <span>Denying…</span>
+                }
+                else
+                {
+                    <span aria-hidden="true">✗</span>
+                    <span> Deny</span>
+                }
             </button>
         </div>
     </div>
 </div>
 
-@inject IJSRuntime JS
-@inject ILogger<ToolApprovalCard> Logger
-
 @code {
     private readonly string _rememberId = $"remember-{Guid.NewGuid():N}";
     private bool _rememberForSession;
     private bool _busy;
+    private string _action = string.Empty; // "approve" or "deny"
 
     /// <summary>Name of the tool the agent wants to invoke (e.g. "shell").</summary>
     [Parameter, EditorRequired] public string ToolName { get; set; } = string.Empty;
@@ -73,48 +85,21 @@
 
     private async Task HandleApprove()
     {
-        Logger.LogInformation("[APPROVE-CLICK] HandleApprove ENTERED. Tool={Tool} Busy={Busy} HasCallback={HasCb}",
-            ToolName, _busy, OnApprove.HasDelegate);
-        try { await JS.InvokeVoidAsync("console.log", "[APPROVE-CLICK] Blazor HandleApprove fired for tool: " + ToolName); }
-        catch (Exception jsEx) { Logger.LogWarning(jsEx, "[APPROVE-CLICK] JS interop failed"); }
-
-        if (_busy)
-        {
-            Logger.LogInformation("[APPROVE-CLICK] Returning early — _busy was already true");
-            return;
-        }
+        if (_busy) return;
         _busy = true;
-        try
-        {
-            Logger.LogInformation("[APPROVE-CLICK] About to invoke OnApprove callback (remember={Remember})", _rememberForSession);
-            await OnApprove.InvokeAsync(_rememberForSession);
-            Logger.LogInformation("[APPROVE-CLICK] OnApprove callback returned");
-        }
-        catch (Exception ex)
-        {
-            Logger.LogWarning(ex, "[APPROVE-CLICK] OnApprove callback threw");
-            throw;
-        }
-        finally
-        {
-            _busy = false;
-        }
+        _action = "approve";
+        await InvokeAsync(StateHasChanged); // Force immediate UI update
+        await OnApprove.InvokeAsync(_rememberForSession);
+        // Don't reset _busy here - let card unmount on success or parent will re-render on failure
     }
 
     private async Task HandleDeny()
     {
-        Logger.LogInformation("[DENY-CLICK] HandleDeny ENTERED. Tool={Tool}", ToolName);
-        try { await JS.InvokeVoidAsync("console.log", "[DENY-CLICK] Blazor HandleDeny fired"); } catch { }
-
         if (_busy) return;
         _busy = true;
-        try
-        {
-            await OnDeny.InvokeAsync();
-        }
-        finally
-        {
-            _busy = false;
-        }
+        _action = "deny";
+        await InvokeAsync(StateHasChanged); // Force immediate UI update
+        await OnDeny.InvokeAsync();
+        // Don't reset _busy here - let card unmount on success or parent will re-render on failure
     }
 }

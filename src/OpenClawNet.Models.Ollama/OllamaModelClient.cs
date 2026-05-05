@@ -43,7 +43,7 @@ public sealed class OllamaModelClient : IModelClient
         var ollamaResponse = await response.Content.ReadFromJsonAsync<OllamaChatResponse>(JsonOptions, cancellationToken)
             ?? throw new InvalidOperationException("Empty response from Ollama");
 
-        return MapToChatResponse(ollamaResponse, request.Model);
+        return MapToChatResponse(ollamaResponse, request.Model ?? string.Empty);
     }
 
     public async IAsyncEnumerable<ChatResponseChunk> StreamAsync(ChatRequest request, [EnumeratorCancellation] CancellationToken cancellationToken = default)

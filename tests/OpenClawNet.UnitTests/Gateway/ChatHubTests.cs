@@ -1,3 +1,5 @@
+// These tests deliberately exercise the obsolete ChatHub for back-compat regression coverage.
+#pragma warning disable CS0618
 using System.Runtime.CompilerServices;
 using FluentAssertions;
 using Microsoft.Extensions.Logging;

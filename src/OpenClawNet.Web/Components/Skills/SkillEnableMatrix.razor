@@ -1,0 +1,124 @@
+@using OpenClawNet.Web.Models.Skills
+@using OpenClawNet.Web.Services
+@inject SkillsClient SkillsClient
+
+@*
+    K-3 per-skill agent enable matrix (spec §4.2). Renders one toggle per
+    agent for the supplied skill. Used inside the detail drawer (per-skill
+    mode). The agent profile page hosts a per-agent variant in K-3-followup.
+
+    Per spec: 1s debounce on PATCH, optimistic UI with revert on error.
+*@
+
+@if (_error is not null)
+{
+    <div class="alert alert-warning py-2 px-3 small mb-0" role="alert">@_error</div>
+}
+else if (_agents.Count == 0)
+{
+    <div class="text-muted small">No agent profiles found.</div>
+}
+else
+{
+    <div class="row g-2" data-testid="enable-matrix">
+        @foreach (var agent in _agents)
+        {
+            var isOn = _state.TryGetValue(agent, out var v) && v;
+            <div class="col-6 col-md-4">
+                <div class="form-check form-switch">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="@($"em-{Skill.Name}-{agent}")"
+                           data-testid="@($"toggle-{agent}")"
+                           checked="@isOn"
+                           disabled="@_busy.Contains(agent)"
+                           @onchange="e => OnToggleAsync(agent, e)" />
+                    <label class="form-check-label" for="@($"em-{Skill.Name}-{agent}")">@agent</label>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+@code {
+    [Parameter, EditorRequired] public SkillDto Skill { get; set; } = default!;
+    /// <summary>
+    /// Agent list source. Falls back to <see cref="Skill"/>.<see cref="SkillDto.EnabledByAgent"/>
+    /// keys when null — in tests we want to drive the matrix without hitting the agent-profiles
+    /// endpoint, so we accept an explicit override.
+    /// </summary>
+    [Parameter] public IReadOnlyList<string>? Agents { get; set; }
+
+    private List<string> _agents = new();
+    private Dictionary<string, bool> _state = new();
+    private HashSet<string> _busy = new(StringComparer.OrdinalIgnoreCase);
+    private string? _error;
+
+    // Pending toggles (skill+agent → debounce timer) for spec §4.1 1s debounce.
+    private readonly Dictionary<string, CancellationTokenSource> _debouncers = new(StringComparer.OrdinalIgnoreCase);
+    private const int DebounceMs = 1000;
+
+    protected override void OnParametersSet()
+    {
+        if (Agents is { Count: > 0 })
+        {
+            _agents = Agents.ToList();
+        }
+        else
+        {
+            _agents = Skill.EnabledByAgent.Keys.OrderBy(a => a, StringComparer.Ordinal).ToList();
+        }
+        _state = new Dictionary<string, bool>(Skill.EnabledByAgent, StringComparer.Ordinal);
+    }
+
+    private async Task OnToggleAsync(string agent, ChangeEventArgs e)
+    {
+        var desired = e.Value is bool b && b;
+        // Optimistic update.
+        _state[agent] = desired;
+        StateHasChanged();
+
+        // Debounce: if user clicks rapidly we coalesce into one PATCH.
+        if (_debouncers.Remove(agent, out var prev))
+        {
+            prev.Cancel();
+            prev.Dispose();
+        }
+        var cts = new CancellationTokenSource();
+        _debouncers[agent] = cts;
+        try
+        {
+            await Task.Delay(DebounceMs, cts.Token);
+        }
+        catch (TaskCanceledException)
+        {
+            return; // superseded by another click
+        }
+
+        _busy.Add(agent);
+        try
+        {
+            await SkillsClient.SetEnabledAsync(Skill.Name, agent, desired);
+            // Reflect in the underlying DTO so the parent (drawer + row) sees it.
+            Skill.EnabledByAgent[agent] = desired;
+        }
+        catch (SkillsClientException ex)
+        {
+            // Revert optimistic.
+            _state[agent] = !desired;
+            _error = $"Couldn't update {agent}: {ex.Reason}";
+        }
+        catch (Exception ex)
+        {
+            _state[agent] = !desired;
+            _error = ex.Message;
+        }
+        finally
+        {
+            _busy.Remove(agent);
+            _debouncers.Remove(agent);
+            StateHasChanged();
+        }
+    }
+}

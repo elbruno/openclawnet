@@ -1,162 +1,220 @@
-@using System.Collections.Generic
-@using System.Diagnostics
-@inject IJSRuntime JS
+@using Microsoft.JSInterop
+@using System.Globalization
+@using System.Text
 @implements IAsyncDisposable
+@inject IJSRuntime JS
 
-<div class="agent-console-panel border-top bg-dark text-light mt-3" style="max-height: 300px; overflow-y: auto;"
-     data-testid="agent-activity-panel">
-    <div class="d-flex justify-content-between align-items-center p-2 border-bottom bg-secondary">
-        <strong>Agent Activity</strong>
-        <div class="gap-2 d-flex">
-            <button class="btn btn-sm btn-outline-light" @onclick="ClearLogs" title="Clear">Clear</button>
-            <button class="btn btn-sm btn-outline-light" @onclick="TogglePanel" title="Collapse/Expand"
-                    data-testid="agent-activity-toggle">
-                @(IsExpanded ? "▼" : "▶")
+<div class="agent-console" data-testid="agent-console">
+    <div class="console-header">
+        <button class="btn btn-sm btn-link text-decoration-none p-0" @onclick="ToggleExpand">
+            <span class="console-toggle-icon">@(isExpanded ? "▼" : "▶")</span>
+            <span class="ms-2">🤖 Agent Activity</span>
+            @if (entries.Count > 0)
+            {
+                <span class="badge bg-secondary ms-2">@entries.Count</span>
+            }
+        </button>
+        <div class="console-actions">
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ExportToFile" title="Export full log to a markdown file" data-testid="agent-console-export">
+                💾 Export
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="CopyToClipboard" title="Copy all logs">
+                📋 Copy
+            </button>
+            <button class="btn btn-sm btn-outline-secondary" @onclick="ClearConsole" title="Clear console">
+                🗑️ Clear
             </button>
         </div>
     </div>
-
-    @if (IsExpanded)
+    @if (isExpanded)
     {
-        <div class="logs-container p-2" id="agent-activity-log" data-testid="agent-activity-log"
-             style="font-family: 'Courier New', monospace; font-size: 0.9rem; white-space: pre-wrap; word-break: break-word; max-height: 240px; overflow-y: auto;">
-            @if (_logEntries.Count == 0)
+        <div class="console-body console-body-expanded" @ref="consoleRef">
+            @if (entries.Count == 0)
             {
-                <div class="text-muted small">Waiting for agent activity…</div>
-            }
-            @foreach (var entry in _logEntries.TakeLast(100))
-            {
-                <div class="log-entry mb-1" style="@GetLogStyle(entry.Level)">
-                    <span class="timestamp">[<small>@entry.Timestamp.ToString("HH:mm:ss.fff")</small>]</span>
-                    <span class="level" style="display: inline-block; width: 60px; font-weight: bold;">@entry.Level</span>
-                    <span class="message">@entry.Message</span>
+                <div class="text-muted text-center py-3">
+                    <small>No agent activity yet. Tool calls and operations will appear here.</small>
                 </div>
+            }
+            else
+            {
+                var visibleEntries = entries.Take(VisibleMaxEntries);
+                @foreach (var entry in visibleEntries)
+                {
+                    var hasDetails = !string.IsNullOrWhiteSpace(entry.Details);
+                    <div class="log-entry log-@entry.Level @(hasDetails ? "log-entry-expandable" : null)"
+                         @onclick="() => ToggleEntry(entry)"
+                         data-testid="agent-console-entry">
+                        <span class="log-chevron">@(hasDetails ? (entry.IsExpanded ? "▼" : "▶") : "")</span>
+                        <span class="log-time">[@entry.Timestamp.ToString("HH:mm:ss")]</span>
+                        <span class="log-icon">@GetIcon(entry.Level)</span>
+                        <span class="log-message">@entry.Message</span>
+                    </div>
+                    @if (hasDetails && entry.IsExpanded)
+                    {
+                        <pre class="log-details" data-testid="agent-console-entry-details">@entry.Details</pre>
+                    }
+                }
+                @if (entries.Count > VisibleMaxEntries)
+                {
+                    <div class="text-muted text-center py-2" style="font-size: 0.75rem;">
+                        … and @(entries.Count - VisibleMaxEntries) older entry(s) (included in Export)
+                    </div>
+                }
             }
         </div>
     }
 </div>
 
 @code {
-    private const string LogElementId = "agent-activity-log";
-    private List<LogEntry> _logEntries = new();
-    private bool IsExpanded = true;
-    private bool _attached;
+    private List<ConsoleEntry> entries = new();
+    private bool isExpanded = false;
+    private ElementReference consoleRef;
+    private const int MaxEntries = 100;
+    private const int VisibleMaxEntries = 20;
+    private const int VisibleRowsExpanded = 4;
 
-    public void AddLog(string level, string message)
+    public Task AddEntry(string message, string level = "info") => AddEntry(message, level, null);
+
+    public async Task AddEntry(string message, string level, string? details)
     {
-        _logEntries.Add(new LogEntry
+        entries.Insert(0, new ConsoleEntry
         {
-            Level = level,
             Message = message,
-            Timestamp = DateTime.Now
+            Level = level,
+            Timestamp = DateTime.Now,
+            Details = string.IsNullOrWhiteSpace(details) ? null : details
         });
 
-        // Keep only last 100 entries
-        if (_logEntries.Count > 100)
-            _logEntries.RemoveAt(0);
+        if (entries.Count > MaxEntries)
+        {
+            entries.RemoveAt(entries.Count - 1);
+        }
 
-        InvokeAsync(StateHasChanged);
+        StateHasChanged();
+
+        // Auto-scroll to top when expanded (newest entries are at index 0)
+        if (isExpanded)
+        {
+            try
+            {
+                await JS.InvokeVoidAsync("eval", "arguments[0].scrollTop = 0", consoleRef);
+            }
+            catch
+            {
+                // JS interop might fail in some contexts
+            }
+        }
     }
 
-    public void AddToolCall(string toolName, Dictionary<string, object> parameters)
+    private void ToggleExpand()
     {
-        var paramStr = string.Join(", ", parameters.Select(p => $"{p.Key}={p.Value}"));
-        AddLog("TOOL", $"→ {toolName}({paramStr})");
+        isExpanded = !isExpanded;
     }
 
-    public void AddToolComplete(string toolName, object result)
+    private void ToggleEntry(ConsoleEntry entry)
     {
-        AddLog("SUCCESS", $"✓ {toolName} completed");
+        if (string.IsNullOrWhiteSpace(entry.Details)) return;
+        entry.IsExpanded = !entry.IsExpanded;
     }
 
-    public void AddError(string message)
+    private void ClearConsole()
     {
-        AddLog("ERROR", $"✗ {message}");
+        entries.Clear();
     }
 
-    private void ClearLogs()
+    private async Task CopyToClipboard()
     {
-        _logEntries.Clear();
-    }
+        if (entries.Count == 0) return;
 
-    private void TogglePanel()
-    {
-        IsExpanded = !IsExpanded;
-    }
+        var logText = string.Join("\n", entries
+            .OrderByDescending(e => e.Timestamp)
+            .Select(e => $"[{e.Timestamp:HH:mm:ss}] {GetIcon(e.Level)} {e.Message}"));
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (!IsExpanded) return;
         try
         {
-            if (!_attached)
-            {
-                await JS.InvokeVoidAsync("activityTail.attach", LogElementId);
-                _attached = true;
-            }
-            await JS.InvokeVoidAsync("activityTail.scrollToBottom", LogElementId);
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", logText);
         }
         catch
         {
-            // JS interop unavailable during prerender — retry next render.
+            // Clipboard API might not be available
         }
     }
 
-    public async ValueTask DisposeAsync()
+    private async Task ExportToFile()
     {
-        try { await JS.InvokeVoidAsync("activityTail.detach", LogElementId); }
-        catch { }
+        if (entries.Count == 0) return;
+
+        var ordered = entries.OrderByDescending(e => e.Timestamp).ToList();
+        var sb = new StringBuilder();
+        sb.AppendLine("# Agent Activity Log");
+        sb.AppendLine();
+        sb.Append("Exported: ").AppendLine(DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss", CultureInfo.InvariantCulture));
+        sb.Append("Total entries: ").AppendLine(ordered.Count.ToString(CultureInfo.InvariantCulture));
+        sb.AppendLine();
+        sb.AppendLine("---");
+        sb.AppendLine();
+
+        foreach (var e in ordered)
+        {
+            sb.Append("## [").Append(e.Timestamp.ToString("HH:mm:ss")).Append("] ")
+              .Append(GetIcon(e.Level)).Append(' ').AppendLine(e.Message);
+            sb.AppendLine();
+            sb.Append("- **Level:** ").AppendLine(e.Level);
+            sb.Append("- **Timestamp:** ").AppendLine(e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss.fff", CultureInfo.InvariantCulture));
+            sb.AppendLine();
+            if (!string.IsNullOrWhiteSpace(e.Details))
+            {
+                sb.AppendLine("<details><summary>Details</summary>");
+                sb.AppendLine();
+                sb.AppendLine("```");
+                sb.AppendLine(e.Details.TrimEnd());
+                sb.AppendLine("```");
+                sb.AppendLine();
+                sb.AppendLine("</details>");
+                sb.AppendLine();
+            }
+        }
+
+        var filename = $"agent-activity-{DateTime.Now:yyyyMMdd-HHmmss}.md";
+        try
+        {
+            await JS.InvokeVoidAsync("consoleExport.download", filename, sb.ToString(), "text/markdown;charset=utf-8");
+        }
+        catch
+        {
+            // JS interop unavailable — fall back to clipboard
+            try
+            {
+                await JS.InvokeVoidAsync("navigator.clipboard.writeText", sb.ToString());
+            }
+            catch
+            {
+                // give up silently
+            }
+        }
     }
 
-    private string GetLogStyle(string level) => level switch
+    private string GetIcon(string level) => level switch
     {
-        "ERROR" => "color: #ff6b6b;",      // Red
-        "SUCCESS" => "color: #51cf66;",    // Green
-        "TOOL" => "color: #4dabf7;",       // Blue
-        "WARNING" => "color: #ffd43b;",    // Yellow
-        _ => "color: #d0bfff;"             // Purple (default)
+        "error" => "❌",
+        "warning" => "⚠️",
+        "success" => "✅",
+        "tool" => "🔧",
+        _ => "ℹ️"
     };
 
-    private class LogEntry
+    public async ValueTask DisposeAsync()
     {
-        public string Level { get; set; }
-        public string Message { get; set; }
+        // Cleanup if needed
+        await Task.CompletedTask;
+    }
+
+    public class ConsoleEntry
+    {
+        public string Message { get; set; } = string.Empty;
+        public string Level { get; set; } = "info";
         public DateTime Timestamp { get; set; }
+        public string? Details { get; set; }
+        public bool IsExpanded { get; set; }
     }
 }
-
-<style>
-.agent-console-panel {
-    position: relative;
-    border-radius: 4px;
-    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
-}
-
-.logs-container {
-    background-color: #1a1a1a;
-    color: #d0d0d0;
-    line-height: 1.6;
-}
-
-.log-entry {
-    display: flex;
-    gap: 12px;
-    font-size: 0.85rem;
-}
-
-.log-entry .timestamp {
-    color: #888;
-    flex-shrink: 0;
-}
-
-.log-entry .level {
-    font-weight: bold;
-    flex-shrink: 0;
-    text-transform: uppercase;
-}
-
-.log-entry .message {
-    flex-grow: 1;
-    word-break: break-word;
-}
-</style>

@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Navigation
+@inject MudBlazor.ISnackbar Snackbar
 
 <PageTitle>OpenClaw .NET - Jobs</PageTitle>
 
@@ -35,20 +36,40 @@
                             Runs for 5 minutes — perfect for a live demo.
                         </p>
 
+                        @* Always allow creating a new instance — multiple jobs may coexist per template. *@
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" @bind="_docPipelineFolderPath" placeholder="C:\src\openclawnet-plan\docs\sampleDocs" />
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-warning btn-sm" @onclick="LaunchDocPipeline" disabled="@_demoLaunching">
+                                @if (_demoLaunching)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    <span>Creating…</span>
+                                }
+                                else
+                                {
+                                    <span>➕ Create Demo Job</span>
+                                }
+                            </button>
+                            <span class="small text-muted">30s interval · 5 min duration</span>
+                        </div>
+
                         @if (_demoStatusLoading)
                         {
-                            <div class="text-muted small">
-                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> Checking status…
+                            <div class="text-muted small mt-2">
+                                <span class="spinner-border spinner-border-sm me-1" role="status"></span> Checking existing instances…
                             </div>
                         }
                         else if (_demoPipelineStatus is not null)
                         {
-                            @* Pipeline already exists — show status *@
-                            <div class="card border-0 bg-light">
+                            @* Latest existing instance — informational only; create button stays enabled. *@
+                            <div class="card border-0 bg-light mt-2">
                                 <div class="card-body py-2 px-3">
                                     <div class="d-flex align-items-center mb-1">
                                         <span class="badge @GetStatusBadgeClass(_demoPipelineStatus.JobStatus) me-2">@_demoPipelineStatus.JobStatus</span>
-                                        <span class="small text-muted">Pipeline running</span>
+                                        <span class="small text-muted">Latest instance</span>
+                                        <a href="/jobs/@_demoPipelineStatus.JobId" class="ms-2 small">Open →</a>
                                     </div>
                                     <table class="table table-sm table-borderless mb-0 small">
                                         <tr><td class="text-muted" style="width:110px">Runs</td><td>@_demoPipelineStatus.CompletedRuns completed · @_demoPipelineStatus.FailedRuns failed · @_demoPipelineStatus.TotalRuns total</td></tr>
@@ -59,28 +80,10 @@
                                             <tr><td class="text-muted">Latest run</td><td><span class="badge @GetStatusBadgeClass(_demoPipelineStatus.LatestRun.Status)">@_demoPipelineStatus.LatestRun.Status</span> @(_demoPipelineStatus.LatestRun.CompletedAt?.ToLocalTime().ToString("g") ?? "")</td></tr>
                                         }
                                     </table>
-                                    <button class="btn btn-outline-primary btn-sm mt-2 me-1" @onclick="CheckDocPipelineStatus">
+                                    <button class="btn btn-outline-primary btn-sm mt-2" @onclick="CheckDocPipelineStatus">
                                         🔄 Refresh
                                     </button>
                                 </div>
-                            </div>
-                        }
-                        else
-                        {
-                            @* No pipeline — show launch button *@
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-warning btn-sm" @onclick="LaunchDocPipeline" disabled="@_demoLaunching">
-                                    @if (_demoLaunching)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Creating…</span>
-                                    }
-                                    else
-                                    {
-                                        <span>➕ Create Demo Job</span>
-                                    }
-                                </button>
-                                <span class="small text-muted">30s interval · 5 min duration</span>
                             </div>
                         }
 
@@ -102,13 +105,33 @@
                             <code>docs/watch-log.txt</code> when the page changes.
                         </p>
 
+                        @* Always show the URL input + create button — multiple watcher instances allowed. *@
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" @bind="_watcherUrl" placeholder="https://example.com" />
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-warning btn-sm" @onclick="LaunchWebsiteWatcher" disabled="@_watcherLaunching">
+                                @if (_watcherLaunching)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    <span>Creating…</span>
+                                }
+                                else
+                                {
+                                    <span>➕ Create Demo Job</span>
+                                }
+                            </button>
+                            <span class="small text-muted">Every 15 min</span>
+                        </div>
+
                         @if (_watcherStatus is not null)
                         {
-                            <div class="card border-0 bg-light">
+                            <div class="card border-0 bg-light mt-2">
                                 <div class="card-body py-2 px-3">
                                     <div class="d-flex align-items-center mb-1">
                                         <span class="badge @GetStatusBadgeClass(_watcherStatus.JobStatus) me-2">@_watcherStatus.JobStatus</span>
-                                        <span class="small text-muted">Watcher running</span>
+                                        <span class="small text-muted">Latest instance</span>
+                                        <a href="/jobs/@_watcherStatus.JobId" class="ms-2 small">Open →</a>
                                     </div>
                                     <table class="table table-sm table-borderless mb-0 small">
                                         <tr><td class="text-muted" style="width:110px">Runs</td><td>@_watcherStatus.CompletedRuns completed · @_watcherStatus.FailedRuns failed · @_watcherStatus.TotalRuns total</td></tr>
@@ -116,26 +139,6 @@
                                     </table>
                                     <button class="btn btn-outline-primary btn-sm mt-2" @onclick="CheckWebsiteWatcherStatus">🔄 Refresh</button>
                                 </div>
-                            </div>
-                        }
-                        else
-                        {
-                            <div class="mb-2">
-                                <input type="text" class="form-control form-control-sm" @bind="_watcherUrl" placeholder="https://example.com" />
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-warning btn-sm" @onclick="LaunchWebsiteWatcher" disabled="@_watcherLaunching">
-                                    @if (_watcherLaunching)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Creating…</span>
-                                    }
-                                    else
-                                    {
-                                        <span>➕ Create Demo Job</span>
-                                    }
-                                </button>
-                                <span class="small text-muted">Every 15 min</span>
                             </div>
                         }
 
@@ -157,13 +160,33 @@
                             and writes a markdown report to <code>docs/folder-health-{date}.md</code>.
                         </p>
 
+                        @* Always show folder input + create button — multiple folder-health jobs allowed. *@
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" @bind="_folderPath" placeholder="C:\src\openclawnet-plan\docs" />
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-warning btn-sm" @onclick="LaunchFolderHealth" disabled="@_folderLaunching">
+                                @if (_folderLaunching)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    <span>Creating…</span>
+                                }
+                                else
+                                {
+                                    <span>➕ Create Demo Job</span>
+                                }
+                            </button>
+                            <span class="small text-muted">Daily at 09:00 UTC</span>
+                        </div>
+
                         @if (_folderStatus is not null)
                         {
-                            <div class="card border-0 bg-light">
+                            <div class="card border-0 bg-light mt-2">
                                 <div class="card-body py-2 px-3">
                                     <div class="d-flex align-items-center mb-1">
                                         <span class="badge @GetStatusBadgeClass(_folderStatus.JobStatus) me-2">@_folderStatus.JobStatus</span>
-                                        <span class="small text-muted">Report job active</span>
+                                        <span class="small text-muted">Latest instance</span>
+                                        <a href="/jobs/@_folderStatus.JobId" class="ms-2 small">Open →</a>
                                     </div>
                                     <table class="table table-sm table-borderless mb-0 small">
                                         <tr><td class="text-muted" style="width:110px">Runs</td><td>@_folderStatus.CompletedRuns completed · @_folderStatus.FailedRuns failed · @_folderStatus.TotalRuns total</td></tr>
@@ -173,30 +196,66 @@
                                 </div>
                             </div>
                         }
-                        else
-                        {
-                            <div class="mb-2">
-                                <input type="text" class="form-control form-control-sm" @bind="_folderPath" placeholder="C:\src\openclawnet-plan\docs" />
-                            </div>
-                            <div class="d-flex align-items-center gap-2">
-                                <button class="btn btn-warning btn-sm" @onclick="LaunchFolderHealth" disabled="@_folderLaunching">
-                                    @if (_folderLaunching)
-                                    {
-                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
-                                        <span>Creating…</span>
-                                    }
-                                    else
-                                    {
-                                        <span>➕ Create Demo Job</span>
-                                    }
-                                </button>
-                                <span class="small text-muted">Daily at 09:00 UTC</span>
-                            </div>
-                        }
 
                         @if (_folderMessage is not null)
                         {
                             <div class="alert @_folderMessageClass py-2 small mt-2 mb-0">@_folderMessage</div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            @* ── URL → Markdown Summary Card ── *@
+            <div class="col-md-6">
+                <div class="card h-100 shadow-sm border-0">
+                    <div class="card-body">
+                        <h6 class="card-title mb-1">🌐➡️📝 URL → Markdown Summary</h6>
+                        <p class="card-text small text-muted mb-2">
+                            Fetches a URL, converts it to clean Markdown via the
+                            <code>markdown_convert</code> tool (powered by
+                            <a href="https://github.com/elbruno/ElBruno.MarkItDotNet" target="_blank" rel="noopener">ElBruno.MarkItDotNet</a>),
+                            then produces a brief AI summary of the page content. Re-runs every hour.
+                        </p>
+
+                        <div class="mb-2">
+                            <input type="text" class="form-control form-control-sm" @bind="_markdownUrl" placeholder="https://elbruno.com" />
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <button class="btn btn-warning btn-sm" @onclick="LaunchMarkdownSummary" disabled="@_markdownLaunching">
+                                @if (_markdownLaunching)
+                                {
+                                    <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    <span>Creating…</span>
+                                }
+                                else
+                                {
+                                    <span>➕ Create Demo Job</span>
+                                }
+                            </button>
+                            <span class="small text-muted">Every 1 hour</span>
+                        </div>
+
+                        @if (_markdownStatus is not null)
+                        {
+                            <div class="card border-0 bg-light mt-2">
+                                <div class="card-body py-2 px-3">
+                                    <div class="d-flex align-items-center mb-1">
+                                        <span class="badge @GetStatusBadgeClass(_markdownStatus.JobStatus) me-2">@_markdownStatus.JobStatus</span>
+                                        <span class="small text-muted">Latest instance</span>
+                                        <a href="/jobs/@_markdownStatus.JobId" class="ms-2 small">Open →</a>
+                                    </div>
+                                    <table class="table table-sm table-borderless mb-0 small">
+                                        <tr><td class="text-muted" style="width:110px">Runs</td><td>@_markdownStatus.CompletedRuns completed · @_markdownStatus.FailedRuns failed · @_markdownStatus.TotalRuns total</td></tr>
+                                        <tr><td class="text-muted">Next run</td><td>@(_markdownStatus.NextRunAt?.ToLocalTime().ToString("g") ?? "—")</td></tr>
+                                    </table>
+                                    <button class="btn btn-outline-primary btn-sm mt-2" @onclick="CheckMarkdownSummaryStatus">🔄 Refresh</button>
+                                </div>
+                            </div>
+                        }
+
+                        @if (_markdownMessage is not null)
+                        {
+                            <div class="alert @_markdownMessageClass py-2 small mt-2 mb-0">@_markdownMessage</div>
                         }
                     </div>
                 </div>
@@ -259,10 +318,46 @@ else
             <PropertyColumn Property="x => x.Name" Title="Name">
                 <CellTemplate>
                     @{ var job = context.Item; }
-                    <a href="/jobs/@job.Id" class="text-decoration-none" data-testid="job-row-@job.Id">
-                        <strong>@job.Name</strong>
-                    </a>
+                    @if (_editingJobId == job.Id)
+                    {
+                        <div class="d-flex align-items-center gap-1">
+                            <MudTextField @bind-Value="_editingJobName"
+                                          Variant="Variant.Outlined"
+                                          Margin="Margin.Dense"
+                                          Immediate="true"
+                                          Error="@(!string.IsNullOrWhiteSpace(_renameError))"
+                                          HelperText="@_renameError"
+                                          OnKeyDown="@(e => HandleRenameKeyDown(e, job))"
+                                          Style="width: 250px;" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Check"
+                                           Color="Color.Success"
+                                           Size="Size.Small"
+                                           OnClick="@(() => SaveRename(job))"
+                                           title="Save" />
+                            <MudIconButton Icon="@Icons.Material.Filled.Close"
+                                           Color="Color.Default"
+                                           Size="Size.Small"
+                                           OnClick="CancelRename"
+                                           title="Cancel" />
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-flex align-items-center gap-2">
+                            <a href="/jobs/@job.Id" class="text-decoration-none" data-testid="job-row-@job.Id">
+                                <strong>@job.Name</strong>
+                            </a>
+                            <MudIconButton Icon="@Icons.Material.Filled.Edit"
+                                           Color="Color.Primary"
+                                           Size="Size.Small"
+                                           OnClick="@(() => StartRename(job))"
+                                           title="Rename job" />
+                        </div>
+                    }
                     <div class="small text-muted">@TruncatePrompt(job.Prompt)</div>
+                    <div class="small text-muted font-monospace" title="@job.Id" style="user-select:all">
+                        <span style="opacity:0.6">id:</span> @job.Id.ToString()
+                    </div>
                 </CellTemplate>
             </PropertyColumn>
             <PropertyColumn Property="x => x.Status" Title="Status">
@@ -296,30 +391,44 @@ else
             </PropertyColumn>
             <TemplateColumn Title="Actions" Sortable="false" Filterable="false">
                 <CellTemplate>
-                    @{ var job = context.Item; }
-                    @switch (job.Status?.ToLowerInvariant())
-                    {
-                        case "draft":
-                            <button class="btn btn-sm btn-success me-1" @onclick="() => StartJob(job.Id)" title="Start">▶ Start</button>
-                            <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary me-1" title="Edit">✏️ Edit</a>
-                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
-                            break;
-                        case "active":
-                            <button class="btn btn-sm btn-warning me-1" @onclick="() => PauseJob(job.Id)" title="Pause">⏸ Pause</button>
-                            <button class="btn btn-sm btn-danger" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
-                            break;
-                        case "paused":
-                            <button class="btn btn-sm btn-success me-1" @onclick="() => ResumeJob(job.Id)" title="Resume">▶ Resume</button>
-                            <button class="btn btn-sm btn-danger me-1" @onclick="() => CancelJob(job.Id)" title="Cancel">⏹ Cancel</button>
-                            <a href="/jobs/@job.Id/edit" class="btn btn-sm btn-outline-primary" title="Edit">✏️ Edit</a>
-                            break;
-                        case "cancelled":
-                        case "completed":
-                            <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => DuplicateJob(job)" title="Duplicate">📋 Duplicate</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteJob(job.Id)" title="Delete">🗑️ Delete</button>
-                            break;
+                    @{
+                        var job = context.Item;
+                        var kind = ClassifyJob(job);
+                        var primary = GetPrimaryAction(job, kind);
                     }
+                    <div class="d-flex flex-column" style="gap:2px;">
+                        <div class="d-flex align-items-center" style="gap:4px;">
+                            @if (primary is not null)
+                            {
+                                @if (primary.IsLink)
+                                {
+                                    <a href="@primary.Href" class="btn btn-sm @primary.CssClass" title="@primary.Tooltip">@primary.Label</a>
+                                }
+                                else
+                                {
+                                    <button class="btn btn-sm @primary.CssClass" @onclick="primary.OnClick" title="@primary.Tooltip">@primary.Label</button>
+                                }
+                            }
+                            <MudMenu Icon="@Icons.Material.Filled.MoreVert"
+                                     Size="Size.Small"
+                                     Dense="true"
+                                     AnchorOrigin="Origin.BottomRight"
+                                     TransformOrigin="Origin.TopRight">
+                                @foreach (var item in GetOverflowActions(job, kind))
+                                {
+                                    @if (item.IsLink)
+                                    {
+                                        <MudMenuItem Href="@item.Href">@item.Label</MudMenuItem>
+                                    }
+                                    else
+                                    {
+                                        <MudMenuItem OnClick="item.OnClick">@item.Label</MudMenuItem>
+                                    }
+                                }
+                            </MudMenu>
+                        </div>
+                        <small class="text-muted" style="font-size:0.72rem;line-height:1.1;">@GetConsequenceCaption(job, kind)</small>
+                    </div>
                 </CellTemplate>
             </TemplateColumn>
         </Columns>
@@ -336,6 +445,11 @@ else
     private bool _dense = true;
     private string? _loadError;
     private string? _actionError;
+
+    // Inline rename state
+    private Guid? _editingJobId;
+    private string? _editingJobName;
+    private string? _renameError;
 
     // Demo templates
     private bool _showDemoTemplates = true;
@@ -354,10 +468,18 @@ else
 
     // Folder Health demo
     private string _folderPath = @"C:\src\openclawnet-plan\docs";
+    private string _docPipelineFolderPath = @"C:\src\openclawnet-plan\docs\sampleDocs";
     private bool _folderLaunching;
     private string? _folderMessage;
     private string _folderMessageClass = "alert-info";
     private DocPipelineStatusInfo? _folderStatus;
+
+    // URL → Markdown Summary demo
+    private string _markdownUrl = "https://elbruno.com";
+    private bool _markdownLaunching;
+    private string? _markdownMessage;
+    private string _markdownMessageClass = "alert-info";
+    private DocPipelineStatusInfo? _markdownStatus;
 
     protected override async Task OnInitializedAsync()
     {
@@ -365,7 +487,8 @@ else
             LoadJobsAsync(),
             CheckDocPipelineStatus(),
             CheckWebsiteWatcherStatus(),
-            CheckFolderHealthStatus());
+            CheckFolderHealthStatus(),
+            CheckMarkdownSummaryStatus());
     }
 
     // ── Load jobs from API ──
@@ -413,6 +536,155 @@ else
         await LifecycleActionAsync(jobId, "cancel");
     }
 
+    // Trigger an immediate one-shot execution of the job, independent of its schedule.
+    // Hits the Gateway's POST /api/jobs/{id}/run-now (added alongside this UI change).
+    private async Task RunJobNow(Guid jobId, string? jobName)
+    {
+        _actionError = null;
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var response = await client.PostAsync($"api/jobs/{jobId}/run-now", null);
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Triggered run for {jobName ?? "job"}", MudBlazor.Severity.Success);
+                await LoadJobsAsync();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                _actionError = $"Run-now failed ({(int)response.StatusCode}). {body}";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _actionError = $"Could not reach the Gateway. {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
+    // ── Type-aware action verbs ──
+    // A job's "kind" determines what the lifecycle verbs actually mean to a user:
+    //   Recurring  → schedule-oriented verbs ("Activate schedule", "Pause schedule")
+    //   OneTime    → fires once at StartAt ("Schedule", "Hold", "Re-arm")
+    //   Manual     → no schedule at all; activation effectively means "run now"
+    private enum JobKind { Recurring, OneTime, Manual }
+
+    private static JobKind ClassifyJob(JobInfo job)
+    {
+        if (job.IsRecurring) return JobKind.Recurring;
+        if (job.StartAt is DateTime start && start.ToUniversalTime() > DateTime.UtcNow)
+            return JobKind.OneTime;
+        return JobKind.Manual;
+    }
+
+    private sealed record ActionItem(
+        string Label,
+        string Tooltip,
+        string CssClass,
+        EventCallback OnClick,
+        bool IsLink = false,
+        string? Href = null);
+
+    private ActionItem? GetPrimaryAction(JobInfo job, JobKind kind)
+    {
+        var status = job.Status?.ToLowerInvariant();
+        return (status, kind) switch
+        {
+            ("draft", JobKind.Recurring) => new ActionItem(
+                "▶ Activate schedule", "Begin honoring the recurring schedule", "btn-success",
+                EventCallback.Factory.Create(this, () => StartJob(job.Id))),
+            ("draft", JobKind.OneTime) => new ActionItem(
+                "📅 Schedule", "Arm this job to fire once at its StartAt", "btn-success",
+                EventCallback.Factory.Create(this, () => StartJob(job.Id))),
+            ("draft", JobKind.Manual) => new ActionItem(
+                "▶ Run now", "Run this job immediately", "btn-success",
+                EventCallback.Factory.Create(this, () => RunJobNow(job.Id, job.Name))),
+
+            ("active", JobKind.Recurring) => new ActionItem(
+                "⏸ Pause schedule", "Stop firing on the schedule (job is preserved)", "btn-warning",
+                EventCallback.Factory.Create(this, () => PauseJob(job.Id))),
+            ("active", JobKind.OneTime) => new ActionItem(
+                "⏸ Hold", "Hold the pending one-time fire", "btn-warning",
+                EventCallback.Factory.Create(this, () => PauseJob(job.Id))),
+            ("active", JobKind.Manual) => new ActionItem(
+                "▶ Run now", "Run this job immediately", "btn-success",
+                EventCallback.Factory.Create(this, () => RunJobNow(job.Id, job.Name))),
+
+            ("paused", JobKind.Recurring) => new ActionItem(
+                "▶ Resume schedule", "Resume the recurring schedule", "btn-success",
+                EventCallback.Factory.Create(this, () => ResumeJob(job.Id))),
+            ("paused", JobKind.OneTime) => new ActionItem(
+                "▶ Re-arm", "Re-arm the one-time fire", "btn-success",
+                EventCallback.Factory.Create(this, () => ResumeJob(job.Id))),
+            ("paused", JobKind.Manual) => new ActionItem(
+                "▶ Resume", "Resume this job", "btn-success",
+                EventCallback.Factory.Create(this, () => ResumeJob(job.Id))),
+
+            ("completed", _) or ("cancelled", _) => new ActionItem(
+                "🔁 Run again", "Trigger a fresh run of this job", "btn-outline-success",
+                EventCallback.Factory.Create(this, () => RunJobNow(job.Id, job.Name))),
+
+            _ => null,
+        };
+    }
+
+    private IEnumerable<ActionItem> GetOverflowActions(JobInfo job, JobKind kind)
+    {
+        var status = job.Status?.ToLowerInvariant();
+        var items = new List<ActionItem>();
+
+        // Run-now is always available as a secondary on Active recurring/one-time jobs
+        // so users can trigger an out-of-band execution without disturbing the schedule.
+        if (status is "active" && kind != JobKind.Manual)
+        {
+            items.Add(new ActionItem("▶ Run now", "", "", EventCallback.Factory.Create(this, () => RunJobNow(job.Id, job.Name))));
+        }
+
+        if (status is "active" or "paused")
+        {
+            items.Add(new ActionItem("⏹ Cancel", "", "", EventCallback.Factory.Create(this, () => CancelJob(job.Id))));
+        }
+
+        if (status is "draft" or "paused")
+        {
+            items.Add(new ActionItem("✏️ Edit", "", "", default, IsLink: true, Href: $"/jobs/{job.Id}/edit"));
+        }
+
+        if (status is "draft" or "completed" or "cancelled")
+        {
+            items.Add(new ActionItem("📋 Duplicate", "", "", EventCallback.Factory.Create(this, () => DuplicateJob(job))));
+        }
+
+        if (status is "draft" or "completed" or "cancelled")
+        {
+            items.Add(new ActionItem("🗑️ Delete", "", "", EventCallback.Factory.Create(this, () => DeleteJob(job.Id))));
+        }
+
+        items.Add(new ActionItem("🔍 Open details", "", "", default, IsLink: true, Href: $"/jobs/{job.Id}"));
+
+        return items;
+    }
+
+    private static string GetConsequenceCaption(JobInfo job, JobKind kind)
+    {
+        var status = job.Status?.ToLowerInvariant();
+        return (status, kind) switch
+        {
+            ("active", JobKind.Recurring) when job.NextRunAt.HasValue => $"Next run {job.NextRunAt.Value.ToLocalTime():g}",
+            ("active", JobKind.OneTime)   when job.StartAt.HasValue   => $"Will fire once at {job.StartAt.Value.ToLocalTime():g}",
+            ("active", JobKind.Manual)                                => "On-demand — only runs when triggered",
+            ("draft",  JobKind.Recurring)                             => "Will follow schedule once activated",
+            ("draft",  JobKind.OneTime)   when job.StartAt.HasValue   => $"Will fire once at {job.StartAt.Value.ToLocalTime():g}",
+            ("draft",  JobKind.Manual)                                => "Will run immediately on activation",
+            ("paused", _)                                             => "Currently held — won't fire",
+            ("completed", _)                                          => "Finished — re-run to execute again",
+            ("cancelled", _)                                          => "Cancelled — re-run to execute again",
+            _                                                         => string.Empty,
+        };
+    }
+
     private async Task LifecycleActionAsync(Guid jobId, string action)
     {
         _actionError = null;
@@ -457,6 +729,100 @@ else
         Navigation.NavigateTo("/jobs/new");
     }
 
+    // ── Inline rename ──
+
+    private void StartRename(JobInfo job)
+    {
+        _editingJobId = job.Id;
+        _editingJobName = job.Name;
+        _renameError = null;
+        StateHasChanged();
+    }
+
+    private void CancelRename()
+    {
+        _editingJobId = null;
+        _editingJobName = null;
+        _renameError = null;
+        StateHasChanged();
+    }
+
+    private async Task HandleRenameKeyDown(KeyboardEventArgs e, JobInfo job)
+    {
+        if (e.Key == "Enter")
+        {
+            await SaveRename(job);
+        }
+        else if (e.Key == "Escape")
+        {
+            CancelRename();
+        }
+    }
+
+    private async Task SaveRename(JobInfo job)
+    {
+        // Validate non-empty
+        if (string.IsNullOrWhiteSpace(_editingJobName))
+        {
+            _renameError = "Name cannot be empty";
+            StateHasChanged();
+            return;
+        }
+
+        // Validate uniqueness (check against other jobs, excluding the current one)
+        var trimmedName = _editingJobName.Trim();
+        if (_jobs.Any(j => j.Id != job.Id && string.Equals(j.Name, trimmedName, StringComparison.OrdinalIgnoreCase)))
+        {
+            _renameError = "Name already in use";
+            StateHasChanged();
+            return;
+        }
+
+        // If name hasn't changed, just cancel
+        if (string.Equals(trimmedName, job.Name, StringComparison.Ordinal))
+        {
+            CancelRename();
+            return;
+        }
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+
+            // Use PATCH for inline rename: it's allowed in any job state (Active,
+            // Paused, Draft, …) — unlike PUT which rejects non-Draft/Paused with 409.
+            var patch = new { Name = trimmedName };
+            var response = await client.PatchAsJsonAsync($"api/jobs/{job.Id}", patch);
+
+            if (response.IsSuccessStatusCode)
+            {
+                Snackbar.Add($"Job renamed to '{trimmedName}'", MudBlazor.Severity.Success);
+
+                // Update the in-memory model so the grid reflects the change
+                // immediately even if the LoadJobsAsync refresh is delayed.
+                var idx = _jobs.FindIndex(j => j.Id == job.Id);
+                if (idx >= 0)
+                {
+                    _jobs[idx] = _jobs[idx] with { Name = trimmedName };
+                }
+
+                CancelRename();
+                await LoadJobsAsync();
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                _renameError = $"Failed to rename: {body}";
+                StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            _renameError = $"Error: {ex.Message}";
+            StateHasChanged();
+        }
+    }
+
     private static string TruncatePrompt(string? prompt)
     {
         if (string.IsNullOrEmpty(prompt)) return "—";
@@ -498,7 +864,8 @@ else
         DateTime? EndAt = null,
         string? TimeZone = null,
         string? NaturalLanguageSchedule = null,
-        bool AllowConcurrentRuns = false);
+        bool AllowConcurrentRuns = false,
+        string? AgentProfileName = null);
 
     // ── Demo Pipeline ──
 
@@ -511,9 +878,12 @@ else
         try
         {
             var client = HttpClientFactory.CreateClient("gateway");
+            var folderPath = string.IsNullOrWhiteSpace(_docPipelineFolderPath)
+                ? @"C:\src\openclawnet-plan\docs\sampleDocs"
+                : _docPipelineFolderPath.Trim();
             var payload = new
             {
-                folderPath = @"C:\src\openclawnet-plan\docs\sampleDocs",
+                folderPath,
                 intervalSeconds = 30,
                 durationMinutes = 5
             };
@@ -528,8 +898,8 @@ else
             }
             else if ((int)response.StatusCode == 409)
             {
-                _demoMessage = "ℹ️ Pipeline already running — check status below.";
-                _demoMessageClass = "alert-info";
+                _demoMessage = "⚠️ Backend rejected duplicate (HTTP 409). The demo setup endpoint enforces a single instance — Irving needs to relax the uniqueness check so multiple Document Processing Pipeline jobs can coexist.";
+                _demoMessageClass = "alert-warning";
                 await CheckDocPipelineStatus();
             }
             else
@@ -628,8 +998,8 @@ else
             }
             else if ((int)response.StatusCode == 409)
             {
-                _watcherMessage = "ℹ️ A watcher job is already running.";
-                _watcherMessageClass = "alert-info";
+                _watcherMessage = "⚠️ Backend rejected duplicate (HTTP 409). The website-watcher demo endpoint enforces a single instance — Irving needs to allow multiple watcher jobs to coexist.";
+                _watcherMessageClass = "alert-warning";
                 await CheckWebsiteWatcherStatus();
             }
             else
@@ -692,8 +1062,8 @@ else
             }
             else if ((int)response.StatusCode == 409)
             {
-                _folderMessage = "ℹ️ A folder-health-report job is already running.";
-                _folderMessageClass = "alert-info";
+                _folderMessage = "⚠️ Backend rejected duplicate (HTTP 409). The folder-health demo endpoint enforces a single instance — Irving needs to allow multiple folder-health jobs to coexist.";
+                _folderMessageClass = "alert-warning";
                 await CheckFolderHealthStatus();
             }
             else
@@ -728,6 +1098,64 @@ else
         catch
         {
             _folderStatus = null;
+        }
+        finally
+        {
+            StateHasChanged();
+        }
+    }
+
+    // ── URL → Markdown Summary demo ──
+
+    private async Task LaunchMarkdownSummary()
+    {
+        _markdownLaunching = true;
+        _markdownMessage = null;
+        StateHasChanged();
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var payload = new { url = _markdownUrl };
+            var response = await client.PostAsJsonAsync("api/demos/markdown-summary/setup", payload);
+
+            if (response.IsSuccessStatusCode)
+            {
+                _markdownMessage = "✅ URL → Markdown summary scheduled. It will fetch the page, convert it to Markdown via markdown_convert, and summarize it every hour.";
+                _markdownMessageClass = "alert-success";
+                await Task.WhenAll(LoadJobsAsync(), CheckMarkdownSummaryStatus());
+            }
+            else
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                _markdownMessage = $"⚠️ Launch failed ({(int)response.StatusCode}). {body}";
+                _markdownMessageClass = "alert-danger";
+            }
+        }
+        catch (Exception ex)
+        {
+            _markdownMessage = $"⚠️ Could not reach the Gateway. {ex.Message}";
+            _markdownMessageClass = "alert-danger";
+        }
+        finally
+        {
+            _markdownLaunching = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task CheckMarkdownSummaryStatus()
+    {
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var response = await client.GetAsync("api/demos/markdown-summary/status");
+            _markdownStatus = response.IsSuccessStatusCode
+                ? await response.Content.ReadFromJsonAsync<DocPipelineStatusInfo>()
+                : null;
+        }
+        catch
+        {
+            _markdownStatus = null;
         }
         finally
         {

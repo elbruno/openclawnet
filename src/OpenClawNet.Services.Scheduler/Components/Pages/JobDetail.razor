@@ -1,8 +1,10 @@
 @page "/jobs/{Id:guid}"
 @using OpenClawNet.Services.Scheduler.Endpoints
 @rendermode InteractiveServer
+@implements IDisposable
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
+@inject IConfiguration Config
 
 <PageTitle>Job Detail — OpenClawNet Scheduler</PageTitle>
 
@@ -28,7 +30,12 @@ else
 {
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">@_job.Name</h5>
+            <div>
+                <h5 class="mb-0">@_job.Name</h5>
+                <div class="small text-muted font-monospace mt-1" title="@_job.Id" style="user-select:all">
+                    <span style="opacity:0.6">id:</span> @_job.Id
+                </div>
+            </div>
             <StatusBadge Status="@_job.Status" />
         </div>
         <div class="card-body">
@@ -67,19 +74,31 @@ else
                 </dd>
             </dl>
         </div>
-        <div class="card-footer d-flex gap-2">
+        <div class="card-footer d-flex gap-2 flex-wrap">
             <button class="btn btn-sm btn-primary" @onclick="TriggerJob" disabled="@(_job.Status == "cancelled")">
                 <i class="bi bi-play-fill me-1"></i>Trigger Now
             </button>
             <button class="btn btn-sm btn-danger" @onclick="CancelJob" disabled="@(_job.Status is "cancelled" or "completed")">
                 <i class="bi bi-x-circle me-1"></i>Cancel Job
             </button>
+            @if (!string.IsNullOrWhiteSpace(ChannelsBaseUrl))
+            {
+                <a class="btn btn-sm btn-outline-primary ms-auto"
+                   href="@($"{ChannelsBaseUrl.TrimEnd('/')}/channels/{_job.Id}")"
+                   target="_blank" rel="noopener"
+                   title="Open this job in the Channels app to read full output, artifacts and failure diagnostics.">
+                    <i class="bi bi-box-arrow-up-right me-1"></i>Open in Channels
+                </a>
+            }
         </div>
     </div>
 
-    <ChannelConfigPanel JobId="@Id" />
-
     <h5><i class="bi bi-clock-history me-2"></i>Run History</h5>
+    var liveRun = _job.Runs.FirstOrDefault(r => string.Equals(r.Status, "running", StringComparison.OrdinalIgnoreCase));
+    if (liveRun is not null)
+    {
+        <LiveConsole JobId="@_job.Id" RunId="@liveRun.Id" />
+    }
     @if (_job.Runs.Count == 0)
     {
         <p class="text-muted">No runs yet.</p>
@@ -107,7 +126,8 @@ else
                             <td class="small">@run.StartedAt.ToLocalTime().ToString("g")</td>
                             <td class="small">@FormatDateTime(run.CompletedAt)</td>
                             <td class="small">@FormatDuration(run.StartedAt, run.CompletedAt)</td>
-                            <td class="small text-truncate" style="max-width:300px">
+                            <td class="small" style="max-width:480px;white-space:pre-wrap;word-break:break-word;max-height:8em;overflow:auto"
+                                title="@(run.Error ?? run.Result)">
                                 @if (run.Error is not null)
                                 {
                                     <span class="text-danger">@run.Error</span>
@@ -115,6 +135,14 @@ else
                                 else
                                 {
                                     @run.Result
+                                }
+                                @if (string.Equals(run.Status, "running", StringComparison.OrdinalIgnoreCase))
+                                {
+                                    <button class="btn btn-sm btn-outline-danger ms-2"
+                                            title="Mark this stuck run as failed (does not abort the agent if still executing)."
+                                            @onclick="() => CancelRun(run.Id)">
+                                        <i class="bi bi-x-circle"></i> Cancel Run
+                                    </button>
                                 }
                             </td>
                         </tr>
@@ -131,8 +159,30 @@ else
     private JobDetailDto? _job;
     private bool _loading = true;
     private string? _loadError;
+    private System.Threading.Timer? _autoRefresh;
+    private Guid _loadedFor;
 
-    protected override async Task OnParametersSetAsync() => await Load();
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_loadedFor != Id)
+        {
+            _loadedFor = Id;
+            await Load();
+            _autoRefresh?.Dispose();
+            _autoRefresh = new System.Threading.Timer(_ => InvokeAsync(async () =>
+            {
+                // Only poll while a run is in progress to avoid unnecessary chatter.
+                var hasRunning = _job?.Runs.Any(r => string.Equals(r.Status, "running", StringComparison.OrdinalIgnoreCase)) == true;
+                if (hasRunning)
+                {
+                    await Load();
+                    StateHasChanged();
+                }
+            }), null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
+        }
+    }
+
+    public void Dispose() => _autoRefresh?.Dispose();
 
     private async Task Load()
     {
@@ -165,6 +215,21 @@ else
         await client.PostAsync($"/api/scheduler/jobs/{Id}/cancel", null);
         await Load();
     }
+
+    private async Task CancelRun(Guid runId)
+    {
+        var client = HttpClientFactory.CreateClient("scheduler-self");
+        await client.PostAsync($"/api/scheduler/jobs/{Id}/runs/{runId}/cancel", null);
+        await Load();
+    }
+
+    // Resolved from Channels__BaseUrl env var wired by the Aspire AppHost.
+    // Falls back to https://localhost:7030 (the dev port) so the link still
+    // works for developers running the scheduler standalone outside Aspire.
+    private string ChannelsBaseUrl =>
+        Config["Channels:BaseUrl"]
+        ?? Config["Channels__BaseUrl"]
+        ?? "https://localhost:7030";
 
     private static string FormatDateTime(DateTime? dt) => dt.HasValue ? dt.Value.ToLocalTime().ToString("g") : "—";
     private static string FormatDuration(DateTime start, DateTime? end)

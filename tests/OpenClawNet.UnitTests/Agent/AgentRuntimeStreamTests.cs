@@ -359,8 +359,6 @@ public sealed class AgentRuntimeStreamTests
             NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance);
 
         var loggerFactory = NullLoggerFactory.Instance;
-        var skillsProvider = new AgentSkillsProvider(
-            Path.Combine(AppContext.BaseDirectory, "skills"), null, null, null, loggerFactory);
         return new DefaultAgentRuntime(
             modelClient,
             promptComposer,
@@ -368,7 +366,6 @@ public sealed class AgentRuntimeStreamTests
             toolRegistry,
             store,
             summaryService,
-            skillsProvider,
             approvalCoordinator,
             loggerFactory,
             NullLogger<DefaultAgentRuntime>.Instance);
@@ -380,8 +377,14 @@ public sealed class AgentRuntimeStreamTests
         workspaceLoader.Setup(w => w.LoadAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new BootstrapContext(null, null, null));
 
+        var skillService = new Mock<ISkillService>();
+        skillService.Setup(s => s.FindRelevantSkillsAsync(It.IsAny<string>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<SkillSummary>());
+
         return new DefaultPromptComposer(
             workspaceLoader.Object,
+            skillService.Object,
+            NullLogger<DefaultPromptComposer>.Instance,
             Options.Create(new WorkspaceOptions()));
     }
 
@@ -490,6 +493,71 @@ public sealed class AgentRuntimeStreamTests
 
         public Task<ToolResult> ExecuteAsync(ToolInput input, CancellationToken cancellationToken = default)
             => Task.FromResult(ToolResult.Ok(Name, "safe result", TimeSpan.Zero));
+    }
+
+    [Fact]
+    public async Task ExecuteStreamAsync_McpBrowserTool_RequiresApproval_WhenNotInLegacyRegistry()
+    {
+        // This test verifies that MCP tools (e.g., browser_navigate) correctly trigger the approval
+        // flow even though they're not in the legacy IToolRegistry. The runtime should check for
+        // bundled MCP server prefixes like "browser", "shell", "web", "file_system".
+        var store = new ConversationStore(_dbFactory);
+        var sessionId = Guid.NewGuid();
+
+        // Model returns a tool call for "browser_navigate" (MCP wire-form name)
+        var modelClient = new FakeModelClientWithToolCall("browser_navigate", """{"url":"https://example.com"}""");
+
+        // Legacy registry does NOT have this tool (simulating the bug condition)
+        var registry = new Mock<IToolRegistry>();
+        registry.Setup(r => r.GetTool("browser_navigate")).Returns((ITool?)null);
+        registry.Setup(r => r.GetToolManifest()).Returns([]);
+        registry.Setup(r => r.GetAllTools()).Returns([]);
+
+        var coordinator = new OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator(
+            NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance);
+
+        var executor = new Mock<IToolExecutor>();
+        executor
+            .Setup(e => e.ExecuteAsync("browser_navigate", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ToolResult.Ok("browser_navigate", "page loaded", TimeSpan.Zero));
+
+        var runtime = BuildRuntime(store, modelClient,
+            toolExecutor: executor.Object, toolRegistry: registry.Object, approvalCoordinator: coordinator);
+
+        // Run the stream in a background task, then approve the request
+        var events = new List<AgentStreamEvent>();
+        var streamTask = Task.Run(async () =>
+        {
+            await foreach (var evt in runtime.ExecuteStreamAsync(new AgentContext
+            {
+                SessionId = sessionId,
+                UserMessage = "Open example.com",
+                RequireToolApproval = true
+            }))
+                events.Add(evt);
+        });
+
+        // Wait for the approval request to appear
+        var deadline = DateTime.UtcNow.AddSeconds(5);
+        while (DateTime.UtcNow < deadline && !events.Any(e => e.Type == AgentStreamEventType.ToolApprovalRequest))
+        {
+            await Task.Delay(50);
+        }
+
+        var approvalEvent = events.FirstOrDefault(e => e.Type == AgentStreamEventType.ToolApprovalRequest);
+        approvalEvent.Should().NotBeNull("MCP tool browser_navigate should trigger approval request");
+        approvalEvent!.ToolName.Should().Be("browser_navigate");
+        approvalEvent.RequestId.Should().NotBeEmpty();
+
+        // Approve the request
+        coordinator.TryResolve(approvalEvent.RequestId!.Value, new OpenClawNet.Agent.ToolApproval.ApprovalDecision(true, false));
+
+        // Wait for stream to complete
+        await streamTask.WaitAsync(TimeSpan.FromSeconds(5));
+
+        // Verify tool was executed after approval
+        events.Should().Contain(e => e.Type == AgentStreamEventType.ToolCallComplete && e.ToolName == "browser_navigate");
+        executor.Verify(e => e.ExecuteAsync("browser_navigate", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
     }
 
     private sealed class TestDbContextFactory : IDbContextFactory<OpenClawDbContext>

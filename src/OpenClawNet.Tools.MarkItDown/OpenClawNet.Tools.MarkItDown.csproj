@@ -2,12 +2,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ElBruno.MarkItDotNet" Version="0.6.0" />
     <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
   </ItemGroup>
 
   <PropertyGroup>

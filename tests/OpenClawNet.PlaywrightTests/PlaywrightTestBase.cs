@@ -90,4 +90,64 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
             Console.WriteLine($"Failed to capture screenshot: {ex.Message}");
         }
     }
+
+    /// <summary>
+    /// Logs a test progress step with timestamp. Writes to stdout AND injects/updates
+    /// a yellow banner at the top of the page so headed runs are watchable.
+    /// </summary>
+    protected async Task LogStepAsync(string message)
+    {
+        var stamp = DateTime.Now.ToString("HH:mm:ss");
+        Console.WriteLine($"[{stamp}] 🧪 {message}");
+        if (_page is null) return;
+        try
+        {
+            // Inject (or update) a fixed banner at top of page showing current test step.
+            await _page.EvaluateAsync(@"(text) => {
+                let el = document.getElementById('__e2e_banner__');
+                if (!el) {
+                    el = document.createElement('div');
+                    el.id = '__e2e_banner__';
+                    el.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:99999;'
+                        + 'background:#ffeb3b;color:#000;font:600 14px/1.4 system-ui,sans-serif;'
+                        + 'padding:8px 16px;border-bottom:2px solid #f57f17;'
+                        + 'box-shadow:0 2px 6px rgba(0,0,0,.2);';
+                    document.body.appendChild(el);
+                }
+                el.textContent = '🧪 E2E: ' + text;
+            }", message);
+        }
+        catch
+        {
+            // Page navigation can race the eval — non-fatal.
+        }
+    }
+
+    /// <summary>
+    /// Waits for a locator to be visible, ticking every 5s with elapsed time so the
+    /// user can see progress during long LLM-driven waits. Throws TimeoutException on timeout.
+    /// </summary>
+    protected async Task WaitForWithTicksAsync(ILocator locator, int timeoutMs, string what)
+    {
+        var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
+        var start = DateTime.UtcNow;
+        while (DateTime.UtcNow < deadline)
+        {
+            var remaining = (int)(deadline - DateTime.UtcNow).TotalMilliseconds;
+            var tick = Math.Min(5_000, Math.Max(500, remaining));
+            try
+            {
+                await locator.First.WaitForAsync(new LocatorWaitForOptions { Timeout = tick });
+                var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
+                await LogStepAsync($"✅ {what} appeared after {elapsed}s");
+                return;
+            }
+            catch (TimeoutException)
+            {
+                var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
+                await LogStepAsync($"⏳ Still waiting for {what}... {elapsed}s elapsed");
+            }
+        }
+        throw new TimeoutException($"Timeout {timeoutMs}ms exceeded waiting for {what}");
+    }
 }

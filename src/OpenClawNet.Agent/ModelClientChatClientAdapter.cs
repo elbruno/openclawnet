@@ -27,7 +27,7 @@ internal sealed class ModelClientChatClientAdapter : IChatClient
         ChatOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var openClawMessages = messages.Select(ToOpenClawMessage).ToList();
+        var openClawMessages = MaterializeMessagesWithInstructions(messages, options?.Instructions);
         var tools = options?.Tools?.OfType<AIFunction>().Select(ToToolDefinition).ToList();
 
         var request = new ChatRequest
@@ -45,7 +45,7 @@ internal sealed class ModelClientChatClientAdapter : IChatClient
         ChatOptions? options = null,
         [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
     {
-        var openClawMessages = messages.Select(ToOpenClawMessage).ToList();
+        var openClawMessages = MaterializeMessagesWithInstructions(messages, options?.Instructions);
         var tools = options?.Tools?.OfType<AIFunction>().Select(ToToolDefinition).ToList();
 
         var request = new ChatRequest
@@ -72,6 +72,55 @@ internal sealed class ModelClientChatClientAdapter : IChatClient
 
     public void Dispose() { }
 
+    /// <summary>
+    /// W-7b — Materializes the MEAI message list into our internal shape and
+    /// prepends a System message carrying any merged
+    /// <see cref="ChatOptions.Instructions"/>. ChatClientAgent merges
+    /// <see cref="AIContext.Instructions"/> from registered AIContextProviders
+    /// (e.g. <c>OpenClawNetSkillsProvider</c>) into <c>chatOptions.Instructions</c>
+    /// before calling the underlying <see cref="IChatClient"/>; without this
+    /// step those instructions would be silently dropped because
+    /// <see cref="ChatRequest"/> has no Instructions field.
+    ///
+    /// If the inbound list already starts with a System message, the merged
+    /// instructions are appended to it (newline-separated) so we do not emit
+    /// two consecutive system messages — Azure OpenAI tolerates two but our
+    /// other providers may not.
+    /// </summary>
+    private static List<OCChatMessage> MaterializeMessagesWithInstructions(
+        IEnumerable<MEAIChatMessage> messages,
+        string? instructions)
+    {
+        var list = messages.Select(ToOpenClawMessage).ToList();
+
+        if (string.IsNullOrWhiteSpace(instructions))
+            return list;
+
+        if (list.Count > 0 && list[0].Role == ChatMessageRole.System)
+        {
+            var existing = list[0].Content ?? string.Empty;
+            list[0] = new OCChatMessage
+            {
+                Role = ChatMessageRole.System,
+                Content = string.IsNullOrEmpty(existing)
+                    ? instructions
+                    : existing + "\n\n" + instructions,
+                ToolCallId = list[0].ToolCallId,
+                ToolCalls = list[0].ToolCalls
+            };
+        }
+        else
+        {
+            list.Insert(0, new OCChatMessage
+            {
+                Role = ChatMessageRole.System,
+                Content = instructions
+            });
+        }
+
+        return list;
+    }
+
     internal static OCChatMessage ToOpenClawMessage(MEAIChatMessage message)
     {
         var role = message.Role.Value switch
@@ -83,12 +132,7 @@ internal sealed class ModelClientChatClientAdapter : IChatClient
         };
 
         var text = message.Text ?? string.Empty;
-        var functionResult = message.Contents.OfType<FunctionResultContent>().FirstOrDefault();
-        var toolCallId = functionResult?.CallId;
-        if (string.IsNullOrEmpty(text) && functionResult?.Result is { } result)
-        {
-            text = result as string ?? JsonSerializer.Serialize(result);
-        }
+        var toolCallId = message.Contents.OfType<FunctionResultContent>().FirstOrDefault()?.CallId;
         var toolCalls = message.Contents
             .OfType<FunctionCallContent>()
             .Select(c => new ModelToolCall

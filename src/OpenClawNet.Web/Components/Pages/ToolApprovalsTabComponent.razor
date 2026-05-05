@@ -1,0 +1,204 @@
+@using System.Net.Http.Json
+@using OpenClawNet.Web.Models.Audit
+@inject IHttpClientFactory HttpClientFactory
+
+<div class="mb-3">
+    <div class="row g-2">
+        <div class="col-md-2">
+            <MudDatePicker Label="From Date" @bind-Date="_sinceFilter" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudDatePicker Label="To Date" @bind-Date="_untilFilter" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudTextField @bind-Value="_toolNameFilter" Label="Tool Name" Clearable="true" />
+        </div>
+        <div class="col-md-2">
+            <MudSelect @bind-Value="_approvedFilterStr" Label="Approval Status" Clearable="true">
+                <MudSelectItem Value="@("All")">All</MudSelectItem>
+                <MudSelectItem Value="@("Approved")">Approved</MudSelectItem>
+                <MudSelectItem Value="@("Denied")">Denied</MudSelectItem>
+            </MudSelect>
+        </div>
+        <div class="col-md-2">
+            <MudSelect @bind-Value="_sourceFilter" Label="Decision Source" Clearable="true">
+                <MudSelectItem Value="@("")">All</MudSelectItem>
+                <MudSelectItem Value="@("user")">User</MudSelectItem>
+                <MudSelectItem Value="@("timeout")">Timeout</MudSelectItem>
+                <MudSelectItem Value="@("sessionmemory")">Session Memory</MudSelectItem>
+            </MudSelect>
+        </div>
+        <div class="col-md-2 d-flex align-items-end">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="OnFilterChanged" FullWidth="true">
+                Apply Filters
+            </MudButton>
+        </div>
+    </div>
+</div>
+
+@if (_loading)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border spinner-border-sm text-primary" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+    </div>
+}
+else if (_error is not null)
+{
+    <div class="alert alert-danger">
+        <strong>Error:</strong> @_error
+    </div>
+}
+else if (_logs.Count == 0)
+{
+    <div class="text-center py-5 text-muted">
+        <p class="mb-0">No tool approval logs found.</p>
+    </div>
+}
+else
+{
+    <MudDataGrid T="AuditToolApprovalLogDto"
+                 Items="_logs"
+                 Dense="_dense"
+                 Hover="true"
+                 Striped="true"
+                 Bordered="false"
+                 Filterable="true"
+                 FilterMode="DataGridFilterMode.Simple"
+                 SortMode="SortMode.Single"
+                 ShowColumnOptions="true"
+                 Groupable="false"
+                 FixedHeader="true"
+                 Height="60vh"
+                 Elevation="0">
+        <ToolBarContent>
+            <MudText Typo="Typo.subtitle2">@_logs.Count approval(s)</MudText>
+            <MudSpacer />
+            <MudSwitch T="bool" Value="_dense" ValueChanged="v => _dense = v"
+                       Color="Color.Primary" Label="@(_dense ? "Compact" : "Comfortable")" />
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x.DecidedAt" Title="Timestamp" InitialDirection="SortDirection.Descending">
+                <CellTemplate>
+                    @context.Item.DecidedAt.ToLocalTime().ToString("g")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.ToolName" Title="Tool Name">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small" Color="Color.Info" Variant="Variant.Filled">@context.Item.ToolName</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.SessionId" Title="Session ID">
+                <CellTemplate>
+                    <a href="/sessions/@context.Item.SessionId" class="font-monospace small">
+                        @context.Item.SessionId.ToString().Substring(0, 8)...
+                    </a>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Approved" Title="Decision">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@(context.Item.Approved ? Color.Success : Color.Error)"
+                             Variant="Variant.Filled">
+                        @(context.Item.Approved ? "✓ Approved" : "✗ Denied")
+                    </MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.Source" Title="Source">
+                <CellTemplate>
+                    <MudChip T="string" Size="Size.Small"
+                             Color="@GetSourceChipColor(context.Item.Source)"
+                             Variant="Variant.Filled">@context.Item.Source.ToUpperInvariant()</MudChip>
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.AgentProfileName" Title="Agent Profile">
+                <CellTemplate>
+                    @(context.Item.AgentProfileName ?? "—")
+                </CellTemplate>
+            </PropertyColumn>
+            <PropertyColumn Property="x => x.RememberForSession" Title="Remembered">
+                <CellTemplate>
+                    @(context.Item.RememberForSession ? "Yes" : "No")
+                </CellTemplate>
+            </PropertyColumn>
+        </Columns>
+    </MudDataGrid>
+}
+
+@code {
+    private List<AuditToolApprovalLogDto> _logs = [];
+    private bool _loading = true;
+    private string? _error;
+    private bool _dense = true;
+    private DateTime? _sinceFilter;
+    private DateTime? _untilFilter;
+    private string? _toolNameFilter;
+    private string _approvedFilterStr = "All";
+    private string? _sourceFilter;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadDataAsync();
+    }
+
+    private async Task LoadDataAsync()
+    {
+        _loading = true;
+        _error = null;
+        StateHasChanged();
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            var queryParams = new List<string> { "limit=500" };
+
+            if (_sinceFilter.HasValue)
+                queryParams.Add($"since={_sinceFilter.Value:yyyy-MM-dd}");
+            
+            if (_untilFilter.HasValue)
+                queryParams.Add($"until={_untilFilter.Value:yyyy-MM-dd}");
+
+            if (!string.IsNullOrWhiteSpace(_toolNameFilter))
+                queryParams.Add($"toolName={Uri.EscapeDataString(_toolNameFilter)}");
+
+            var queryString = string.Join("&", queryParams);
+            var response = await client.GetAsync($"api/audit/tool-approvals?{queryString}");
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<AuditToolApprovalLogsResponse>();
+            _logs = result?.Logs ?? [];
+
+            // Apply client-side filters
+            if (_approvedFilterStr == "Approved")
+                _logs = _logs.Where(l => l.Approved).ToList();
+            else if (_approvedFilterStr == "Denied")
+                _logs = _logs.Where(l => !l.Approved).ToList();
+            
+            if (!string.IsNullOrWhiteSpace(_sourceFilter))
+                _logs = _logs.Where(l => l.Source.Equals(_sourceFilter, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
+        catch (Exception ex)
+        {
+            _error = $"Failed to load tool approvals: {ex.Message}";
+        }
+        finally
+        {
+            _loading = false;
+            StateHasChanged();
+        }
+    }
+
+    private async Task OnFilterChanged()
+    {
+        await LoadDataAsync();
+    }
+
+    private static Color GetSourceChipColor(string? source) => source?.ToLowerInvariant() switch
+    {
+        "user" => Color.Primary,
+        "timeout" => Color.Warning,
+        "sessionmemory" => Color.Info,
+        _ => Color.Default
+    };
+}

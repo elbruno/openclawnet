@@ -43,6 +43,8 @@ app.MapGet("/api/scheduler/running", (SchedulerRunState runState) =>
     Results.Ok(new { count = runState.RunningJobCount }));
 app.MapSchedulerSettingsEndpoints();
 app.MapSchedulerJobsEndpoints();
+app.MapJobRunStreamEndpoints();
+app.MapSchedulerHealthEndpoints();
 
 // Blazor UI
 app.MapRazorComponents<App>()
