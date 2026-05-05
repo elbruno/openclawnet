@@ -1,14 +1,49 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
+  <!--
+    K-1a stub project (recreated per K-D-3).
+
+    Intentionally minimal: ships ONLY ISkillsRegistry / ISkillsSnapshot /
+    ISkillRecord interfaces + a no-op StubSkillsRegistry. K-1b will add
+    LayeredSkill, SkillsSnapshot impl, FileSystemWatcher coalescer,
+    enabled.json reader, OpenClawNetSkillsProvider (scoped AIContextProvider),
+    and AddOpenClawNetSkills() extension.
+
+    Single primary dependency on Microsoft.Agents.AI is forward-looking for
+    K-1b (AgentSkillsProviderBuilder().UseSkill(AgentInlineSkill).Build() per
+    K-D-1). DI / Logging abstractions are needed today for the StubSkillsRegistry
+    constructor and the AddOpenClawNetSkillsStub() extension method.
+  -->
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <NoWarn>$(NoWarn);MAAI001</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="*" />
+    <PackageReference Include="YamlDotNet" Version="16.2.1" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- K-1b #1: bundle the 2 system skills (memory, doc-processor) so they ship
+         with OpenClawNet.Skills.dll. SystemSkillsSeeder copies these into
+         {StorageRoot}/skills/system/ at boot, idempotently. -->
+    <Content Include="SystemSkills\**\*.md" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="OpenClawNet.UnitTests" />
   </ItemGroup>
 
 </Project>
