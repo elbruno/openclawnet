@@ -4,6 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using OpenClawNet.Agent.ToolApproval;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
+using OpenClawNet.IntegrationTests.Fixtures;
 
 namespace OpenClawNet.IntegrationTests.Audit;
 
@@ -11,17 +12,30 @@ namespace OpenClawNet.IntegrationTests.Audit;
 /// Integration tests validating that tool approval decisions write ToolApprovalLog records.
 /// Story 5: Audit Trail Integration Tests (Feature 2).
 /// Tests both user approval and timeout scenarios.
+/// Per-test storage isolation via PerTestTempDirectory (issue #26 fix).
 /// </summary>
 [Trait("Category", "Integration")]
-public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
-    : IClassFixture<GatewayWebAppFactory>
+public sealed class ToolApprovalLogTests : IDisposable
 {
+    private readonly PerTestTempDirectory _temp = new("toolapproval");
+    private readonly GatewayWebAppFactory _factory;
+
+    public ToolApprovalLogTests()
+    {
+        _factory = new GatewayWebAppFactory { StorageRoot = _temp.Path };
+    }
+
+    public void Dispose()
+    {
+        _factory.Dispose();
+        _temp.Dispose();
+    }
+
     [Fact]
     public async Task UserApproval_WritesLogRecord_WithSourceUser()
     {
-        // Arrange: Get the ToolApprovalCoordinator and create a pending request
-        await using var scope = factory.Services.CreateAsyncScope();
-        var coordinator = scope.ServiceProvider.GetRequiredService<ToolApprovalCoordinator>();
+        // Arrange: Get the database factory and create a test log record
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var requestId = Guid.NewGuid();
@@ -63,7 +77,7 @@ public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
     public async Task UserDenial_WritesLogRecord_WithApprovedFalse()
     {
         // Arrange: Set up test context
-        await using var scope = factory.Services.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var requestId = Guid.NewGuid();
@@ -100,7 +114,7 @@ public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
     public async Task TimeoutDenial_WritesLogRecord_WithSourceTimeout()
     {
         // Arrange: Set up test context for timeout scenario
-        await using var scope = factory.Services.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var requestId = Guid.NewGuid();
@@ -140,7 +154,7 @@ public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
     public async Task SessionMemoryApproval_WritesLogRecord_WithSourceSessionMemory()
     {
         // Arrange: Set up test context for session memory scenario
-        await using var scope = factory.Services.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var requestId = Guid.NewGuid();
@@ -178,7 +192,7 @@ public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
     public async Task ApprovalLog_ContainsAllRequiredFields()
     {
         // Arrange & Act: Create a complete log entry
-        await using var scope = factory.Services.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var requestId = Guid.NewGuid();
@@ -222,7 +236,7 @@ public sealed class ToolApprovalLogTests(GatewayWebAppFactory factory)
     public async Task MultipleApprovals_ForSameSession_AllLogged()
     {
         // Arrange: Simulate multiple tool approvals in the same session
-        await using var scope = factory.Services.CreateAsyncScope();
+        await using var scope = _factory.Services.CreateAsyncScope();
         var dbFactory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<OpenClawDbContext>>();
 
         var sessionId = Guid.NewGuid();

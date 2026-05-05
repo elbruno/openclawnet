@@ -18,9 +18,25 @@ namespace OpenClawNet.IntegrationTests;
 /// </summary>
 public class GatewayWebAppFactory : WebApplicationFactory<GatewayProgramMarker>
 {
+    /// <summary>
+    /// Optional per-test storage root. When set, the factory configures
+    /// OPENCLAWNET_STORAGE_ROOT environment variable to isolate storage
+    /// (skills directory, audit logs, etc.) from concurrent test instances.
+    /// Fixes issue #26 - integration test isolation.
+    /// </summary>
+    public string? StorageRoot { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        // Fix #26: Set per-test storage root to isolate concurrent factories
+        if (StorageRoot != null)
+        {
+            Environment.SetEnvironmentVariable(
+                OpenClawNet.Storage.OpenClawNetPaths.EnvironmentVariableName,
+                StorageRoot);
+        }
 
         builder.ConfigureAppConfiguration((_, cfg) =>
         {
@@ -69,9 +85,25 @@ public class GatewayWebAppFactory : WebApplicationFactory<GatewayProgramMarker>
 /// </summary>
 public sealed class GatewayToolCallWebAppFactory : WebApplicationFactory<GatewayProgramMarker>
 {
+    /// <summary>
+    /// Optional per-test storage root. When set, the factory configures
+    /// OPENCLAWNET_STORAGE_ROOT environment variable to isolate storage
+    /// (skills directory, audit logs, etc.) from concurrent test instances.
+    /// Fixes issue #26 - integration test isolation.
+    /// </summary>
+    public string? StorageRoot { get; set; }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Testing");
+
+        // Fix #26: Set per-test storage root to isolate concurrent factories
+        if (StorageRoot != null)
+        {
+            Environment.SetEnvironmentVariable(
+                OpenClawNet.Storage.OpenClawNetPaths.EnvironmentVariableName,
+                StorageRoot);
+        }
 
         builder.ConfigureAppConfiguration((_, cfg) =>
         {
