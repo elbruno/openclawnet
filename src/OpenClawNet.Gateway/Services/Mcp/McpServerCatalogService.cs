@@ -110,9 +110,6 @@ public sealed class McpServerCatalogService
         return row is null
             ? null
             : await MapAsync(EntityToDefinition(row), isBuiltInOverride: row.IsBuiltIn, ct).ConfigureAwait(false);
-        return row is null
-            ? null
-            : await MapAsync(EntityToDefinition(row), isBuiltInOverride: row.IsBuiltIn, ct).ConfigureAwait(false);
     }
 
     // ── Create ──────────────────────────────────────────────────────────────

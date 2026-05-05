@@ -125,6 +125,14 @@ public static class AgentProfileEndpoints
         .WithName("SetAgentProfileDefault")
         .WithDescription("Marks the named profile as the default. Clears IsDefault on all other profiles.");
 
+        group.MapGet("/default", async (IAgentProfileStore store, CancellationToken ct) =>
+        {
+            var defaultProfile = await store.GetDefaultAsync(ct);
+            return defaultProfile is null ? Results.NotFound() : Results.Ok(ToResponse(defaultProfile));
+        })
+        .WithName("GetDefaultAgentProfile")
+        .WithDescription("Returns the currently configured default agent profile");
+
         group.MapPost("/import",async (ImportAgentProfileRequest request, IAgentProfileStore store, CancellationToken ct) =>
         {
             var profile = AgentProfileMarkdownParser.Parse(request.Markdown, request.FallbackName);
@@ -178,7 +186,7 @@ public static class AgentProfileEndpoints
             IAgentProfileStore profileStore,
             IModelProviderDefinitionStore providerStore,
             IEnumerable<IAgentProvider> providers,
-            ILogger<Program> logger,
+            ILogger<GatewayProgramMarker> logger,
             CancellationToken ct) =>
         {
             var profile = await profileStore.GetAsync(name, ct);

@@ -1,9 +1,9 @@
 using OpenClawNet.Agent;
 using Microsoft.AspNetCore.DataProtection;
+using OpenClawNet.Gateway.Configuration;
 using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Gateway.Hubs;
 using OpenClawNet.Gateway.Services;
-using OpenClawNet.Gateway.Configuration;
 using OpenClawNet.Mcp.Core;
 using OpenClawNet.Memory;
 using OpenClawNet.Models.Abstractions;
@@ -14,6 +14,7 @@ using OpenClawNet.Models.GitHubCopilot;
 using OpenClawNet.Models.Ollama;
 using OpenClawNet.Skills;
 using OpenClawNet.Storage;
+using OpenClawNet.Storage.Services;
 using OpenClawNet.Tools.Abstractions;
 using OpenClawNet.Tools.Browser;
 using OpenClawNet.Tools.Core;
@@ -24,19 +25,19 @@ using OpenClawNet.Tools.Embeddings;
 using OpenClawNet.Tools.GitHub;
 using OpenClawNet.Tools.HtmlQuery;
 using OpenClawNet.Tools.ImageEdit;
-using OpenClawNet.Tools.Memory;
 using OpenClawNet.Tools.Text2Image;
 using OpenClawNet.Tools.TextToSpeech;
 using OpenClawNet.Tools.YouTube;
 using OpenClawNet.Tools.Shell;
 using OpenClawNet.Tools.Web;
+using OpenClawNet.Channels.Services;
 using OpenClawNet.Tools.Scheduler;
 using ElBruno.MarkItDotNet;
 using OpenClawNet.Mcp.Browser;
-using OpenClawNet.Mcp.Core;
 using OpenClawNet.Mcp.FileSystem;
 using OpenClawNet.Mcp.Shell;
 using OpenClawNet.Mcp.Web;
+using OpenClawNet.Channels.Adapters;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,35 +61,61 @@ builder.Services.AddCors(options =>
         policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader());
 });
 
-// OpenClawNet options (StorageDir, StorageRetention, etc.)
-builder.Services.Configure<OpenClawNet.Gateway.Configuration.OpenClawNetOptions>(
-    builder.Configuration.GetSection("OpenClawNet"));
+// Core OpenClawNet configuration
+builder.Services.Configure<OpenClawNetOptions>(builder.Configuration.GetSection("OpenClawNet"));
+builder.Services.AddSingleton<IStorageDirectoryProvider, StorageDirectoryProvider>();
 
 // Storage (SQLite via Aspire integration)
 builder.AddSqliteConnection("openclawnet-db");
 builder.Services.AddOpenClawStorage();
 
-// Storage directory provider — manages agent output paths and directory creation
-// Registered with a factory to ensure it's instantiated after all infrastructure is ready.
-builder.Services.AddSingleton<IStorageDirectoryProvider>(sp =>
-    ActivatorUtilities.CreateInstance<StorageDirectoryProvider>(sp)
-);
-
-// Tools-facing adapter so tools (which can't reference Gateway types) can persist
-// artifacts under the same storage root the rest of the app uses.
-builder.Services.AddSingleton<OpenClawNet.Tools.Abstractions.IToolStorageProvider, ToolStorageProviderAdapter>();
+// Skill vector sync service (Phase 2B - Story 5)
+builder.Services.AddScoped<SkillVectorSyncService>();
 
 // DataProtection — needed to encrypt the Secrets table at rest. Persist keys
 // to the storage root so they survive container/host restarts; without this,
 // every restart rotates the key and existing ciphertexts become unreadable.
+// W-1: route through OpenClawNetPaths.ResolveRoot so DataProtection honors
+// OPENCLAWNET_STORAGE_ROOT just like the rest of storage.
+var (dataProtectionRoot, _) = OpenClawNet.Storage.OpenClawNetPaths.ResolveRoot(
+    builder.Configuration.GetValue<string>("Storage:RootPath"),
+    logger: null);
+
+// W-2 (H-7): Boot-time ACL verification. Runs BEFORE
+// AddDataProtection().PersistKeysToFileSystem(...) so the verifier has the
+// final say on whether credential persistence is allowed. Today this is the
+// no-op Windows stub (logs WARN, returns IsSecure=true); a real DACL probe
+// will replace it in a future wave. The call site stays here so the future
+// upgrade is a one-line implementation swap with no boot-path rewiring.
+{
+    using var aclLoggerFactory = LoggerFactory.Create(b => b.AddConsole());
+    var aclLogger = aclLoggerFactory.CreateLogger("OpenClawNet.Storage.AclVerification");
+    IStorageAclVerifier aclVerifier = new NoopStorageAclVerifier(
+        aclLoggerFactory.CreateLogger<NoopStorageAclVerifier>());
+    var aclResult = aclVerifier.VerifyAsync(dataProtectionRoot).GetAwaiter().GetResult();
+    aclLogger.LogInformation(
+        "Storage ACL verification (root): IsSecure={IsSecure}, Findings={FindingCount}, ScopeRoot='{ScopeRoot}'",
+        aclResult.IsSecure, aclResult.Findings.Count, aclResult.ScopeRoot);
+
+    // W-4 (Drummond W-4 AC4): user-folder reparse-point sweep. Runs AFTER
+    // the ACL verifier (ACL is the gating check; this sweep is advisory).
+    // WARN-and-continue per finding — never deletes. Closes the residual
+    // gap recorded in Drummond's W-3 deviation #2 for the user-folder
+    // surface, which becomes operator-reachable in W-4 via the gateway
+    // endpoints (commit #4) and the Web UI (Helly's parallel work).
+    var userFolderHealth = new OpenClawNet.Storage.UserFolderHealthCheck(
+        aclLoggerFactory.CreateLogger<OpenClawNet.Storage.UserFolderHealthCheck>());
+    var sweep = userFolderHealth.SweepAsync(dataProtectionRoot).GetAwaiter().GetResult();
+    aclLogger.LogInformation(
+        "User-folder health sweep: FoldersInspected={Inspected}, Findings={FindingCount}, StorageRoot='{Root}'",
+        sweep.FoldersInspected, sweep.Findings.Count, sweep.StorageRoot);
+}
+
 builder.Services
     .AddDataProtection()
     .SetApplicationName("OpenClawNet")
     .PersistKeysToFileSystem(new DirectoryInfo(
-        Path.Combine(
-            builder.Configuration.GetValue<string>("Storage:RootPath")
-                ?? new OpenClawNet.Storage.StorageOptions().RootPath,
-            "dataprotection-keys")));
+        Path.Combine(dataProtectionRoot, "dataprotection-keys")));
 
 // Model provider — runtime-switchable via the Settings UI (no restart needed).
 // RuntimeModelSettings loads the initial provider from IConfiguration / user secrets,
@@ -143,8 +170,16 @@ builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<GitHub
 builder.Services.AddSingleton<RuntimeAgentProvider>();
 builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<RuntimeAgentProvider>());
 
-// Skills
-builder.Services.AddSkills();
+// Skills (K-1b — real registry replaces K-1a stub)
+// Wires ISkillsRegistry → OpenClawNetSkillsRegistry. Eagerly seeds the
+// system layer (memory + doc-processor) from bundled SystemSkills/** at
+// boot. K-1b #3 hosted watcher + #4 scoped MAF provider are registered
+// in subsequent commits within this wave.
+builder.Services.AddOpenClawNetSkills();
+
+// K-4 — bind SkillsImport configuration (allowlist + preview TTL).
+builder.Services.Configure<OpenClawNet.Skills.SkillsImportOptions>(
+    builder.Configuration.GetSection(OpenClawNet.Skills.SkillsImportOptions.SectionName));
 
 // Memory (with embedded defaults for now)
 builder.Services.AddMemory(builder.Configuration);
@@ -203,11 +238,6 @@ builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<ImageEditTool>(
 builder.Services.AddSingleton<HtmlQueryTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<HtmlQueryTool>());
 
-// Memory tools — RememberTool/RecallTool wired against IAgentMemoryStore (issue #100).
-// The MempalaceNet-backed store lands via #98; until then AddMemory() registers the
-// stub implementation and the tools resolve through it transparently.
-builder.Services.AddMemoryTools();
-
 // Named HTTP clients for external tool services (Aspire service discovery resolves the URLs)
 builder.Services.AddHttpClient("shell-service", c => c.BaseAddress = new Uri("https+http://shell-service"));
 builder.Services.AddHttpClient("browser-service", c => c.BaseAddress = new Uri("https+http://browser-service"));
@@ -216,11 +246,27 @@ builder.Services.AddHttpClient("memory-service", c => c.BaseAddress = new Uri("h
 // Channel registry— all IChannel implementations are discoverable via IChannelRegistry
 builder.Services.AddSingleton<IChannelRegistry, ChannelRegistry>();
 
+// Channel delivery adapters (Phase 2 Feature 1)
+builder.Services.AddHttpClient<GenericWebhookAdapter>();
+builder.Services.AddScoped<GenericWebhookAdapter>();
+builder.Services.AddHttpClient<TeamsProactiveAdapter>();
+builder.Services.AddScoped<TeamsProactiveAdapter>();
+builder.Services.AddHttpClient<SlackWebhookAdapter>();
+builder.Services.AddScoped<SlackWebhookAdapter>();
+builder.Services.Configure<OpenClawNet.Channels.Configuration.SlackClientOptions>(
+    builder.Configuration.GetSection("Slack"));
+builder.Services.AddHttpClient<OpenClawNet.Channels.Adapters.SlackProactiveAdapter>();
+builder.Services.AddScoped<OpenClawNet.Channels.Adapters.SlackProactiveAdapter>();
+builder.Services.AddScoped<IChannelDeliveryAdapterFactory, ChannelDeliveryAdapterFactory>();
+
+// Channel delivery service (Phase 2 Feature 1 - Story 4)
+builder.Services.AddScoped<IChannelDeliveryService, ChannelDeliveryService>();
+
 // Smart schedule parser (uses IModelClient to parse natural-language schedules)
 builder.Services.AddSingleton<SmartScheduleParser>();
 
-// Chat naming service (uses IModelClient to generate chat names from messages)
-builder.Services.AddScoped<ChatNamingService>();
+// Chat naming service (uses IModelClient to generate session names)
+builder.Services.AddSingleton<ChatNamingService>();
 
 // Job executor service
 builder.Services.AddScoped<JobExecutor>();
@@ -232,6 +278,38 @@ builder.Services.Configure<ArtifactRetentionOptions>(builder.Configuration.GetSe
 
 // Agent runtime
 builder.Services.AddAgentRuntime();
+
+// Phase 2B: Semantic skill ranking using HybridSearchService
+builder.Services.AddScoped<OpenClawNet.Agent.IHybridSearchService, OpenClawNet.Gateway.Services.DefaultHybridSearchService>();
+builder.Services.AddScoped<OpenClawNet.Agent.ISemanticSkillRanker, OpenClawNet.Agent.SemanticSkillRanker>();
+
+// Concept-review §4a — tool-approval auditor (best-effort SQLite writes via DbContextFactory).
+builder.Services.AddScoped<OpenClawNet.Agent.ToolApproval.IToolApprovalAuditor,
+                           OpenClawNet.Agent.ToolApproval.ToolApprovalAuditor>();
+
+// Concept-review §4c — sibling-model invocation logger (chat + job rows in one table).
+builder.Services.AddScoped<OpenClawNet.Storage.Entities.AgentInvocationLogger>();
+
+// Concept-review §5 (UX) — channels real-time broadcaster (HTTP NDJSON, NOT SignalR;
+// the project deliberately moved chat off SignalR to NDJSON and channels follow the
+// same pattern). Singleton fan-out so both producers (job runner) and consumers
+// (the streaming endpoint) share one in-memory bus.
+builder.Services.AddSingleton<OpenClawNet.Gateway.Services.IChannelEventBus,
+                              OpenClawNet.Gateway.Services.InMemoryChannelEventBus>();
+
+// Bridge Storage artifact-created hook → channel event bus.
+builder.Services.AddSingleton<OpenClawNet.Storage.IArtifactCreatedNotifier,
+                              OpenClawNet.Gateway.Services.ChannelEventArtifactNotifier>();
+
+// Concept-review §4a (Security, scaffold) — MCP process-isolation policy.
+// Default: no-op. Set Mcp:Isolation:Enabled=true to opt into the working-dir/env-scrub policy.
+builder.Services.AddSingleton<OpenClawNet.Mcp.Abstractions.IMcpProcessIsolationPolicy>(sp =>
+{
+    var enabled = bool.TryParse(builder.Configuration["Mcp:Isolation:Enabled"], out var v) && v;
+    return enabled
+        ? new OpenClawNet.Mcp.Abstractions.WorkingDirIsolationPolicy()
+        : new OpenClawNet.Mcp.Abstractions.NoIsolationPolicy();
+});
 
 // MCP foundation (PR-A): secret store, in-process + stdio hosts, tool provider,
 // and the lifecycle hosted service that starts every enabled server on app boot.
@@ -268,16 +346,6 @@ builder.Services.AddSingleton<OpenClawNet.Gateway.Services.Mcp.IMcpRegistryClien
 var initialProvider = builder.Configuration.GetValue<string>("Model:Provider") ?? "ollama";
 if (initialProvider.Equals("ollama", StringComparison.OrdinalIgnoreCase))
     builder.Services.AddHostedService<OllamaWarmupService>();
-
-// Ollama health check — monitors Ollama availability for semantic search integration
-builder.Services.AddHttpClient<OllamaHealthCheck>();
-builder.Services.AddSingleton<OllamaHealthCheck>(sp =>
-{
-    var httpClientFactory = sp.GetRequiredService<IHttpClientFactory>();
-    var httpClient = httpClientFactory.CreateClient();
-    var logger = sp.GetRequiredService<ILogger<OllamaHealthCheck>>();
-    return new OllamaHealthCheck(httpClient, logger);
-});
 
 var app = builder.Build();
 
@@ -333,28 +401,54 @@ app.MapChatStreamEndpoints();
 app.MapSessionEndpoints();
 app.MapToolEndpoints();
 app.MapToolTestEndpoints();
+app.MapToolCallHistoryEndpoints();
 app.MapSkillEndpoints();
+app.MapSkillImportEndpoints();
 app.MapMemoryEndpoints();
 app.MapJobEndpoints();
+app.MapRunsEndpoints();
 app.MapSchedulerHelpersEndpoints();
 app.MapScheduleEndpoints();
 app.MapWebhookEndpoints();
 app.MapSettingsEndpoints();
+app.MapStorageEndpoints();
+app.MapUserFolderEndpoints();
 app.MapChatDebugEndpoints();
 app.MapChannelEndpoints();
 app.MapChannelsApiEndpoints();
-app.MapJobChannelConfigEndpoints();
+app.MapChannelsExtraEndpoints();
+app.MapChannelAdapterEndpoints();
+app.MapChannelEventStreamEndpoints();
 app.MapDemoEndpoints();
 app.MapAgentProfileEndpoints();
 app.MapModelProviderEndpoints();
 app.MapToolApprovalEndpoints();
+app.MapAuditEndpoints();
 app.MapMcpServerEndpoints();
+app.MapMcpServerToolsEndpoints();
 app.MapSecretsEndpoints();
+app.MapJobScheduleEndpoints();
+app.MapJobStreamEndpoints();
+app.MapRuntimeSettingsEndpoints();
+app.MapDiagnosticsEndpoints();
 
-// Map SignalR hub
+// Map SignalR hubs (legacy — ChatHub is [Obsolete]; new code uses NDJSON via /api/chat/stream
+// and /api/channels/{jobId}/stream — see ChannelEventStreamEndpoints).
+#pragma warning disable CS0618 // Intentionally mapping the obsolete hub for back-compat
 app.MapHub<ChatHub>("/hubs/chat");
+#pragma warning restore CS0618
 
 app.Run();
 
 // Expose Program for WebApplicationFactory in integration tests
 public partial class Program { }
+
+namespace OpenClawNet.Gateway
+{
+    /// <summary>
+    /// Unique marker type used as TEntryPoint for WebApplicationFactory&lt;T&gt; in integration
+    /// tests. Avoids CS0433 ambiguity caused by both Gateway and Channels exposing a
+    /// top-level <c>Program</c> class in the global namespace.
+    /// </summary>
+    public sealed class GatewayProgramMarker { }
+}

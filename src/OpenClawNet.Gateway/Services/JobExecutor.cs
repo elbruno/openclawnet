@@ -2,6 +2,7 @@ using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using OpenClawNet.Agent;
+using OpenClawNet.Channels.Services;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
@@ -19,6 +20,8 @@ public sealed class JobExecutor
     private readonly IAgentRuntime _agentRuntime;
     private readonly IAgentProfileStore _profileStore;
     private readonly RuntimeModelSettings _runtimeSettings;
+    private readonly AgentInvocationLogger? _invocationLogger;
+    private readonly IChannelDeliveryService? _deliveryService;
     private readonly ILogger<JobExecutor> _logger;
 
     public JobExecutor(
@@ -27,13 +30,17 @@ public sealed class JobExecutor
         IAgentRuntime agentRuntime,
         IAgentProfileStore profileStore,
         RuntimeModelSettings runtimeSettings,
-        ILogger<JobExecutor> logger)
+        ILogger<JobExecutor> logger,
+        AgentInvocationLogger? invocationLogger = null,
+        IChannelDeliveryService? deliveryService = null)
     {
         _dbFactory = dbFactory;
         _agentProvider = agentProvider;
         _agentRuntime = agentRuntime;
         _profileStore = profileStore;
         _runtimeSettings = runtimeSettings;
+        _invocationLogger = invocationLogger;
+        _deliveryService = deliveryService;
         _logger = logger;
     }
 
@@ -181,6 +188,43 @@ public sealed class JobExecutor
             // Update job and run
             if (!dryRun && jobRun is not null)
             {
+                // Promote tool failures to run failure. Previously a successful
+                // agent invocation that called a tool which failed (e.g.
+                // markdown_convert returning a Fail ToolResult) was recorded as
+                // Status="completed" with a vague paraphrase from the model in
+                // the Result column ("markdown_convert tool failed: ..."). The
+                // raw tool diagnostics never made it to JobRun.Error so the
+                // Channel detail page's failure card stayed empty.
+                //
+                // If any tool returned Success=false we now flip the run to
+                // Failed and persist the FULL tool diagnostics in jobRun.Error
+                // (joined when there are multiple). The model's text is still
+                // kept in jobRun.Result as a partial output for context.
+                var failedTools = result.ToolResults.Where(r => !r.Success).ToList();
+                if (failedTools.Count > 0)
+                {
+                    var summary = string.Join(
+                        Environment.NewLine + Environment.NewLine,
+                        failedTools.Select(t => $"Tool '{t.ToolName}' failed: {t.Error ?? "(no error message)"}"));
+
+                    jobRun.Status = "failed";
+                    jobRun.Error = summary;
+                    jobRun.Result = result.FinalResponse;
+                    jobRun.CompletedAt = completedAt;
+                    jobRun.TokensUsed = result.TotalTokens;
+
+                    job.LastRunAt = completedAt;
+                    job.LastOutputJson = result.FinalResponse;
+
+                    AppendRunEvents(db, jobRun, startedAt, completedAt, result, profileName, error: summary);
+                    await db.SaveChangesAsync(cancellationToken);
+
+                    _logger.LogWarning("Job {JobId} agent finished but {Count} tool call(s) failed; marking run Failed: {Summary}",
+                        jobId, failedTools.Count, summary);
+
+                    return JobExecutionResult.Failed(jobRun.Id, summary, dryRun);
+                }
+
                 jobRun.Status = "completed";
                 jobRun.Result = result.FinalResponse;
                 jobRun.CompletedAt = completedAt;
@@ -192,6 +236,29 @@ public sealed class JobExecutor
                 AppendRunEvents(db, jobRun, startedAt, completedAt, result, profileName, error: null);
 
                 await db.SaveChangesAsync(cancellationToken);
+
+                // Concept-review §4c — record sibling-model invocation row.
+                if (_invocationLogger is not null)
+                {
+                    _ = _invocationLogger.RecordAsync(new AgentInvocationLog
+                    {
+                        Kind = AgentInvocationKind.JobRun,
+                        SourceId = jobRun.Id,
+                        AgentProfileName = profileName,
+                        Provider = job.AgentProfileName, // best-effort
+                        Model = model,
+                        TokensIn = null,
+                        TokensOut = result.TotalTokens,
+                        LatencyMs = (int)duration.TotalMilliseconds,
+                        StartedAt = startedAt,
+                        CompletedAt = completedAt,
+                    }, CancellationToken.None);
+                }
+
+                // Phase 2 Story 6: Multi-channel delivery integration
+                // After successful job completion, trigger delivery to all enabled channels.
+                // Fire-and-forget pattern: job success NOT blocked by delivery failures.
+                await TriggerMultiChannelDeliveryAsync(db, job, jobRun, result.FinalResponse, cancellationToken);
             }
 
             _logger.LogInformation("Job {JobId} executed successfully in {Duration}ms (Tokens: {Tokens})",
@@ -209,13 +276,20 @@ public sealed class JobExecutor
         {
             _logger.LogError(ex, "Job {JobId} execution failed", jobId);
 
+            // Persist FULL exception chain (message + stack + inner exceptions)
+            // so the Channels detail page and live console can surface meaningful
+            // diagnostics instead of an empty cell. ex.ToString() includes the
+            // Type, Message, StackTrace and any InnerException recursively —
+            // this is the canonical "give me everything" rendering.
+            var fullDetail = ex.ToString();
+
             if (!dryRun && jobRun is not null)
             {
                 jobRun.Status = "failed";
-                jobRun.Error = ex.Message;
+                jobRun.Error = fullDetail;
                 jobRun.CompletedAt = DateTime.UtcNow;
                 AppendRunEvents(db, jobRun, startedAt, jobRun.CompletedAt.Value,
-                    result: null, profileName: jobRun.ExecutedByAgentProfile, error: ex.Message);
+                    result: null, profileName: jobRun.ExecutedByAgentProfile, error: fullDetail);
                 await db.SaveChangesAsync(cancellationToken);
             }
 
@@ -286,6 +360,71 @@ public sealed class JobExecutor
             DurationMs = (int)(completedAt - startedAt).TotalMilliseconds,
             TokensUsed = result?.TotalTokens
         });
+    }
+
+    /// <summary>
+    /// Triggers multi-channel delivery for a completed job.
+    /// Fire-and-forget pattern: never throws, logs all delivery outcomes.
+    /// </summary>
+    private async Task TriggerMultiChannelDeliveryAsync(
+        OpenClawDbContext db,
+        ScheduledJob job,
+        JobRun jobRun,
+        string? artifactContent,
+        CancellationToken cancellationToken)
+    {
+        if (_deliveryService is null)
+        {
+            _logger.LogDebug("No IChannelDeliveryService available; skipping multi-channel delivery for job {JobId}", job.Id);
+            return;
+        }
+
+        try
+        {
+            // Query enabled channel configurations for this job
+            var channelConfigs = await db.JobChannelConfigurations
+                .Where(jc => jc.JobId == job.Id && jc.IsEnabled)
+                .ToListAsync(cancellationToken);
+
+            if (channelConfigs.Count == 0)
+            {
+                _logger.LogInformation("No enabled channels configured for job {JobId}; skipping delivery", job.Id);
+                return;
+            }
+
+            _logger.LogInformation("Triggering multi-channel delivery for job {JobId} to {Count} enabled channel(s)",
+                job.Id, channelConfigs.Count);
+
+            // Call delivery service (fire-and-forget: job success NOT blocked by delivery failures)
+            // Content is job run result; artifact ID is job run ID
+            var deliveryResult = await _deliveryService.DeliverAsync(
+                job,
+                jobRun.Id,
+                artifactType: "text",
+                content: artifactContent ?? "(no output)",
+                cancellationToken);
+
+            _logger.LogInformation(
+                "Multi-channel delivery completed for job {JobId}: {Success}/{Total} succeeded, {Failed} failed in {Duration}ms",
+                job.Id,
+                deliveryResult.SuccessCount,
+                deliveryResult.TotalAttempted,
+                deliveryResult.FailureCount,
+                deliveryResult.Duration.TotalMilliseconds);
+
+            if (deliveryResult.FailureCount > 0)
+            {
+                _logger.LogWarning(
+                    "Some channel deliveries failed for job {JobId}: {Failures}",
+                    job.Id,
+                    string.Join("; ", deliveryResult.Failures.Select(f => $"{f.ChannelType}: {f.ErrorMessage}")));
+            }
+        }
+        catch (Exception ex)
+        {
+            // Fire-and-forget: catch all exceptions to ensure job completion is not blocked
+            _logger.LogError(ex, "Multi-channel delivery failed for job {JobId}; job marked complete regardless", job.Id);
+        }
     }
 
     /// <summary>

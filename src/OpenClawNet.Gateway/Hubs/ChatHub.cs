@@ -78,6 +78,7 @@ public sealed class ChatHub : Hub
                 {
                     AgentStreamEventType.ContentDelta      => new ChatHubMessage("content",          evt.Content ?? ""),
                     AgentStreamEventType.ToolApprovalRequest => new ChatHubMessage("tool_approval",  evt.ToolName ?? ""),
+                    AgentStreamEventType.ToolApprovalResolved => new ChatHubMessage("tool_approval_resolved",  evt.ToolName ?? ""),
                     AgentStreamEventType.ToolCallStart     => new ChatHubMessage("tool_start",       evt.ToolName ?? ""),
                     AgentStreamEventType.ToolCallComplete  => new ChatHubMessage("tool_complete",    evt.ToolResult?.Output ?? ""),
                     AgentStreamEventType.Complete          => new ChatHubMessage("complete",         evt.Content ?? ""),

@@ -99,6 +99,67 @@ public static class ChannelsApiEndpoints
         })
         .WithName("GetChannelDetail");
 
+        // GET /api/channels/{jobId}/view — channel detail with all artifacts for Razor pages
+        group.MapGet("/{jobId:guid}/view", async (
+            Guid jobId,
+            [FromServices] IDbContextFactory<OpenClawDbContext> dbFactory,
+            HttpContext httpContext) =>
+        {
+            if (!IsLoopbackRequest(httpContext))
+                return Results.StatusCode(403);
+
+            await using var db = await dbFactory.CreateDbContextAsync();
+
+            var job = await db.Jobs.FindAsync(jobId);
+            if (job is null)
+                return Results.NotFound();
+
+            // Fetch ALL artifacts across all runs for this job
+            var artifacts = await db.JobRunArtifacts
+                .Where(a => a.JobId == jobId)
+                .OrderByDescending(a => a.CreatedAt)
+                .ToListAsync();
+
+            var artifactDtos = artifacts.Select(a => new ArtifactForViewDto(
+                a.Id,
+                a.JobRunId,
+                a.ArtifactType.ToString().ToLowerInvariant(),
+                a.Title,
+                a.ContentInline,
+                a.ContentPath,
+                a.ContentSizeBytes,
+                a.MimeType,
+                a.CreatedAt
+            )).ToList();
+
+            // Failed runs (most-recent first) — surface error + stack on the
+            // Channels detail page so the user is not staring at an empty cell.
+            // We include the full Error text persisted by JobExecutor (ex.ToString()).
+            var failedRuns = await db.JobRuns
+                .Where(r => r.JobId == jobId && r.Status == "failed")
+                .OrderByDescending(r => r.StartedAt)
+                .Take(10)
+                .Select(r => new FailedRunForViewDto(
+                    r.Id,
+                    r.Status,
+                    r.StartedAt,
+                    r.CompletedAt,
+                    r.Error,
+                    r.Result,
+                    r.ExecutedByAgentProfile))
+                .ToListAsync();
+
+            var viewDto = new ChannelDetailViewDto(
+                job.Id,
+                job.Name,
+                artifactDtos,
+                failedRuns
+            );
+
+            return Results.Ok(viewDto);
+        })
+        .WithName("GetChannelDetailView");
+
         // GET /api/channels/{jobId}/runs/{runId} — all artifacts for a single run
         group.MapGet("/{jobId:guid}/runs/{runId:guid}", async (
             Guid jobId,
@@ -226,7 +287,7 @@ public static class ChannelsApiEndpoints
             );
 
             return Results.Created($"/api/channels/{jobId}/runs/{latestRun.Id}/artifacts/{artifact.Id}", 
-                new { artifactId = artifact.Id });
+                (object)new { artifactId = artifact.Id });
         })
         .WithName("CreateArtifact");
     }
@@ -241,7 +302,12 @@ public static class ChannelsApiEndpoints
 }
 
 // DTOs
-public record ChannelSummaryDto(Guid JobId, string JobName, DateTime LastActivity, int ArtifactCount);
+//
+// NOTE: Property names below are part of the loopback HTTP contract consumed by
+// the OpenClawNet.Channels Razor pages. Renaming requires coordinating with the
+// matching ChannelSummary/ChannelDetailDto records there. JSON is case-insensitive
+// but field names must still match.
+public record ChannelSummaryDto(Guid JobId, string JobName, DateTime LastActivityUtc, int TotalArtifacts);
 
 public record ChannelDetailDto(
     Guid JobId, 
@@ -256,6 +322,33 @@ public record ChannelRunSummaryDto(
     DateTime StartedAt, 
     DateTime? CompletedAt, 
     int ArtifactCount);
+
+// Razor-specific DTOs for ChannelDetail.razor
+public record ChannelDetailViewDto(
+    Guid JobId,
+    string JobName,
+    List<ArtifactForViewDto> Artifacts,
+    List<FailedRunForViewDto>? FailedRuns = null);
+
+public record FailedRunForViewDto(
+    Guid RunId,
+    string Status,
+    DateTime StartedAt,
+    DateTime? CompletedAt,
+    string? Error,
+    string? PartialResult,
+    string? ExecutedByAgentProfile);
+
+public record ArtifactForViewDto(
+    Guid Id,
+    Guid RunId,
+    string ArtifactType,
+    string? Title,
+    string? ContentInline,
+    string? ContentPath,
+    long ContentSizeBytes,
+    string? MimeType,
+    DateTime CreatedAt);
 
 public record RunArtifactsDto(
     Guid RunId,

@@ -16,7 +16,7 @@ public static class ChatDebugEndpoints
         // Minimal DI resolution test — does resolving the orchestrator hang?
         app.MapGet("/api/chat/debug/ping", (
             OpenClawNet.Agent.IAgentOrchestrator orchestrator,
-            ILogger<Program> logger) =>
+            ILogger<GatewayProgramMarker> logger) =>
         {
             logger.LogInformation("[DIAG-PING] Orchestrator resolved: {Type}", orchestrator.GetType().Name);
             return Results.Ok(new { ok = true, orchestratorType = orchestrator.GetType().Name });
@@ -31,7 +31,7 @@ public static class ChatDebugEndpoints
             OpenClawNet.Agent.ISummaryService summaryService,
             OpenClawNet.Agent.IPromptComposer promptComposer,
             IModelClient modelClient,
-            ILogger<Program> logger,
+            ILogger<GatewayProgramMarker> logger,
             CancellationToken ct) =>
         {
             var sw = Stopwatch.StartNew();
