@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
@@ -77,6 +78,26 @@ public class GitHubToolTests
             .ToArray();
 
         Assert.Contains("summary", enumValues);
+    }
+
+    [Fact]
+    public void Factory_Honors_Custom_BaseUrl_From_Configuration()
+    {
+        var customBaseUrl = "http://wiremock.local:8080/api";
+        var configData = new Dictionary<string, string?>
+        {
+            ["GitHub:ApiBaseUrl"] = customBaseUrl
+        };
+        var config = new Microsoft.Extensions.Configuration.ConfigurationBuilder()
+            .AddInMemoryCollection(configData)
+            .Build();
+
+        var factory = new GitHubClientFactory(config);
+        var client = factory.CreateClient();
+
+        // Verify the client uses the custom base address
+        Assert.NotNull(client.Connection);
+        Assert.Equal(new Uri(customBaseUrl), client.Connection.BaseAddress);
     }
 
     private static void SetOctokitProperty<T>(object target, string name, T value)
