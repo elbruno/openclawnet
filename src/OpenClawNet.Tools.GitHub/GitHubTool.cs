@@ -16,18 +16,25 @@ public sealed class GitHubTool : ITool
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<GitHubTool> _logger;
-    private readonly Func<IGitHubClient> _clientFactory;
+    private readonly IGitHubClientFactory _clientFactory;
 
-    public GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger)
-        : this(scopeFactory, logger, () => new GitHubClient(new ProductHeaderValue(ProductName)))
-    {
-    }
-
-    internal GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger, Func<IGitHubClient> clientFactory)
+    public GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger, IGitHubClientFactory clientFactory)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
         _clientFactory = clientFactory;
+    }
+
+    internal GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger, Func<IGitHubClient> clientFactoryFunc)
+        : this(scopeFactory, logger, new FuncBasedClientFactory(clientFactoryFunc))
+    {
+    }
+
+    private sealed class FuncBasedClientFactory : IGitHubClientFactory
+    {
+        private readonly Func<IGitHubClient> _factory;
+        public FuncBasedClientFactory(Func<IGitHubClient> factory) => _factory = factory;
+        public IGitHubClient CreateClient() => _factory();
     }
 
     public string Name => "github";
@@ -72,8 +79,7 @@ public sealed class GitHubTool : ITool
 
             var perPage = Math.Clamp(input.GetArgument<int?>("perPage") ?? 10, 1, 50);
 
-            // TODO(petey): inject IGitHubClient seam — see dylan-e2e-framework.md.
-            var client = _clientFactory();
+            var client = _clientFactory.CreateClient();
             string? token;
             using (var scope = _scopeFactory.CreateScope())
             {

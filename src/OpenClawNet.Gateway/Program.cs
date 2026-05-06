@@ -227,8 +227,7 @@ builder.Services.AddSingleton<TextToSpeechTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<TextToSpeechTool>());
 
 // GitHub — read-only repo browsing via Octokit. Optional GITHUB_TOKEN secret enables higher rate limits.
-builder.Services.AddSingleton<GitHubTool>();
-builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<GitHubTool>());
+builder.Services.AddGitHubTool();
 
 // Image editing — resize/convert/crop local images via SixLabors.ImageSharp.
 builder.Services.AddSingleton<ImageEditTool>();
