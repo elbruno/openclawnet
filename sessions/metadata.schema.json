@@ -1,0 +1,72 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "OpenClawNet sessions metadata",
+  "description": "Canonical source of truth for speaker and session info. Slides MUST match this file.",
+  "type": "object",
+  "required": ["speakers", "sessions"],
+  "properties": {
+    "series": {
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "tagline": { "type": "string" },
+        "repo": { "type": "string", "format": "uri" },
+        "site": { "type": "string", "format": "uri" }
+      }
+    },
+    "speakers": {
+      "type": "object",
+      "description": "Speaker records keyed by kebab-case slug.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name", "title"],
+        "properties": {
+          "name": { "type": "string" },
+          "title": { "type": "string", "description": "Job title or 'Microsoft MVP' for non-employees." },
+          "affiliation": { "type": ["string", "null"], "description": "Employer name, or null if unaffiliated (e.g., MVPs)." },
+          "links": {
+            "type": "object",
+            "properties": {
+              "github": { "type": "string", "format": "uri" },
+              "twitter": { "type": "string", "format": "uri" },
+              "linkedin": { "type": "string", "format": "uri" },
+              "website": { "type": "string", "format": "uri" }
+            }
+          }
+        }
+      }
+    },
+    "sessions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "number", "status", "languages"],
+        "properties": {
+          "id": { "type": "string", "pattern": "^session-\\d+$" },
+          "number": { "type": "integer", "minimum": 1 },
+          "status": { "enum": ["published", "draft", "coming-soon"] },
+          "languages": {
+            "type": "object",
+            "description": "Per-language session info, keyed by ISO 639-1 code.",
+            "additionalProperties": {
+              "type": "object",
+              "required": ["speakers"],
+              "properties": {
+                "title": { "type": "string" },
+                "description": { "type": "string" },
+                "slides": { "type": "string", "description": "Path to source .md relative to docs/sessions/." },
+                "html": { "type": "string", "description": "Path to rendered .html relative to docs/sessions/." },
+                "speakers": {
+                  "type": "array",
+                  "items": { "type": "string" },
+                  "minItems": 1,
+                  "description": "Ordered list of speaker slugs. First entry is primary speaker."
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

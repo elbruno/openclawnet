@@ -1,0 +1,160 @@
+name: Tool E2E Nightly
+
+# Nightly regression prevention for the 10/10 Tool Matrix E2E baseline.
+# Runs full sweep against Azure OpenAI (NEVER Ollama — would consume runner resources).
+# Failure triggers auto-issue creation/comment with label 'tool-e2e-regression'.
+#
+# Schedule: 03:00 America/New_York (07:00 UTC) daily
+# Manual: Actions → Tool E2E Nightly → Run workflow
+
+on:
+  schedule:
+    # 07:00 UTC = 03:00 EDT (America/New_York observes DST Mar-Nov)
+    - cron: '0 7 * * *'
+  
+  workflow_dispatch:
+    inputs:
+      headed:
+        description: 'Run Playwright in headed mode (visible browser)'
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  issues: write  # Auto-create/comment on regression tracking issues
+
+jobs:
+  tool-e2e-sweep:
+    name: Tool E2E Sweep (10 tests)
+    runs-on: windows-latest
+    timeout-minutes: 30
+    
+    env:
+      # Azure OpenAI configuration (REQUIRED — Ollama not allowed in CI)
+      Model__Provider: AzureOpenAI
+      Model__Endpoint: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      Model__ApiKey: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      Model__DeploymentName: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+      
+      # Test environment config
+      AZURE_OPENAI_ENDPOINT: ${{ secrets.AZURE_OPENAI_ENDPOINT }}
+      AZURE_OPENAI_API_KEY: ${{ secrets.AZURE_OPENAI_API_KEY }}
+      AZURE_OPENAI_DEPLOYMENT: ${{ secrets.AZURE_OPENAI_DEPLOYMENT }}
+      NUGET_PACKAGES: ${{ github.workspace }}\.nuget\packages2
+      PLAYWRIGHT_HEADED: ${{ inputs.headed || 'false' }}
+      CI: true
+    
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+      
+      # Docker is pre-installed on windows-latest, but verify it's running
+      - name: Verify Docker
+        shell: pwsh
+        run: |
+          docker --version
+          docker ps -a
+          if ($LASTEXITCODE -ne 0) {
+            Write-Error "Docker is not running. Aspire AppHost requires Docker."
+            exit 1
+          }
+      
+      - name: Restore dependencies
+        shell: pwsh
+        run: |
+          dotnet restore tests\OpenClawNet.PlaywrightTests
+      
+      - name: Build test project
+        shell: pwsh
+        run: |
+          dotnet build tests\OpenClawNet.PlaywrightTests --no-restore --verbosity quiet
+      
+      # Playwright browsers are installed as part of the build (see .csproj)
+      # but we verify here to catch any installation issues early
+      - name: Verify Playwright
+        shell: pwsh
+        run: |
+          pwsh tests\OpenClawNet.PlaywrightTests\bin\Debug\net10.0\playwright.ps1 install --with-deps chromium
+      
+      - name: Run Tool E2E Sweep
+        id: sweep
+        shell: pwsh
+        run: |
+          .\scripts\run-tool-e2e-sweep.ps1
+        continue-on-error: true
+      
+      - name: Upload test results on failure
+        if: steps.sweep.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: tool-e2e-sweep-results-${{ github.run_number }}
+          path: TestResults/tool-e2e-sweep-*
+          retention-days: 30
+      
+      - name: Create or update regression issue
+        if: steps.sweep.outcome == 'failure'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Check if there's already an open regression issue
+          $existingIssue = gh issue list --label "tool-e2e-regression" --state open --json number,title --jq ".[0].number"
+          
+          $timestamp = Get-Date -Format "yyyy-MM-dd HH:mm:ss UTC"
+          $runUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          $artifactUrl = "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+          $commentBody = @"
+          ## 🔴 Tool E2E Nightly Failure
+          
+          **Time:** $timestamp  
+          **Run:** [#${{ github.run_number }}]($runUrl)  
+          **Commit:** ${{ github.sha }}
+          
+          The nightly Tool E2E sweep failed. This may indicate:
+          - LLM behavior drift (model updated upstream)
+          - Prompt brittleness (forbid-alternatives pattern needs tuning)
+          - Infrastructure regression (approval flow, NDJSON streaming)
+          - Azure OpenAI deployment issue (transient failure, quota)
+          
+          **Action required:**
+          1. Download test results artifact: [$artifactUrl]($artifactUrl)
+          2. Review logs in `tool-e2e-sweep-*/all-tests.log`
+          3. Identify failed test(s) — compare prompt vs actual tool selected
+          4. If LLM drift: update prompt using [forbid-alternatives pattern](https://github.com/${{ github.repository }}/blob/main/docs/testing/tool-test-prompt-playbook.md)
+          5. If infra issue: check NDJSON streaming, approval timeout, AppHost health
+          6. Re-run locally: ``.\scripts\run-tool-e2e-sweep.ps1``
+          
+          **Note:** Model version/deployment used: ``${{ secrets.AZURE_OPENAI_DEPLOYMENT }}``  
+          Baseline established with: 10/10 PASS ([milestone](https://github.com/${{ github.repository }}/blob/main/docs/milestones/2026-04-26-tool-e2e-10-of-10.md))
+          "@
+          
+          if ($existingIssue) {
+            Write-Host "Commenting on existing issue #$existingIssue"
+            gh issue comment $existingIssue --body $commentBody
+          } else {
+            Write-Host "Creating new regression tracking issue"
+            $issueTitle = "Tool E2E Nightly Regression — Run #${{ github.run_number }}"
+            $issueBody = @"
+          The nightly Tool E2E sweep has failed. The 10/10 baseline is at risk.
+          
+          $commentBody
+          
+          ---
+          
+          **Tracking:** This issue tracks all nightly failures until the suite returns to 10/10 green. Subsequent failures will comment here instead of creating duplicate issues.
+          "@
+            gh issue create --title "$issueTitle" --body "$issueBody" --label "tool-e2e-regression,needs-triage"
+          }
+      
+      - name: Fail workflow if tests failed
+        if: steps.sweep.outcome == 'failure'
+        shell: pwsh
+        run: |
+          Write-Error "Tool E2E sweep failed. Check test results artifact and regression issue."
+          exit 1

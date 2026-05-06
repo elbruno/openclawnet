@@ -1,0 +1,276 @@
+name: Publish Session Materials
+
+# Publishes session materials to the public repo (elbruno/openclawnet)
+# 50 minutes before each live session, or on-demand via workflow_dispatch.
+#
+# Required secret: PUBLIC_REPO_TOKEN
+#   A GitHub PAT (classic) with repo scope on elbruno/openclawnet.
+#   Create at Settings > Developer settings > Personal access tokens.
+#   Add to this repo at Settings > Secrets > Actions > New repository secret.
+#
+# Session schedule (all times UTC, sessions start at 14:00 UTC):
+#   Session 1 - April 15, 2026
+#   Session 2 - April 22, 2026
+#   Session 3 - April 29, 2026
+#   Session 4 - May  6,  2026
+
+on:
+  workflow_dispatch:
+    inputs:
+      session:
+        description: 'Session number to publish (1-4)'
+        required: true
+        type: choice
+        options:
+          - '1'
+          - '2'
+          - '3'
+          - '4'
+      dry_run:
+        description: 'Dry run - prepare files locally without pushing'
+        type: boolean
+        default: false
+
+  schedule:
+    # 13:10 UTC = 50 minutes before each 14:00 UTC session
+    - cron: '10 13 15 4 *'   # Session 1 - April 15, 2026
+    - cron: '10 13 22 4 *'   # Session 2 - April 22, 2026
+    - cron: '10 13 29 4 *'   # Session 3 - April 29, 2026
+    - cron: '10 13 6 5 *'    # Session 4 - May 6, 2026
+
+jobs:
+  publish:
+    name: Publish Session Materials
+    runs-on: ubuntu-latest
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+
+    steps:
+      # -- 1. Checkout plan repo (this repo - all materials live here) --------
+      - name: Checkout plan repo
+        uses: actions/checkout@v4
+        with:
+          path: plan
+
+      # -- 2. Determine session number ----------------------------------------
+      - name: Determine session number
+        id: session
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "number=${{ inputs.session }}" >> "$GITHUB_OUTPUT"
+          else
+            MONTH=$(date -u +%-m)
+            DAY=$(date -u +%-d)
+            if   [ "$MONTH" -eq 4 ] && [ "$DAY" -ge 15 ] && [ "$DAY" -lt 22 ]; then
+              echo "number=1" >> "$GITHUB_OUTPUT"
+            elif [ "$MONTH" -eq 4 ] && [ "$DAY" -ge 22 ] && [ "$DAY" -lt 29 ]; then
+              echo "number=2" >> "$GITHUB_OUTPUT"
+            elif [ "$MONTH" -eq 4 ] && [ "$DAY" -ge 29 ]; then
+              echo "number=3" >> "$GITHUB_OUTPUT"
+            elif [ "$MONTH" -eq 5 ] && [ "$DAY" -ge 6  ] && [ "$DAY" -lt 13 ]; then
+              echo "number=4" >> "$GITHUB_OUTPUT"
+            else
+              echo "::error::Cannot determine session from date $MONTH/$DAY - use workflow_dispatch to specify manually."
+              exit 1
+            fi
+          fi
+
+      # -- 3. Build slides (EN + ES) ------------------------------------------
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: plan/docs/presentations/package-lock.json
+
+      - name: Install presentation dependencies
+        run: npm ci
+        working-directory: plan/docs/presentations
+
+      - name: Build slides (all sessions, EN + ES)
+        run: node build.js
+        working-directory: plan/docs/presentations
+
+      # -- 4. Checkout public repo --------------------------------------------
+      - name: Checkout public repo
+        uses: actions/checkout@v4
+        with:
+          repository: elbruno/openclawnet
+          token: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          path: public
+
+      # -- 5. Copy source projects (cumulative up to session N) ---------------
+      - name: Copy source projects
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          declare -A PROJECTS
+          PROJECTS[1]="OpenClawNet.Models.Abstractions OpenClawNet.Models.Ollama OpenClawNet.Storage OpenClawNet.ServiceDefaults OpenClawNet.Gateway OpenClawNet.Web OpenClawNet.AppHost"
+          PROJECTS[2]="OpenClawNet.Tools.Abstractions OpenClawNet.Tools.Core OpenClawNet.Tools.FileSystem OpenClawNet.Tools.Shell OpenClawNet.Tools.Web OpenClawNet.Tools.Scheduler OpenClawNet.Agent OpenClawNet.Skills OpenClawNet.Memory"
+          PROJECTS[3]=""
+          PROJECTS[4]="OpenClawNet.Models.AzureOpenAI OpenClawNet.Models.Foundry"
+
+          for s in $(seq 1 "$SESSION"); do
+            for proj in ${PROJECTS[$s]}; do
+              src="plan/src/$proj"
+              dst="public/src/$proj"
+              if [ -d "$src" ] && [ ! -d "$dst" ]; then
+                echo "  + $proj"
+                mkdir -p public/src
+                cp -r "$src" "$dst"
+              fi
+            done
+          done
+
+          # Test projects - session 4 only
+          if [ "$SESSION" -ge 4 ]; then
+            mkdir -p public/tests
+            for tp in OpenClawNet.UnitTests OpenClawNet.IntegrationTests; do
+              src="plan/tests/$tp"
+              dst="public/tests/$tp"
+              if [ -d "$src" ] && [ ! -d "$dst" ]; then
+                echo "  + tests/$tp"
+                cp -r "$src" "$dst"
+              fi
+            done
+          fi
+
+      # -- 6. Update solution file --------------------------------------------
+      - name: Update solution file
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          slnx="plan/scripts/stages/session-${SESSION}/OpenClawNet.slnx"
+          if [ -f "$slnx" ]; then
+            echo "  Updating OpenClawNet.slnx for session $SESSION"
+            cp "$slnx" public/OpenClawNet.slnx
+          else
+            echo "::warning::Solution file not found: $slnx"
+          fi
+
+      # -- 7. Apply Gateway overlay files ------------------------------------
+      - name: Apply overlay files
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          overlay="plan/scripts/stages/session-${SESSION}/src"
+          if [ -d "$overlay" ]; then
+            echo "  Applying overlays for session $SESSION"
+            find "$overlay" -type f | while read -r f; do
+              rel="${f#$overlay/}"
+              dst="public/src/$rel"
+              mkdir -p "$(dirname "$dst")"
+              cp "$f" "$dst"
+              echo "    src/$rel"
+            done
+          fi
+
+      # -- 8. Copy session presentation materials -----------------------------
+      - name: Copy session materials
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          session_dir="public/sessions/session-${SESSION}"
+          mkdir -p "$session_dir"
+
+          # Docs (guides, speaker scripts, copilot prompts, etc.)
+          docs_src="plan/docs/sessions/session-${SESSION}"
+          if [ -d "$docs_src" ]; then
+            find "$docs_src" -maxdepth 1 -type f | while read -r f; do
+              cp "$f" "$session_dir/"
+              echo "  $(basename "$f")"
+            done
+          fi
+
+          # Slides HTML - EN and ES
+          for lang in "" "-es"; do
+            html="plan/docs/presentations/session-${SESSION}/slides${lang}.html"
+            if [ -f "$html" ]; then
+              cp "$html" "${session_dir}/slides${lang}.html"
+              echo "  slides${lang}.html"
+            fi
+          done
+
+      # -- 9. Copy skill samples (session 3+) --------------------------------
+      - name: Copy skill samples
+        if: steps.session.outputs.number >= '3'
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          src="plan/skills/samples"
+          dst="public/skills/samples"
+          if [ -d "$src" ] && [ ! -d "$dst" ]; then
+            echo "  Copying skill samples"
+            mkdir -p public/skills
+            cp -r "$src" public/skills/
+          fi
+
+      # -- 10. Update public README to add material links ---------------------
+      - name: Update public README
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          readme="public/README.md"
+          S="$SESSION"
+          LINKS="[Slides EN](sessions/session-${S}/slides.html) | [Slides ES](sessions/session-${S}/slides-es.html)"
+
+          if [ "$S" -eq 1 ]; then
+            # Replace placeholder text for session 1
+            sed -i "s|Materials available on session day|${LINKS}|" "$readme"
+          else
+            PREV=$((S - 1))
+            # Replace placeholder text for subsequent sessions
+            sed -i "s|Materials available after Session ${PREV}|${LINKS}|" "$readme"
+          fi
+
+      # -- 11. Build verification ---------------------------------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Build verification
+        run: dotnet build public/OpenClawNet.slnx --verbosity quiet
+
+      - name: Run tests (session 4 only)
+        if: steps.session.outputs.number == '4'
+        run: dotnet test public/OpenClawNet.slnx --verbosity quiet
+
+      # -- 12. Commit and push ------------------------------------------------
+      - name: Commit and push
+        if: ${{ !inputs.dry_run }}
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+        run: |
+          cd public
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Nothing to commit - materials may already be published."
+            exit 0
+          fi
+          COMMIT_MSG=$(printf 'feat: publish session %s materials\n\nAuto-published 50 minutes before the Session %s live event.\n\nCo-authored-by: Copilot <223556219+Copilot@users.noreply.github.com>' "${SESSION}" "${SESSION}")
+          git commit -m "$COMMIT_MSG"
+          git push
+
+      # -- 13. Summary --------------------------------------------------------
+      - name: Job summary
+        env:
+          SESSION: ${{ steps.session.outputs.number }}
+          DRY_RUN: ${{ inputs.dry_run }}
+        run: |
+          echo "## Session ${SESSION} materials published" >> "$GITHUB_STEP_SUMMARY"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          if [ "$DRY_RUN" = "true" ]; then
+            echo "> **Dry run** - files prepared but not pushed." >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "Published to [elbruno/openclawnet](https://github.com/elbruno/openclawnet)" >> "$GITHUB_STEP_SUMMARY"
+          fi
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Item | Status |" >> "$GITHUB_STEP_SUMMARY"
+          echo "|------|--------|" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Source projects | Copied |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Slides EN | slides.html |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Slides ES | slides-es.html |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Session materials | Copied |" >> "$GITHUB_STEP_SUMMARY"
+          echo "| Build verification | Passed |" >> "$GITHUB_STEP_SUMMARY"

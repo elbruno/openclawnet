@@ -1,0 +1,74 @@
+# Gitleaks Configuration for OpenClawNet
+#
+# Conservative baseline — uses default built-in rules with minimal allowlist.
+# Only add allowlist entries for verified false positives with specific justification.
+#
+# Maintainer: Mark (Lead Architect)
+# Created: 2026-05-06
+# Last updated: 2026-05-06
+
+title = "OpenClawNet gitleaks config"
+
+# Use all default gitleaks rules — DO NOT disable any rule categories
+[extend]
+# No extensions — use gitleaks defaults
+
+# ============================================================================
+# ALLOWLIST — Known-safe patterns (verified false positives only)
+# ============================================================================
+#
+# POLICY: Add entries ONLY when:
+# 1. A specific pattern triggers a false positive
+# 2. The pattern is verified to NOT be a real secret
+# 3. The entry is scoped as narrowly as possible
+#
+# DO NOT add broad allowlists like "tests/**" without specific patterns.
+# Each entry must document WHY it's safe.
+
+[allowlist]
+  description = "Allowlist for verified false positives"
+
+  # Example placeholder API keys in documentation
+  # These patterns match obviously fake keys used in examples/demos
+  regexes = [
+    # Placeholder keys that start with 'sk-test-' or 'pk-test-' (Stripe test mode pattern)
+    '''sk-test-[a-zA-Z0-9]{24,}EXAMPLE''',
+    '''pk-test-[a-zA-Z0-9]{24,}EXAMPLE''',
+    
+    # Explicit placeholder markers
+    '''YOUR[-_]API[-_]KEY[-_]HERE''',
+    '''REPLACE[-_]WITH[-_]YOUR[-_]KEY''',
+    '''<your[-_]api[-_]key>''',
+    '''<insert[-_]key[-_]here>''',
+  ]
+
+  # Path-specific allowlists (use sparingly)
+  paths = [
+    # None yet — add with specific justification if needed
+  ]
+
+# ============================================================================
+# ADDING NEW ALLOWLIST ENTRIES
+# ============================================================================
+#
+# If you encounter a false positive:
+#
+# 1. DO NOT add a broad path allowlist (e.g., "tests/**")
+# 2. Instead, identify the specific pattern causing the false positive
+# 3. Add a narrow regex that matches ONLY that pattern
+# 4. Document the pattern in this file with a comment explaining why it's safe
+# 5. Create a PR for review — security-relevant changes need Drummond review
+#
+# Example of a GOOD addition:
+#   '''test-webhook-secret-12345'''  # Hardcoded test fixture value in WebhookTests.cs
+#
+# Example of a BAD addition (too broad):
+#   paths = ["tests/**"]  # This silences ALL findings in tests — don't do this
+
+# ============================================================================
+# RULE OVERRIDES
+# ============================================================================
+# Only override rules if absolutely necessary. Document the reason.
+# Prefer allowlist patterns over disabling rules entirely.
+
+# No rule overrides — using all default rules

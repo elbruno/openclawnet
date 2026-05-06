@@ -42,14 +42,18 @@ dotnet --version
 
 **Version Required:** Latest stable release (13.2+)
 
-For up-to-date install instructions across Windows, macOS, and Linux, follow the official Aspire documentation. We intentionally don't inline the commands here so this page never goes stale:
-
-- **Official site:** [https://aspire.dev/](https://aspire.dev/)
+**Install:**
+```bash
+dotnet workload install aspire
+```
 
 **Verify Installation:**
 ```bash
 aspire --version
 ```
+
+**Official Documentation:**
+- [https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling](https://learn.microsoft.com/en-us/dotnet/aspire/fundamentals/setup-tooling)
 
 ---
 
@@ -104,6 +108,18 @@ ollama pull llama3.2:3b
 
 # Alternative: larger, more capable
 ollama pull llama3.2
+
+# Alternative: lightweight with native tool calling (verified in live tests)
+ollama pull qwen2.5:3b
+
+# Alternative: stronger Qwen variant
+ollama pull qwen2.5:7b
+
+# Alternative: strong reasoning, compact
+ollama pull phi4
+
+# Alternative: smaller Phi for quick local fallback
+ollama pull phi3
 ```
 
 **Official Documentation:**
@@ -155,7 +171,7 @@ Choose one:
 | **Visual Studio Code** | Lightweight, cross-platform | [https://code.visualstudio.com/](https://code.visualstudio.com/) |
 | **JetBrains Rider** | Advanced .NET IDE (paid) | [https://www.jetbrains.com/rider/](https://www.jetbrains.com/rider/) |
 
-**For VS Code Users (optional):** The **C# Dev Kit** extension is recommended for a richer .NET editing experience (solution explorer, test runner, debugging UI), but it is **not required** to build or run OpenClaw .NET. The base **C#** extension (powered by the .NET language server) is sufficient. Install C# Dev Kit only if you want the extra IDE features.
+**For VS Code Users:** Install the **C# Dev Kit** extension.
 
 ---
 
@@ -226,4 +242,4 @@ Once all prerequisites are met, proceed to **[01-local-installation.md](./01-loc
 
 - [Architecture Overview](../architecture/overview.md)
 - [Local Setup Guide](../setup/local-setup.md)
-- [Ollama Setup Guide](../setup/ollama-setup.md)
+- [Ollama Setup Guide](../setup/ollama.md)
