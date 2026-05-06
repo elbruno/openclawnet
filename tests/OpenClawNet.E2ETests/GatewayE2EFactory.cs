@@ -25,7 +25,7 @@ namespace OpenClawNet.E2ETests;
 /// <see cref="E2EEnvironment.HasAzureOpenAi"/> + <c>Skip.IfNot</c>.
 /// </para>
 /// </summary>
-public sealed class GatewayE2EFactory : WebApplicationFactory<GatewayProgramMarker>
+public class GatewayE2EFactory : WebApplicationFactory<GatewayProgramMarker>
 {
     public string StorageRoot { get; }
 
