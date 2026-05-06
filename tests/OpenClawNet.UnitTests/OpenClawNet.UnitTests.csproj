@@ -53,6 +53,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.GitHub\OpenClawNet.Tools.GitHub.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.MarkItDown\OpenClawNet.Tools.MarkItDown.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />

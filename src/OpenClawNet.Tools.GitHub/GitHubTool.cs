@@ -16,17 +16,24 @@ public sealed class GitHubTool : ITool
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly ILogger<GitHubTool> _logger;
+    private readonly Func<IGitHubClient> _clientFactory;
 
     public GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger)
+        : this(scopeFactory, logger, () => new GitHubClient(new ProductHeaderValue(ProductName)))
+    {
+    }
+
+    internal GitHubTool(IServiceScopeFactory scopeFactory, ILogger<GitHubTool> logger, Func<IGitHubClient> clientFactory)
     {
         _scopeFactory = scopeFactory;
         _logger = logger;
+        _clientFactory = clientFactory;
     }
 
     public string Name => "github";
 
     public string Description =>
-        "Read-only GitHub access (Octokit). Actions: list_issues, list_pulls, list_commits, get_repo, get_file. " +
+        "Read-only GitHub access (Octokit). Actions: summary, list_issues, list_pulls, list_commits, get_repo, get_file. " +
         $"Authenticate by setting the secret '{TokenSecretName}' (or environment variable of the same name) — anonymous calls work but are rate-limited.";
 
     public ToolMetadata Metadata => new()
@@ -37,7 +44,7 @@ public sealed class GitHubTool : ITool
         {
             "type": "object",
             "properties": {
-                "action": { "type": "string", "enum": ["list_issues", "list_pulls", "list_commits", "get_repo", "get_file"], "description": "GitHub operation to perform." },
+                "action": { "type": "string", "enum": ["summary", "list_issues", "list_pulls", "list_commits", "get_repo", "get_file"], "description": "GitHub operation to perform. Use 'summary' for repo issue/PR/star counts." },
                 "owner": { "type": "string", "description": "Repository owner (user or org)." },
                 "repo": { "type": "string", "description": "Repository name." },
                 "path": { "type": "string", "description": "Path inside the repo (only for action='get_file')." },
@@ -49,7 +56,7 @@ public sealed class GitHubTool : ITool
         """),
         RequiresApproval = false,
         Category = "integration",
-        Tags = ["github", "git", "issues", "pulls", "commits"]
+        Tags = ["github", "git", "issues", "pulls", "commits", "summary"]
     };
 
     public async Task<ToolResult> ExecuteAsync(ToolInput input, CancellationToken cancellationToken = default)
@@ -65,7 +72,8 @@ public sealed class GitHubTool : ITool
 
             var perPage = Math.Clamp(input.GetArgument<int?>("perPage") ?? 10, 1, 50);
 
-            var client = new GitHubClient(new ProductHeaderValue(ProductName));
+            // TODO(petey): inject IGitHubClient seam — see dylan-e2e-framework.md.
+            var client = _clientFactory();
             string? token;
             using (var scope = _scopeFactory.CreateScope())
             {
@@ -73,11 +81,12 @@ public sealed class GitHubTool : ITool
                 token = await secrets.GetAsync(TokenSecretName, cancellationToken);
             }
             token ??= Environment.GetEnvironmentVariable(TokenSecretName);
-            if (!string.IsNullOrWhiteSpace(token))
-                client.Credentials = new Credentials(token);
+            if (!string.IsNullOrWhiteSpace(token) && client is GitHubClient gitHubClient)
+                gitHubClient.Credentials = new Credentials(token);
 
             return action switch
             {
+                "summary" => await GetSummaryAsync(client, owner!, repo!, sw),
                 "list_issues" => await ListIssuesAsync(client, owner!, repo!, input, perPage, sw),
                 "list_pulls" => await ListPullsAsync(client, owner!, repo!, input, perPage, sw),
                 "list_commits" => await ListCommitsAsync(client, owner!, repo!, perPage, sw),
@@ -88,11 +97,15 @@ public sealed class GitHubTool : ITool
         }
         catch (RateLimitExceededException ex)
         {
-            return ToolResult.Fail(Name, $"GitHub rate limit exceeded. Set the {TokenSecretName} secret to authenticate. ({ex.Message})", sw.Elapsed);
+            return ToolResult.Fail(Name, $"GitHub rate limit exceeded. Set the {TokenSecretName} secret to authenticate. ({ex.Message}){FormatRateLimitInfo(ex.HttpResponse?.ApiInfo)}", sw.Elapsed);
         }
-        catch (NotFoundException)
+        catch (NotFoundException ex)
         {
-            return ToolResult.Fail(Name, "Resource not found (or not accessible without authentication).", sw.Elapsed);
+            return ToolResult.Fail(Name, $"Resource not found (or not accessible without authentication).{FormatRateLimitInfo(ex.HttpResponse?.ApiInfo)}", sw.Elapsed);
+        }
+        catch (ApiException ex)
+        {
+            return ToolResult.Fail(Name, $"GitHub API error: {ex.Message}{FormatRateLimitInfo(ex.HttpResponse?.ApiInfo)}", sw.Elapsed);
         }
         catch (Exception ex)
         {
@@ -101,7 +114,44 @@ public sealed class GitHubTool : ITool
         }
     }
 
-    private async Task<ToolResult> ListIssuesAsync(GitHubClient c, string owner, string repo, ToolInput input, int perPage, Stopwatch sw)
+    private async Task<ToolResult> GetSummaryAsync(IGitHubClient c, string owner, string repo, Stopwatch sw)
+    {
+        var repository = await c.Repository.Get(owner, repo);
+
+        // GitHub's Repository.OpenIssuesCount includes pull requests, so use two Search API count queries
+        // for accurate issue vs PR totals while avoiding paged list downloads.
+        var issueCountTask = c.Search.SearchIssues(new SearchIssuesRequest($"repo:{owner}/{repo} is:issue is:open") { PerPage = 1 });
+        var pullCountTask = c.Search.SearchIssues(new SearchIssuesRequest($"repo:{owner}/{repo} is:pr is:open") { PerPage = 1 });
+        await Task.WhenAll(issueCountTask, pullCountTask);
+
+        sw.Stop();
+        return ToolResult.Ok(Name, FormatSummaryMarkdown(owner, repo, repository, issueCountTask.Result.TotalCount, pullCountTask.Result.TotalCount), sw.Elapsed);
+    }
+
+    internal static string FormatSummaryMarkdown(string owner, string repo, Repository repository, int openIssues, int openPulls)
+    {
+        var sb = new StringBuilder()
+            .AppendLine($"**{owner}/{repo}:** {openIssues} open issues, {openPulls} open PRs · ⭐ {repository.StargazersCount}");
+
+        if (!string.IsNullOrWhiteSpace(repository.Description))
+            sb.AppendLine(repository.Description);
+
+        sb.AppendLine($"Updated: {repository.UpdatedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC");
+        if (repository.PushedAt is { } pushedAt)
+            sb.AppendLine($"Last push: {pushedAt.UtcDateTime:yyyy-MM-dd HH:mm} UTC");
+
+        return sb.ToString();
+    }
+
+    private static string FormatRateLimitInfo(ApiInfo? apiInfo)
+    {
+        var limit = apiInfo?.RateLimit;
+        return limit is null
+            ? string.Empty
+            : $" Rate limit: {limit.Remaining}/{limit.Limit} remaining until {limit.Reset.UtcDateTime:yyyy-MM-dd HH:mm} UTC.";
+    }
+
+    private async Task<ToolResult> ListIssuesAsync(IGitHubClient c, string owner, string repo, ToolInput input, int perPage, Stopwatch sw)
     {
         var stateRaw = (input.GetStringArgument("state") ?? "open").ToLowerInvariant();
         var state = stateRaw switch { "closed" => ItemStateFilter.Closed, "all" => ItemStateFilter.All, _ => ItemStateFilter.Open };
@@ -115,7 +165,7 @@ public sealed class GitHubTool : ITool
         return ToolResult.Ok(Name, sb.ToString(), sw.Elapsed);
     }
 
-    private async Task<ToolResult> ListPullsAsync(GitHubClient c, string owner, string repo, ToolInput input, int perPage, Stopwatch sw)
+    private async Task<ToolResult> ListPullsAsync(IGitHubClient c, string owner, string repo, ToolInput input, int perPage, Stopwatch sw)
     {
         var stateRaw = (input.GetStringArgument("state") ?? "open").ToLowerInvariant();
         var state = stateRaw switch { "closed" => ItemStateFilter.Closed, "all" => ItemStateFilter.All, _ => ItemStateFilter.Open };
@@ -129,7 +179,7 @@ public sealed class GitHubTool : ITool
         return ToolResult.Ok(Name, sb.ToString(), sw.Elapsed);
     }
 
-    private async Task<ToolResult> ListCommitsAsync(GitHubClient c, string owner, string repo, int perPage, Stopwatch sw)
+    private async Task<ToolResult> ListCommitsAsync(IGitHubClient c, string owner, string repo, int perPage, Stopwatch sw)
     {
         var commits = await c.Repository.Commit.GetAll(owner, repo,
             new ApiOptions { PageSize = perPage, PageCount = 1 });
@@ -143,7 +193,7 @@ public sealed class GitHubTool : ITool
         return ToolResult.Ok(Name, sb.ToString(), sw.Elapsed);
     }
 
-    private async Task<ToolResult> GetRepoAsync(GitHubClient c, string owner, string repo, Stopwatch sw)
+    private async Task<ToolResult> GetRepoAsync(IGitHubClient c, string owner, string repo, Stopwatch sw)
     {
         var r = await c.Repository.Get(owner, repo);
         sw.Stop();
@@ -156,7 +206,7 @@ public sealed class GitHubTool : ITool
         return ToolResult.Ok(Name, sb.ToString(), sw.Elapsed);
     }
 
-    private async Task<ToolResult> GetFileAsync(GitHubClient c, string owner, string repo, string? path, Stopwatch sw)
+    private async Task<ToolResult> GetFileAsync(IGitHubClient c, string owner, string repo, string? path, Stopwatch sw)
     {
         if (string.IsNullOrWhiteSpace(path))
             return ToolResult.Fail(Name, "'path' is required for action='get_file'", sw.Elapsed);
