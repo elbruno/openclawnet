@@ -128,14 +128,8 @@ public static class ChatEndpoints
             // Generate new name
             var generatedName = await namingService.GenerateNameAsync(messages, ct);
 
-            // Update session title
-            session.Title = generatedName;
-            session.UpdatedAt = DateTime.UtcNow;
+            await conversationStore.UpdateSessionTitleAsync(id, generatedName, ct);
 
-            // For now, we rely on the session being tracked by EF Core if it was retrieved from the store.
-            // A proper implementation would use a session update method. For MVP, this is acceptable
-            // if conversationStore tracks changes, or we would need to add UpdateSessionAsync.
-            
             logger.LogInformation("Auto-renamed chat session {SessionId} to '{Title}'", id, generatedName);
 
             return Results.Ok(new { generatedName, updated = true });

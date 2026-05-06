@@ -55,6 +55,20 @@
                 {
                     <span class="fw-semibold">@_currentSession.Title</span>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="StartRename" title="Rename session">✏️</button>
+                    <button class="btn btn-sm btn-outline-secondary py-0"
+                            @onclick="AutoNameSessionAsync"
+                            title="Auto-name from conversation"
+                            data-testid="auto-name-btn"
+                            disabled="@(_messages.Count == 0 || _isAutoNaming)">
+                        @if (_isAutoNaming)
+                        {
+                            <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
+                        }
+                        else
+                        {
+                            <span>✨</span>
+                        }
+                    </button>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="CopyShareLinkAsync" title="Copy shareable session link">🔗</button>
                 }
             </div>
@@ -219,6 +233,7 @@
     [SupplyParameterFromQuery(Name = "profile")]
     public string? ProfileParam { get; set; }
 
+    private readonly CancellationTokenSource _componentCts = new();
     private CancellationTokenSource? _streamCts;
     private long _lastRenderTick;
     private readonly List<ChatDisplayMessage> _messages = [];
@@ -304,6 +319,7 @@
 
     // Rename
     private bool _isRenaming;
+    private bool _isAutoNaming;
     private string _renameTitle = string.Empty;
 
     // Agent profiles
@@ -504,6 +520,72 @@
         }
         catch { /* ignore */ }
         CancelRename();
+    }
+
+    private async Task AutoNameSessionAsync()
+    {
+        if (_currentSession is null || _messages.Count == 0 || _isAutoNaming) return;
+
+        var sessionId = _currentSession.Id;
+        var previousSession = _currentSession;
+        _isAutoNaming = true;
+        _connectionError = null;
+
+        try
+        {
+            var client = HttpClientFactory.CreateClient("gateway");
+            using var response = await client.PostAsync($"api/chat/{sessionId}/auto-rename", content: null, _componentCts.Token);
+            if (!response.IsSuccessStatusCode)
+            {
+                _currentSession = previousSession;
+                var errorBody = await response.Content.ReadAsStringAsync(_componentCts.Token);
+                _connectionError = $"Auto-name failed ({(int)response.StatusCode}): {errorBody}";
+                Snackbar.Add("Auto-name failed. Please try again.", MudBlazor.Severity.Error);
+                return;
+            }
+
+            var result = await response.Content.ReadFromJsonAsync<AutoRenameResponseDto>(JsonOpts, _componentCts.Token);
+            var generatedName = result?.GeneratedName?.Trim();
+            if (string.IsNullOrWhiteSpace(generatedName))
+            {
+                _currentSession = previousSession;
+                _connectionError = "Auto-name failed: Gateway did not return a title.";
+                Snackbar.Add("Auto-name failed: no title returned.", MudBlazor.Severity.Error);
+                return;
+            }
+
+            var updated = previousSession with { Title = generatedName };
+            if (_currentSession?.Id == sessionId)
+            {
+                _currentSession = updated;
+            }
+
+            var idx = _sessions.FindIndex(s => s.Id == sessionId);
+            if (idx >= 0) _sessions[idx] = updated;
+
+            await LoadSessionsAsync();
+            if (_currentSession?.Id == sessionId)
+            {
+                _currentSession = _sessions.FirstOrDefault(s => s.Id == sessionId) ?? updated;
+            }
+
+            Snackbar.Add($"Chat renamed to '{generatedName}'", MudBlazor.Severity.Success, config => config.VisibleStateDuration = 3000);
+        }
+        catch (OperationCanceledException) when (_componentCts.IsCancellationRequested)
+        {
+            _currentSession = previousSession;
+        }
+        catch (Exception ex)
+        {
+            _currentSession = previousSession;
+            _connectionError = $"Auto-name failed: {ex.Message}";
+            Snackbar.Add("Auto-name failed. Please try again.", MudBlazor.Severity.Error);
+        }
+        finally
+        {
+            _isAutoNaming = false;
+            await InvokeAsync(StateHasChanged);
+        }
     }
 
     private async Task CopyShareLinkAsync()
@@ -717,6 +799,8 @@
 
     public async ValueTask DisposeAsync()
     {
+        await _componentCts.CancelAsync();
+        _componentCts.Dispose();
         _streamCts?.Cancel();
         _streamCts?.Dispose();
     }
@@ -743,6 +827,7 @@
         DateTime? ToolDecidedAt = null);
     
     private sealed record SessionDto(Guid Id, string Title, DateTime CreatedAt, DateTime UpdatedAt);
+    private sealed record AutoRenameResponseDto(string? GeneratedName, bool Updated);
     private sealed record AgentProfileDto(string Name, string? DisplayName, string? Provider, bool IsDefault);
     private sealed record ProviderInfoDto(string Name, string ProviderType, string? DisplayName, string? Model, string? DeploymentName);
     private sealed record MessageDto(
