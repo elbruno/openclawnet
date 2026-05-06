@@ -1,5 +1,6 @@
 using System.Text;
 using Microsoft.Extensions.Options;
+using OpenClawNet.Storage;
 
 namespace OpenClawNet.Agent.ToolApproval;
 
@@ -42,10 +43,14 @@ public sealed class DefaultToolResultSanitizer : IToolResultSanitizer
     };
 
     private readonly ToolResultSanitizerOptions _options;
+    private readonly IVaultSecretRedactor? _vaultRedactor;
 
-    public DefaultToolResultSanitizer(IOptions<ToolResultSanitizerOptions> options)
+    public DefaultToolResultSanitizer(
+        IOptions<ToolResultSanitizerOptions> options,
+        IVaultSecretRedactor? vaultRedactor = null)
     {
         _options = options.Value;
+        _vaultRedactor = vaultRedactor;
     }
 
     public string Sanitize(string? rawContent, string toolName)
@@ -57,8 +62,11 @@ public sealed class DefaultToolResultSanitizer : IToolResultSanitizer
 
         try
         {
-            // 1. Unicode normalization (NFC) — defense against homoglyph attacks
-            var normalized = rawContent.Normalize(NormalizationForm.FormC);
+            // 1. Redact any value produced by the vault before other transformations.
+            var vaultRedacted = _vaultRedactor?.Redact(rawContent) ?? rawContent;
+
+            // 2. Unicode normalization (NFC) — defense against homoglyph attacks
+            var normalized = vaultRedacted.Normalize(NormalizationForm.FormC);
 
             // 2. Strip control characters (except CR/LF/TAB)
             var stripped = StripControlChars(normalized);

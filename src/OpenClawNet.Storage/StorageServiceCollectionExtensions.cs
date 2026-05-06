@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,14 +11,17 @@ public static class StorageServiceCollectionExtensions
 {
     public static IServiceCollection AddOpenClawStorage(this IServiceCollection services, string? connectionString = null)
     {
+        services.AddSingleton(sp => new SharedInMemorySqliteConnection(ResolveConnectionString(sp, connectionString)));
+
         services.AddDbContextFactory<OpenClawDbContext>((sp, options) =>
         {
-            // IConfiguration is a singleton — safe to resolve from the root provider.
-            // Aspire injects ConnectionStrings:openclawnet-db as an env var; this reads it correctly.
-            var config = sp.GetService<IConfiguration>();
-            var connStr = config?.GetConnectionString("openclawnet-db")
-                ?? connectionString
-                ?? "Data Source=openclawnet.db";
+            var connStr = ResolveConnectionString(sp, connectionString);
+            if (IsInMemorySqlite(connStr))
+            {
+                options.UseSqlite(sp.GetRequiredService<SharedInMemorySqliteConnection>().Connection);
+                return;
+            }
+
             options.UseSqlite(connStr);
         });
 
@@ -82,8 +86,47 @@ public static class StorageServiceCollectionExtensions
         services.AddScoped<IModelProviderDefinitionStore, ModelProviderDefinitionStore>();
         services.AddScoped<IToolTestRecordStore, ToolTestRecordStore>();
         services.AddScoped<ISecretsStore, SecretsStore>();
+        services.AddScoped<ISecretAccessAuditor, SecretAccessAuditor>();
+        services.AddScoped<IVault, VaultService>();
+        services.AddSingleton<IVaultSecretRedactor, VaultSecretRedactor>();
+        services.AddSingleton<IVaultErrorShield, VaultErrorShield>();
+        services.AddSingleton<VaultConfigurationResolver>();
+        services.AddSingleton<IVaultCacheInvalidator>(sp => sp.GetRequiredService<VaultConfigurationResolver>());
         services.AddSingleton<OpenClawNet.Mcp.Abstractions.IMcpServerCatalog, McpServerCatalog>();
 
+        // S5-5: Register encrypted OAuth token store
+        services.AddScoped<OpenClawNet.Tools.GoogleWorkspace.IGoogleOAuthTokenStore, EncryptedSqliteOAuthTokenStore>();
+
         return services;
+    }
+
+    private static string ResolveConnectionString(IServiceProvider sp, string? connectionString)
+    {
+        // IConfiguration is a singleton — safe to resolve from the root provider.
+        // Aspire injects ConnectionStrings:openclawnet-db as an env var; this reads it correctly.
+        var config = sp.GetService<IConfiguration>();
+        return config?.GetConnectionString("openclawnet-db")
+            ?? connectionString
+            ?? "Data Source=openclawnet.db";
+    }
+
+    private static bool IsInMemorySqlite(string connectionString)
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        return string.Equals(builder.DataSource, ":memory:", StringComparison.OrdinalIgnoreCase)
+            || builder.Mode == SqliteOpenMode.Memory;
+    }
+
+    private sealed class SharedInMemorySqliteConnection : IDisposable
+    {
+        public SharedInMemorySqliteConnection(string connectionString)
+        {
+            Connection = new SqliteConnection(connectionString);
+            Connection.Open();
+        }
+
+        public SqliteConnection Connection { get; }
+
+        public void Dispose() => Connection.Dispose();
     }
 }

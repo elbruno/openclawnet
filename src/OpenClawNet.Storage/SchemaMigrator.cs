@@ -205,6 +205,21 @@ public static class SchemaMigrator
             )
             """);
 
+        await CreateTableIfMissingAsync(db, "SecretAccessAudit",
+            """
+            CREATE TABLE SecretAccessAudit (
+                Id TEXT NOT NULL PRIMARY KEY,
+                SecretName TEXT NOT NULL,
+                CallerType TEXT NOT NULL,
+                CallerId TEXT NOT NULL,
+                SessionId TEXT,
+                AccessedAt TEXT NOT NULL,
+                Success INTEGER NOT NULL
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_SecretAccessAudit_SecretName_AccessedAt",
+            "CREATE INDEX IX_SecretAccessAudit_SecretName_AccessedAt ON SecretAccessAudit(SecretName, AccessedAt)");
+
         // JobRunEvents table — append-only timeline of what happened during a JobRun.
         // Survives app restart (unlike OTEL traces). Cascade-deletes with the parent run.
         await CreateTableIfMissingAsync(db, "JobRunEvents",
@@ -383,6 +398,24 @@ public static class SchemaMigrator
             "CREATE INDEX IX_AdapterDeliveryLogs_JobId ON AdapterDeliveryLogs(JobId)");
         await CreateIndexIfMissingAsync(db, "IX_AdapterDeliveryLogs_CreatedAt",
             "CREATE INDEX IX_AdapterDeliveryLogs_CreatedAt ON AdapterDeliveryLogs(CreatedAt)");
+
+        // S5-5: OAuth token storage (encrypted via DataProtection)
+        await CreateTableIfMissingAsync(db, "OAuthTokens",
+            """
+            CREATE TABLE OAuthTokens (
+                Id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                Provider TEXT NOT NULL,
+                UserId TEXT NOT NULL,
+                AccessTokenCiphertext TEXT NOT NULL,
+                RefreshTokenCiphertext TEXT NOT NULL,
+                ExpiresAtUtc TEXT NOT NULL,
+                Scopes TEXT NOT NULL,
+                CreatedAt TEXT NOT NULL,
+                UpdatedAt TEXT NOT NULL
+            )
+            """);
+        await CreateIndexIfMissingAsync(db, "IX_OAuthTokens_Provider_UserId",
+            "CREATE UNIQUE INDEX IX_OAuthTokens_Provider_UserId ON OAuthTokens(Provider, UserId)");
 
         // PR-F reverted by commit c5c12a9: Model column is REQUIRED for per-profile model selection.
         // Tests create profiles with explicit Model values (e.g. "gemma4:e2b"). Do NOT drop this column.

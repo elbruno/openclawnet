@@ -17,11 +17,16 @@ public sealed class SecretsStore : ISecretsStore
 
     private readonly IDbContextFactory<OpenClawDbContext> _dbFactory;
     private readonly IDataProtector _protector;
+    private readonly IReadOnlyList<IVaultCacheInvalidator> _cacheInvalidators;
 
-    public SecretsStore(IDbContextFactory<OpenClawDbContext> dbFactory, IDataProtectionProvider dataProtection)
+    public SecretsStore(
+        IDbContextFactory<OpenClawDbContext> dbFactory,
+        IDataProtectionProvider dataProtection,
+        IEnumerable<IVaultCacheInvalidator>? cacheInvalidators = null)
     {
         _dbFactory = dbFactory;
         _protector = dataProtection.CreateProtector(ProtectorPurpose);
+        _cacheInvalidators = cacheInvalidators?.ToList() ?? [];
     }
 
     public async Task<string?> GetAsync(string name, CancellationToken ct = default)
@@ -72,15 +77,27 @@ public sealed class SecretsStore : ISecretsStore
             existing.UpdatedAt = DateTime.UtcNow;
         }
         await db.SaveChangesAsync(ct);
+        Invalidate(name);
     }
 
     public async Task<bool> DeleteAsync(string name, CancellationToken ct = default)
     {
         await using var db = await _dbFactory.CreateDbContextAsync(ct);
         var row = await db.Secrets.FirstOrDefaultAsync(s => s.Name == name, ct);
-        if (row is null) return false;
+        if (row is null)
+        {
+            Invalidate(name);
+            return false;
+        }
         db.Secrets.Remove(row);
         await db.SaveChangesAsync(ct);
+        Invalidate(name);
         return true;
+    }
+
+    private void Invalidate(string name)
+    {
+        foreach (var invalidator in _cacheInvalidators)
+            invalidator.Invalidate(name);
     }
 }

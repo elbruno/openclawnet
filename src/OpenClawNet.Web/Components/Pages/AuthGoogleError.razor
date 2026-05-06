@@ -1,0 +1,78 @@
+@page "/auth/google/error"
+@using Microsoft.AspNetCore.WebUtilities
+@inject NavigationManager Navigation
+
+<PageTitle>Google Connection Error - OpenClawNet</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="py-8">
+    <MudPaper Elevation="2" Class="pa-8 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.Error" Color="Color.Error" Size="Size.Large" Style="font-size: 4rem;" Class="mb-4" />
+        
+        <MudText Typo="Typo.h4" GutterBottom="true" Class="fw-bold">
+            Connection Failed
+        </MudText>
+        
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+            @GetErrorMessage()
+        </MudText>
+
+        <MudAlert Severity="Severity.Warning" Class="mb-4 text-start">
+            <MudText Typo="Typo.body2">
+                <strong>Common reasons:</strong>
+            </MudText>
+            <MudList T="string" Dense="true">
+                <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                    <MudText Typo="Typo.body2">You clicked "Deny" on Google's consent screen</MudText>
+                </MudListItem>
+                <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                    <MudText Typo="Typo.body2">The authorization link expired (links are valid for 10 minutes)</MudText>
+                </MudListItem>
+                <MudListItem T="string" Icon="@Icons.Material.Filled.ArrowRight">
+                    <MudText Typo="Typo.body2">Network or server error during token exchange</MudText>
+                </MudListItem>
+            </MudList>
+        </MudAlert>
+
+        <MudStack Row="true" Justify="Justify.Center" Spacing="3" Class="mt-5">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/api/auth/google/start?userId=default" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Refresh" Class="me-2" />
+                Try Again
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" Href="/" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Home" Class="me-2" />
+                Back to Home
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private string _errorReason = "unknown";
+
+    protected override void OnInitialized()
+    {
+        var uri = new Uri(Navigation.Uri);
+        var query = QueryHelpers.ParseQuery(uri.Query);
+        
+        if (query.TryGetValue("message", out var message))
+        {
+            _errorReason = message.ToString();
+        }
+        else if (query.TryGetValue("reason", out var reason))
+        {
+            _errorReason = reason.ToString();
+        }
+    }
+
+    private string GetErrorMessage()
+    {
+        return _errorReason switch
+        {
+            "access_denied" => "You denied access to your Google account. To use Google Workspace tools, you'll need to grant the requested permissions.",
+            "invalid_state" => "The authorization request expired or was tampered with. Please try connecting again.",
+            "token_exchange_failed" => "Failed to exchange the authorization code for tokens. This may be a temporary Google API issue.",
+            "Authorization failed" => "The authorization process failed. Please check your network connection and try again.",
+            _ => $"An unexpected error occurred during the connection process. Please try again or contact support if the issue persists."
+        };
+    }
+}
