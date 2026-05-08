@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>OpenClawNet.Cli.Vault</RootNamespace>
+    <AssemblyName>vault-cli</AssemblyName>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="*" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="*" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="*" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection" Version="*" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="*" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
+  </ItemGroup>
+
+</Project>

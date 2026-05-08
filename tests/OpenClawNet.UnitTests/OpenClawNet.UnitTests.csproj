@@ -54,6 +54,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.GitHub\OpenClawNet.Tools.GitHub.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Dashboard\OpenClawNet.Tools.Dashboard.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.MarkItDown\OpenClawNet.Tools.MarkItDown.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Memory\OpenClawNet.Memory.csproj" />
@@ -74,6 +75,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Web\OpenClawNet.Web.csproj">
       <!-- Copy all Web project satellite assemblies to test output -->
       <Private>true</Private>

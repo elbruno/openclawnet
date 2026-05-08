@@ -20,6 +20,7 @@
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
     <ProjectReference Include="..\OpenClawNet.Mcp.Abstractions\OpenClawNet.Mcp.Abstractions.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
   </ItemGroup>
 
   <ItemGroup>

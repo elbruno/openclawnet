@@ -83,6 +83,7 @@ public static class Extensions
                     .AddSource("OpenClawNet.AzureOpenAI")
                     .AddSource("OpenClawNet.Foundry")
                     .AddSource("OpenClawNet.GitHubCopilot")
+                    .AddSource("OpenClawNet.Tools.Dashboard")
                     .AddAspNetCoreInstrumentation(tracing =>
                         // Exclude health check requests from tracing
                         tracing.Filter = context =>

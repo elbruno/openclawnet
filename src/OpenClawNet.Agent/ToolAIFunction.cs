@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.Extensions.AI;
+using OpenClawNet.Agent.ToolApproval;
 using OpenClawNet.Tools.Abstractions;
 
 namespace OpenClawNet.Agent;
@@ -11,10 +12,12 @@ namespace OpenClawNet.Agent;
 internal sealed class ToolAIFunction : AIFunction
 {
     private readonly ITool _tool;
+    private readonly IToolResultSanitizer? _sanitizer;
 
-    public ToolAIFunction(ITool tool)
+    public ToolAIFunction(ITool tool, IToolResultSanitizer? sanitizer = null)
     {
         _tool = tool;
+        _sanitizer = sanitizer;
     }
 
     public override string Name => _tool.Name;
@@ -29,6 +32,7 @@ internal sealed class ToolAIFunction : AIFunction
             arguments.ToDictionary(k => k.Key, v => v.Value));
         var input = new ToolInput { ToolName = _tool.Name, RawArguments = json };
         var result = await _tool.ExecuteAsync(input, cancellationToken);
-        return result.Success ? result.Output : $"Error: {result.Error}";
+        var content = result.Success ? result.Output : $"Error: {result.Error}";
+        return _sanitizer?.Sanitize(content, _tool.Name) ?? content;
     }
 }

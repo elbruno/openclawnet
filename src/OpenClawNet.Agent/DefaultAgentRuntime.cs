@@ -190,7 +190,7 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         // Build ToolAIFunction wrappers for all registered tools so the model knows what's available.
         // Execution is still handled by our IToolExecutor — these wrappers only advertise tools.
         var legacyTools = toolRegistry.GetAllTools()
-            .Select(t => (AITool)new ToolAIFunction(t));
+            .Select(t => (AITool)new ToolAIFunction(t, sanitizer));
 
         // PR-A: union MCP-provided tools with the legacy ITool wrappers. With zero
         // McpServerDefinition rows this is a no-op; PR-B seeds the bundled servers.
@@ -353,7 +353,9 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                         currentMessages.Add(new OpenClawChatMessage
                         {
                             Role = ChatMessageRole.Tool,
-                            Content = result.Success ? result.Output : $"Error: {result.Error}",
+                            Content = _sanitizer is not null
+                                ? _sanitizer.Sanitize(result.Success ? result.Output : $"Error: {result.Error}", toolCall.Name)
+                                : (result.Success ? result.Output : $"Error: {result.Error}"),
                             ToolCallId = toolCall.Id
                         });
                     }
