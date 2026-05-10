@@ -6,15 +6,15 @@ using OpenClawNet.Storage;
 namespace OpenClawNet.UnitTests.Storage;
 
 /// <summary>
-/// PR-F: covers <see cref="SchemaMigrator"/>'s removal of the legacy
-/// <c>AgentProfiles.Model</c> column. Uses a real in-memory SQLite connection
-/// because the migration step issues raw <c>ALTER TABLE … DROP COLUMN</c> SQL,
-/// which the EF InMemory provider cannot execute.
+/// Covers <see cref="SchemaMigrator"/> behavior for <c>AgentProfiles.Model</c>
+/// on a real in-memory SQLite connection. The column is part of the current model;
+/// these tests guard against duplicate-column migration failures and accidental
+/// reactivation of the old destructive drop migration.
 /// </summary>
 public class SchemaMigratorDropAgentProfileModelTests
 {
     [Fact]
-    public async Task Migrate_DropsLegacyModelColumn_WhenPresent()
+    public async Task Migrate_PreservesModelColumn_WhenPresent()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         await connection.OpenAsync();
@@ -24,34 +24,30 @@ public class SchemaMigratorDropAgentProfileModelTests
                 new DbContextOptionsBuilder<OpenClawDbContext>().UseSqlite(connection).Options);
             await db.Database.EnsureCreatedAsync();
 
-            // Arrange — re-introduce the legacy Model column on the freshly created
-            // schema to mimic an upgraded-from-pre-PR-F deployment.
             using (var seed = connection.CreateCommand())
             {
                 seed.CommandText =
                     """
-                    ALTER TABLE AgentProfiles ADD COLUMN Model TEXT;
-                    INSERT INTO AgentProfiles (Name, Model, IsDefault, RequireToolApproval, IsEnabled, CreatedAt, UpdatedAt)
-                    VALUES ('legacy', 'gpt-4o', 0, 0, 1, '2025-01-01T00:00:00', '2025-01-01T00:00:00');
+                    INSERT INTO AgentProfiles (Name, Model, IsDefault, RequireToolApproval, IsEnabled, Kind, CreatedAt, UpdatedAt)
+                    VALUES ('current', 'gpt-4o', 0, 0, 1, 'Standard', '2025-01-01T00:00:00', '2025-01-01T00:00:00');
                     """;
                 await seed.ExecuteNonQueryAsync();
             }
 
-            // Act
             await SchemaMigrator.MigrateAsync(db);
 
-            // Assert — the column is gone and the row survived.
             var hasModel = await ColumnExistsAsync(connection, "AgentProfiles", "Model");
-            hasModel.Should().BeFalse("PR-F drops AgentProfiles.Model");
+            hasModel.Should().BeTrue("AgentProfiles.Model is required for per-profile model selection");
 
             await using var freshDb = new OpenClawDbContext(
                 new DbContextOptionsBuilder<OpenClawDbContext>().UseSqlite(connection).Options);
-            var profile = await freshDb.AgentProfiles.FirstOrDefaultAsync(p => p.Name == "legacy");
-            profile.Should().NotBeNull("dropping a column must not destroy the row");
+            var profile = await freshDb.AgentProfiles.FirstOrDefaultAsync(p => p.Name == "current");
+            profile.Should().NotBeNull();
+            profile!.Model.Should().Be("gpt-4o");
 
             var marker = await freshDb.SchemaVersions
                 .FirstOrDefaultAsync(v => v.Key == SchemaMigrator.AgentProfileDropModelMarker);
-            marker.Should().NotBeNull("the migration must record a SchemaVersions marker");
+            marker.Should().BeNull("the old destructive drop migration must remain disabled");
         }
         finally
         {
@@ -60,7 +56,7 @@ public class SchemaMigratorDropAgentProfileModelTests
     }
 
     [Fact]
-    public async Task Migrate_IsNoOp_WhenColumnAlreadyAbsent()
+    public async Task Migrate_IsNoOp_WhenModelColumnAlreadyPresent()
     {
         var connection = new SqliteConnection("DataSource=:memory:");
         await connection.OpenAsync();
@@ -68,23 +64,20 @@ public class SchemaMigratorDropAgentProfileModelTests
         {
             await using var db = new OpenClawDbContext(
                 new DbContextOptionsBuilder<OpenClawDbContext>().UseSqlite(connection).Options);
-            // Fresh DB built from the EF model — no Model column.
             await db.Database.EnsureCreatedAsync();
 
-            // Act — running twice must not throw and must leave a single marker row.
             await SchemaMigrator.MigrateAsync(db);
             await SchemaMigrator.MigrateAsync(db);
 
-            // Assert
             var hasModel = await ColumnExistsAsync(connection, "AgentProfiles", "Model");
-            hasModel.Should().BeFalse();
+            hasModel.Should().BeTrue();
 
             await using var freshDb = new OpenClawDbContext(
                 new DbContextOptionsBuilder<OpenClawDbContext>().UseSqlite(connection).Options);
             var markers = await freshDb.SchemaVersions
                 .Where(v => v.Key == SchemaMigrator.AgentProfileDropModelMarker)
                 .CountAsync();
-            markers.Should().Be(1, "the marker is keyed; a second migration run must not duplicate it");
+             markers.Should().Be(0, "the disabled drop migration must not write markers");
         }
         finally
         {

@@ -66,6 +66,60 @@ title = "OpenClawNet gitleaks config"
 #   paths = ["tests/**"]  # This silences ALL findings in tests — don't do this
 
 # ============================================================================
+# CUSTOM RULES — Google OAuth Defense In Depth
+# ============================================================================
+# Added per S5 OAuth Security Checklist (docs/security/s5-oauth-checklist.md)
+# These rules detect Google OAuth credentials that should never be committed.
+# DO NOT add allowlists for these patterns — they should always trigger alerts.
+
+[[rules]]
+id = "google-oauth-client-secret"
+description = "Google OAuth Client Secret (GOCSPX-* pattern)"
+regex = '''GOCSPX-[A-Za-z0-9_-]{20,}'''
+keywords = [
+  "client_secret",
+  "GOCSPX"
+]
+tags = [
+  "google",
+  "oauth",
+  "credential"
+]
+entropy = 3.5
+
+[[rules]]
+id = "google-oauth-refresh-token"
+description = "Google OAuth Refresh Token (1// pattern)"
+regex = '''1//0[A-Za-z0-9_-]{100,}'''
+keywords = [
+  "refresh_token",
+  "refresh-token",
+  "1//"
+]
+tags = [
+  "google",
+  "oauth",
+  "token"
+]
+entropy = 4.0
+
+[[rules]]
+id = "google-oauth-access-token"
+description = "Google OAuth Access Token (ya29.* pattern)"
+regex = '''ya29\.[A-Za-z0-9_-]{100,}'''
+keywords = [
+  "access_token",
+  "access-token",
+  "ya29."
+]
+tags = [
+  "google",
+  "oauth",
+  "token"
+]
+entropy = 4.0
+
+# ============================================================================
 # RULE OVERRIDES
 # ============================================================================
 # Only override rules if absolutely necessary. Document the reason.

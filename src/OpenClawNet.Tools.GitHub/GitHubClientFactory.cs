@@ -24,8 +24,8 @@ public sealed class GitHubClientFactory : IGitHubClientFactory
         
         if (_baseAddress is not null)
         {
-            // Custom base address for testing with WireMock or GitHub Enterprise
-            return new GitHubClient(productHeader, _baseAddress);
+            // Treat configured URLs as exact API endpoints for WireMock/GitHub Enterprise tests.
+            return new GitHubClient(new Connection(productHeader, _baseAddress));
         }
         
         // Default GitHub API endpoint

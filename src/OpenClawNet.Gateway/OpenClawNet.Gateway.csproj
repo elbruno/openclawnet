@@ -48,6 +48,8 @@
     <ProjectReference Include="..\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.TextToSpeech\OpenClawNet.Tools.TextToSpeech.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.GitHub\OpenClawNet.Tools.GitHub.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Tools.Dashboard\OpenClawNet.Tools.Dashboard.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
     <ProjectReference Include="..\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />

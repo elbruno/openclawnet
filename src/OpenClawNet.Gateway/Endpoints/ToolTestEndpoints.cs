@@ -57,6 +57,7 @@ public static class ToolTestEndpoints
         IModelProviderDefinitionStore providerStore,
         IEnumerable<IAgentProvider> providers,
         ILoggerFactory loggerFactory,
+        IVaultSecretRedactor vaultRedactor,
         CancellationToken ct)
     {
         var logger = loggerFactory.CreateLogger("TestTool");
@@ -71,8 +72,8 @@ public static class ToolTestEndpoints
 
         return mode switch
         {
-            "direct" => await RunDirectAsync(tool, request, recordStore, logger, ct),
-            "probe" => await RunProbeAsync(tool, request, recordStore, profileStore, providerStore, providers, logger, ct),
+            "direct" => await RunDirectAsync(tool, request, recordStore, logger, vaultRedactor, ct),
+            "probe" => await RunProbeAsync(tool, request, recordStore, profileStore, providerStore, providers, logger, vaultRedactor, ct),
             _ => Results.BadRequest(new { error = $"Unknown mode '{mode}'. Use 'direct' or 'probe'." })
         };
     }
@@ -84,6 +85,7 @@ public static class ToolTestEndpoints
         ToolTestRequest request,
         IToolTestRecordStore recordStore,
         ILogger logger,
+        IVaultSecretRedactor vaultRedactor,
         CancellationToken ct)
     {
         var args = string.IsNullOrWhiteSpace(request.Arguments) ? "{}" : request.Arguments.Trim();
@@ -101,7 +103,7 @@ public static class ToolTestEndpoints
                 false, "Invalid JSON arguments: " + ex.Message, "direct", null, TimeSpan.Zero));
         }
 
-        logger.LogInformation("Direct test of tool '{Tool}' with args: {Args}", tool.Name, args);
+        logger.LogInformation("Direct test of tool '{Tool}' with args: {Args}", tool.Name, vaultRedactor.Redact(args));
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
@@ -113,8 +115,8 @@ public static class ToolTestEndpoints
             sw.Stop();
 
             var summary = result.Success
-                ? $"OK ({sw.ElapsedMilliseconds}ms): {Truncate(result.Output, 200)}"
-                : $"FAIL: {result.Error}";
+                ? $"OK ({sw.ElapsedMilliseconds}ms): {Truncate(vaultRedactor.Redact(result.Output), 200)}"
+                : $"FAIL: {vaultRedactor.Redact(result.Error)}";
 
             await recordStore.SaveAsync(tool.Name, result.Success, summary, "direct", ct);
 
@@ -122,7 +124,7 @@ public static class ToolTestEndpoints
                 result.Success,
                 summary,
                 "direct",
-                result.Output,
+                vaultRedactor.Redact(result.Output),
                 sw.Elapsed));
         }
         catch (OperationCanceledException)
@@ -151,6 +153,7 @@ public static class ToolTestEndpoints
         IModelProviderDefinitionStore providerStore,
         IEnumerable<IAgentProvider> providers,
         ILogger logger,
+        IVaultSecretRedactor vaultRedactor,
         CancellationToken ct)
     {
         if (string.IsNullOrWhiteSpace(request.Prompt))
@@ -267,12 +270,12 @@ public static class ToolTestEndpoints
             sw.Stop();
 
             var summary = result.Success
-                ? $"Probe OK ({sw.ElapsedMilliseconds}ms). Args: {Truncate(args, 80)}"
-                : $"Probe FAIL: {result.Error} (Args: {Truncate(args, 80)})";
+                ? $"Probe OK ({sw.ElapsedMilliseconds}ms). Args: {Truncate(vaultRedactor.Redact(args), 80)}"
+                : $"Probe FAIL: {vaultRedactor.Redact(result.Error)} (Args: {Truncate(vaultRedactor.Redact(args), 80)})";
 
             await recordStore.SaveAsync(tool.Name, result.Success, summary, "probe", ct);
             return Results.Ok(new ToolTestResponse(
-                result.Success, summary, "probe", result.Output, sw.Elapsed));
+                result.Success, summary, "probe", vaultRedactor.Redact(result.Output), sw.Elapsed));
         }
         catch (OperationCanceledException)
         {
