@@ -60,6 +60,13 @@ builder.Services.AddScoped<SkillsClient>(sp =>
     return new SkillsClient(factory.CreateClient("gateway"));
 });
 
+// Secrets Vault typed client for /api/secrets lifecycle operations.
+builder.Services.AddScoped<SecretsVaultClient>(sp =>
+{
+    var factory = sp.GetRequiredService<IHttpClientFactory>();
+    return new SecretsVaultClient(factory.CreateClient("gateway"));
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

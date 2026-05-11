@@ -129,7 +129,7 @@ public class ToolMatrixE2ETests : PlaywrightTestBase
                 Name: $"e2e-markdown-{Guid.NewGuid():N}".ToLowerInvariant(),
                 Provider: providerName,
                 Model: Fixture.AzureOpenAIDeployment!,
-                Instructions: "You are a helpful assistant. Use web_fetch and markdown_convert tools when asked to fetch and convert content.",
+                Instructions: "You are a helpful assistant. For website/blog summarization requests, call markdown_convert first, then summarize from markdown. Avoid web_fetch unless raw HTML/text is explicitly requested.",
                 RequireToolApproval: true));
             await LogStepAsync($"Profile created: {profileName}");
 
@@ -137,21 +137,22 @@ public class ToolMatrixE2ETests : PlaywrightTestBase
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             await LogStepAsync("Chat page loaded — sending Bruno's exact prompt");
 
-            // Bruno's exact prompt that triggered the bug
-            await SendChatMessageAsync("Please fetch https://example.com and convert it to markdown");
-            await LogStepAsync("Prompt sent — waiting for first approval card (web_fetch or markdown_convert)");
+            // Bruno's exact scenario that was failing in chat:
+            // summarize the latest content from a website.
+            await SendChatMessageAsync("Summarize the latest content of the https://elbruno.com website");
+            await LogStepAsync("Prompt sent — waiting for markdown_convert approval card");
 
             // Wait for first approval card
             await WaitForWithTicksAsync(ApprovalCard(), 90_000, "first tool approval card");
             var cardText = await ApprovalCard().InnerTextAsync();
             await LogStepAsync($"✅ First card appeared: {cardText.Replace('\n', ' ').Substring(0, Math.Min(150, cardText.Length))}");
 
-            // Verify it mentions web_fetch OR markdown_convert
+            // This scenario must route through markdown_convert.
             Assert.True(
-                cardText.Contains("web_fetch", StringComparison.OrdinalIgnoreCase) ||
                 cardText.Contains("markdown_convert", StringComparison.OrdinalIgnoreCase) ||
-                cardText.Contains("browser", StringComparison.OrdinalIgnoreCase),
-                $"Expected first card to reference 'web_fetch', 'markdown_convert', or 'browser'. Card text: {cardText}");
+                (cardText.Contains("markdown", StringComparison.OrdinalIgnoreCase) &&
+                 cardText.Contains("elbruno.com", StringComparison.OrdinalIgnoreCase)),
+                $"Expected first card to reference 'markdown_convert'. Card text: {cardText}");
 
             // Approve first tool
             var approveBtn = ApprovalCard().Locator("button:has-text('Approve')");
@@ -186,6 +187,49 @@ public class ToolMatrixE2ETests : PlaywrightTestBase
 
             await LogStepAsync("✅ MarkdownConvert e2e test completed");
         }, "MarkdownConvert_RequiresApproval_EndToEnd");
+    }
+
+    // ---------------------------------------------------------------------
+    // Scenario 1b: markdown_convert with auto-approve profile (no approval card)
+    // ---------------------------------------------------------------------
+    [SkippableFact]
+    public async Task MarkdownConvert_AutoApproveProfile_CompletesWithoutApprovalCard()
+    {
+        Skip.IfNot(Fixture.IsAzureOpenAIAvailable,
+            "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.");
+
+        await WithScreenshotOnFailure(async () =>
+        {
+            var providerName = await CreateAzureProviderAsync($"azure-md-auto-{Guid.NewGuid():N}");
+            await LogStepAsync("🔧 Testing markdown_convert with auto-approve profile");
+
+            var profileName = await CreateProfileAsync(new AgentProfileDraft(
+                Name: $"e2e-markdown-auto-{Guid.NewGuid():N}".ToLowerInvariant(),
+                Provider: providerName,
+                Model: Fixture.AzureOpenAIDeployment!,
+                Instructions: "For website/blog summarization, call markdown_convert first and summarize from markdown.",
+                RequireToolApproval: false));
+
+            await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
+                new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+            await StartNewChatAsync();
+            await SendChatMessageAsync("Summarize the latest content of the https://elbruno.com website");
+            await LogStepAsync("Prompt sent — expecting no approval card");
+
+            await Page.WaitForTimeoutAsync(8_000);
+            var cardCount = await ApprovalCard().CountAsync();
+            Assert.Equal(0, cardCount);
+
+            var assistantMessage = Page.Locator(".assistant-message, [data-role='assistant']").Last;
+            await assistantMessage.WaitForAsync(new LocatorWaitForOptions { Timeout = 90_000 });
+            var text = (await assistantMessage.InnerTextAsync()).Trim();
+            Assert.False(string.IsNullOrWhiteSpace(text), "Assistant response should not be empty.");
+            Assert.DoesNotContain("couldn't retrieve", text, StringComparison.OrdinalIgnoreCase);
+            Assert.DoesNotContain("returned no content", text, StringComparison.OrdinalIgnoreCase);
+
+            await LogStepAsync("✅ Auto-approve markdown scenario completed");
+        }, "MarkdownConvert_AutoApproveProfile_CompletesWithoutApprovalCard");
     }
 
     // ---------------------------------------------------------------------

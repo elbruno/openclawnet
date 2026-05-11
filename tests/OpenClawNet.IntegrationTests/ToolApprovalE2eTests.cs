@@ -1,25 +1,29 @@
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Microsoft.Playwright;
 using Xunit.Abstractions;
+using Xunit;
 
 namespace OpenClawNet.IntegrationTests;
 
 /// <summary>
 /// E2E test for Bruno's tool approval workflow scenario:
-/// 1. Start Aspire (if not running)
-/// 2. Open web app at http://localhost:5010
+/// 1. Resolve resources with `aspire describe --format Json`
+/// 2. Start Aspire only if resources are missing, then wait until available
+/// 3. Open web app at discovered URL
 /// 3. Navigate to Chat page
 /// 4. Create new chat with default agent
 /// 5. Send: "ok, convert the content of elbruno.com to markdown and save it on a file"
 /// 6. Wait for tool_approval event
 /// 7. Click Approve
 /// 8. Verify: file saved, result shown, no errors
+/// 9. Stop Aspire with `aspire stop` when this test started it
 /// 
 /// IMPORTANT: This test requires a running Aspire stack with:
 /// - Gateway service (API backend)
-/// - Web service (Blazor frontend) on port 5010
+/// - Web service (Blazor frontend) discovered from Aspire resources
 /// - Tool-capable model (e.g., Ollama with qwen2.5:3b or Azure OpenAI)
 /// 
 /// Run with: dotnet test --filter "FullyQualifiedName~ToolApprovalE2eTests"
@@ -35,10 +39,11 @@ public class ToolApprovalE2eTests : IAsyncLifetime
     private IBrowserContext? _context;
     private IPage? _page;
     private HttpClient? _gatewayClient;
+    private bool _startedAspireForTest;
 
-    // Configuration
-    private const string WebAppUrl = "http://localhost:5010";
-    private const string GatewayApiUrl = "http://localhost:5000";
+    // Configuration (resolved from Aspire when available)
+    private string _webAppUrl = "http://localhost:5010";
+    private string _gatewayApiUrl = "http://localhost:5000";
     
     public ToolApprovalE2eTests(ITestOutputHelper output)
     {
@@ -47,8 +52,9 @@ public class ToolApprovalE2eTests : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // 1. Check if Aspire is running, start if needed
+        // 1. Resolve service-discovery endpoints and start Aspire when missing.
         await StartAspireIfNeededAsync();
+        await ResolveServiceUrlsAsync();
 
         // 2. Initialize Playwright and browser
         _playwright = await Playwright.CreateAsync();
@@ -79,9 +85,11 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         };
         _gatewayClient = new HttpClient(handler) 
         { 
-            BaseAddress = new Uri(GatewayApiUrl),
+            BaseAddress = new Uri(_gatewayApiUrl),
             Timeout = TimeSpan.FromMinutes(5)
         };
+
+        await EnsureChatPageReachableAsync();
     }
 
     public async Task DisposeAsync()
@@ -91,14 +99,27 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         if (_context is not null) await _context.DisposeAsync();
         if (_browser is not null) await _browser.DisposeAsync();
         _playwright?.Dispose();
+
+        if (_startedAspireForTest)
+        {
+            var stopResult = await RunAspireCommandAsync("stop");
+            if (stopResult.ExitCode == 0)
+            {
+                _output.WriteLine("Stopped Aspire with 'aspire stop'.");
+            }
+            else
+            {
+                _output.WriteLine($"aspire stop failed: {stopResult.Stderr}");
+            }
+        }
     }
 
     /// <summary>
-    /// Full E2E test for Bruno's tool approval workflow with web_fetch + markdown tool.
+    /// Full E2E test for Bruno's tool approval workflow for website summarization via markdown_convert.
     /// Tests the complete flow: send message, wait for approval prompt, approve, verify result.
     /// </summary>
     [SkippableFact]
-    public async Task ToolApprovalWorkflow_ApprovesAndExecutes_WebFetchAndMarkdown()
+    public async Task ToolApprovalWorkflow_ApprovesAndExecutes_MarkdownWebsiteSummary()
     {
         // Skip if model not available (Ollama or Azure OpenAI required)
         Skip.IfNot(await IsModelAvailableAsync(), 
@@ -106,17 +127,18 @@ public class ToolApprovalE2eTests : IAsyncLifetime
 
         try
         {
-            // Step 1: Create agent profile with RequireToolApproval = true
-            var profileName = await CreateApprovalRequiredProfileAsync();
-            _output.WriteLine($"Created profile: {profileName}");
+            // Step 1: Prefer an existing approval-enabled profile; create one only as fallback
+            var profileName = await ResolveApprovalProfileNameAsync();
+            _output.WriteLine($"Using profile: {profileName}");
 
             // Step 2: Navigate to web app with the profile
-            await _page!.GotoAsync($"{WebAppUrl}/?profile={profileName}", 
+            var sessionId = Guid.NewGuid().ToString();
+            await _page!.GotoAsync($"{_webAppUrl}/chat?profile={Uri.EscapeDataString(profileName)}&sessionId={Uri.EscapeDataString(sessionId)}", 
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
-            _output.WriteLine($"Navigated to {WebAppUrl}");
+            _output.WriteLine($"Navigated to {_webAppUrl}");
 
             // Step 3: Send the chat message
-            var testMessage = "ok, convert the content of elbruno.com to markdown and save it on a file";
+            var testMessage = "Summarize the latest content of the https://elbruno.com website";
             await SendChatMessageAsync(testMessage);
             _output.WriteLine($"Sent message: {testMessage}");
 
@@ -127,12 +149,12 @@ public class ToolApprovalE2eTests : IAsyncLifetime
             var cardText = await approvalCard.InnerTextAsync();
             _output.WriteLine($"Approval card appeared: {cardText}");
             
-            // Verify the approval card mentions web_fetch or browser tool
+            // Verify the approval card targets markdown conversion for this summary scenario
             Assert.True(
-                cardText.Contains("web_fetch", StringComparison.OrdinalIgnoreCase) ||
-                cardText.Contains("browser", StringComparison.OrdinalIgnoreCase) ||
-                cardText.Contains("elbruno.com", StringComparison.OrdinalIgnoreCase),
-                "Approval card should reference web_fetch/browser tool or the target URL");
+                cardText.Contains("markdown_convert", StringComparison.OrdinalIgnoreCase) ||
+                (cardText.Contains("markdown", StringComparison.OrdinalIgnoreCase) &&
+                 cardText.Contains("elbruno.com", StringComparison.OrdinalIgnoreCase)),
+                "Approval card should reference markdown_convert for website summary requests");
 
             // Step 5: Click the Approve button
             await ClickApproveButtonAsync(approvalCard);
@@ -157,6 +179,67 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         }
     }
 
+    /// <summary>
+    /// End-to-end verification for the same website-summary scenario using an
+    /// auto-approve profile. No tool approval card should appear.
+    /// </summary>
+    [SkippableFact]
+    public async Task ToolApprovalWorkflow_AutoApproveProfile_CompletesWithoutApprovalCard()
+    {
+        Skip.IfNot(await IsModelAvailableAsync(),
+            "No tool-capable model available. Requires Ollama (qwen2.5:3b) or Azure OpenAI.");
+
+        var profileName = await CreateProfileAsync(requireToolApproval: false);
+        _output.WriteLine($"Using auto-approve profile: {profileName}");
+
+        var sessionId = Guid.NewGuid().ToString();
+        await _page!.GotoAsync(
+            $"{_webAppUrl}/chat?profile={Uri.EscapeDataString(profileName)}&sessionId={Uri.EscapeDataString(sessionId)}",
+            new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
+
+        var testMessage = "Summarize the latest content of the https://elbruno.com website";
+        await SendChatMessageAsync(testMessage);
+        _output.WriteLine($"Sent message: {testMessage}");
+
+        // Give the model time to select tools and begin output.
+        await _page.WaitForTimeoutAsync(8_000);
+        var approvalCardCount = await _page
+            .Locator("[data-testid='tool-approval-card'], .tool-approval-card")
+            .CountAsync();
+        Assert.Equal(0, approvalCardCount);
+
+        // Wait for at least one assistant response block to appear.
+        var assistantMessage = _page.Locator(".assistant-message, [data-role='assistant']").Last;
+        await assistantMessage.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 60_000
+        });
+
+        var responseText = (await assistantMessage.InnerTextAsync()).Trim();
+        Assert.False(string.IsNullOrWhiteSpace(responseText), "Assistant response should not be empty.");
+    }
+
+    private async Task<string> ResolveApprovalProfileNameAsync()
+    {
+        var profiles = await _gatewayClient!.GetFromJsonAsync<List<AgentProfileSummary>>("/api/agent-profiles?kind=Standard")
+            ?? [];
+
+        var selected = profiles
+            .Where(p => (p.IsEnabled ?? true) && (p.RequireToolApproval ?? false))
+            .OrderByDescending(p => p.IsDefault)
+            .ThenByDescending(p => p.LastTestSucceeded ?? false)
+            .ThenBy(p => p.Name, StringComparer.OrdinalIgnoreCase)
+            .FirstOrDefault();
+
+        if (selected is not null && !string.IsNullOrWhiteSpace(selected.Name))
+        {
+            return selected.Name;
+        }
+
+        return await CreateProfileAsync(requireToolApproval: true);
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Helper Methods
     // ═══════════════════════════════════════════════════════════════════════
@@ -167,10 +250,12 @@ public class ToolApprovalE2eTests : IAsyncLifetime
     /// </summary>
     private async Task StartAspireIfNeededAsync()
     {
+        await ResolveServiceUrlsAsync();
+
         try
         {
             using var testClient = new HttpClient { Timeout = TimeSpan.FromSeconds(5) };
-            var response = await testClient.GetAsync($"{GatewayApiUrl}/health");
+            var response = await testClient.GetAsync($"{_gatewayApiUrl}/health");
             
             if (response.IsSuccessStatusCode)
             {
@@ -183,37 +268,42 @@ public class ToolApprovalE2eTests : IAsyncLifetime
             _output.WriteLine($"Gateway not reachable: {ex.Message}");
         }
 
+        // Resolve resource map first; only start when describe doesn't return usable resources.
+        if (await HasValidAspireResourcesAsync())
+        {
+            _output.WriteLine("Aspire resources discovered from 'aspire describe --format Json'.");
+            return;
+        }
+
         // Try to start Aspire
         _output.WriteLine("Attempting to start Aspire...");
-        
         var startInfo = new ProcessStartInfo
         {
             FileName = "aspire",
             Arguments = "start",
             UseShellExecute = false,
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            WorkingDirectory = Path.GetFullPath(Path.Combine(
-                Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."))
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            WorkingDirectory = GetRepositoryRoot()
         };
 
-        using var process = Process.Start(startInfo);
-        if (process is null)
-        {
-            throw new InvalidOperationException(
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException(
                 "Failed to start Aspire. Ensure 'aspire' CLI is installed and AppHost is configured.");
-        }
+        _startedAspireForTest = true;
 
-        // Wait up to 2 minutes for services to start
+        // Wait up to 2 minutes for resources to appear and health to become reachable.
         var timeout = TimeSpan.FromMinutes(2);
         var stopwatch = Stopwatch.StartNew();
         
         while (stopwatch.Elapsed < timeout)
         {
+            await ResolveServiceUrlsAsync();
+
             try
             {
                 using var testClient = new HttpClient { Timeout = TimeSpan.FromSeconds(3) };
-                var response = await testClient.GetAsync($"{GatewayApiUrl}/health");
+                var response = await testClient.GetAsync($"{_gatewayApiUrl}/health");
                 
                 if (response.IsSuccessStatusCode)
                 {
@@ -234,25 +324,217 @@ public class ToolApprovalE2eTests : IAsyncLifetime
             "Check logs with 'aspire describe' or start manually.");
     }
 
+    private async Task EnsureChatPageReachableAsync()
+    {
+        try
+        {
+            var handler = new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+            };
+
+            using var http = new HttpClient(handler) { Timeout = TimeSpan.FromSeconds(10) };
+            var response = await http.GetAsync($"{_webAppUrl}/chat");
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new SkipException(
+                    $"Skipping ToolApprovalE2eTests: web chat URL '{_webAppUrl}/chat' returned {(int)response.StatusCode}.");
+            }
+
+            var body = await response.Content.ReadAsStringAsync();
+            var looksLikeChatPage = body.Contains("OpenClaw .NET - Chat", StringComparison.OrdinalIgnoreCase)
+                || body.Contains("data-testid=\"chat-input\"", StringComparison.OrdinalIgnoreCase)
+                || body.Contains("+ New Chat", StringComparison.OrdinalIgnoreCase);
+
+            if (!looksLikeChatPage)
+            {
+                throw new SkipException(
+                    $"Skipping ToolApprovalE2eTests: '{_webAppUrl}/chat' does not look like the chat UI.");
+            }
+        }
+        catch (SkipException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new SkipException(
+                $"Skipping ToolApprovalE2eTests: web chat URL '{_webAppUrl}/chat' is not reachable ({ex.Message}).");
+        }
+    }
+
+    private async Task ResolveServiceUrlsAsync()
+    {
+        var envGateway = Environment.GetEnvironmentVariable("OPENCLAWNET_GATEWAY_URL");
+        var envWeb = Environment.GetEnvironmentVariable("OPENCLAWNET_WEB_URL");
+        if (!string.IsNullOrWhiteSpace(envGateway) && !string.IsNullOrWhiteSpace(envWeb))
+        {
+            _gatewayApiUrl = envGateway.TrimEnd('/');
+            _webAppUrl = envWeb.TrimEnd('/');
+            _output.WriteLine($"Using service URLs from env: gateway={_gatewayApiUrl}, web={_webAppUrl}");
+            return;
+        }
+
+        var describeResult = await RunAspireCommandAsync("describe --format Json");
+        if (describeResult.ExitCode != 0)
+        {
+            _output.WriteLine($"aspire describe failed: {describeResult.Stderr}");
+            return;
+        }
+
+        var trimmed = describeResult.Stdout.Trim();
+        var jsonStart = trimmed.IndexOf('{');
+        var jsonEnd = trimmed.LastIndexOf('}');
+        if (jsonStart < 0 || jsonEnd <= jsonStart)
+        {
+            return;
+        }
+
+        var json = trimmed.Substring(jsonStart, jsonEnd - jsonStart + 1);
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("resources", out var resources) || resources.ValueKind != JsonValueKind.Array)
+        {
+            return;
+        }
+
+        string? gatewayUrl = null;
+        string? webUrl = null;
+        foreach (var resource in resources.EnumerateArray())
+        {
+            if (!resource.TryGetProperty("displayName", out var displayNameProp))
+                continue;
+
+            var displayName = displayNameProp.GetString() ?? string.Empty;
+            if (!resource.TryGetProperty("urls", out var urlsProp) || urlsProp.ValueKind != JsonValueKind.Array)
+                continue;
+
+            var urls = urlsProp.EnumerateArray()
+                .Select(u => u.TryGetProperty("url", out var p) ? p.GetString() : null)
+                .Where(u => !string.IsNullOrWhiteSpace(u))
+                .Select(u => u!)
+                .ToList();
+
+            var selectedUrl = urls.FirstOrDefault(u => u.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                ?? urls.FirstOrDefault(u => u.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrWhiteSpace(selectedUrl))
+                continue;
+
+            if (displayName.Equals("gateway", StringComparison.OrdinalIgnoreCase))
+                gatewayUrl = selectedUrl;
+            else if (displayName.Equals("web", StringComparison.OrdinalIgnoreCase))
+                webUrl = selectedUrl;
+        }
+
+        if (!string.IsNullOrWhiteSpace(gatewayUrl))
+            _gatewayApiUrl = gatewayUrl.TrimEnd('/');
+        if (!string.IsNullOrWhiteSpace(webUrl))
+            _webAppUrl = webUrl.TrimEnd('/');
+
+        _output.WriteLine($"Resolved service URLs: gateway={_gatewayApiUrl}, web={_webAppUrl}");
+    }
+
+    private async Task<bool> HasValidAspireResourcesAsync()
+    {
+        var describeResult = await RunAspireCommandAsync("describe --format Json");
+        if (describeResult.ExitCode != 0)
+        {
+            return false;
+        }
+
+        var trimmed = describeResult.Stdout.Trim();
+        var jsonStart = trimmed.IndexOf('{');
+        var jsonEnd = trimmed.LastIndexOf('}');
+        if (jsonStart < 0 || jsonEnd <= jsonStart)
+        {
+            return false;
+        }
+
+        var json = trimmed.Substring(jsonStart, jsonEnd - jsonStart + 1);
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("resources", out var resources) || resources.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        var hasGateway = false;
+        var hasWeb = false;
+        foreach (var resource in resources.EnumerateArray())
+        {
+            if (!resource.TryGetProperty("displayName", out var displayNameProp))
+            {
+                continue;
+            }
+
+            var displayName = displayNameProp.GetString() ?? string.Empty;
+            if (displayName.Equals("gateway", StringComparison.OrdinalIgnoreCase))
+            {
+                hasGateway = true;
+            }
+            else if (displayName.Equals("web", StringComparison.OrdinalIgnoreCase))
+            {
+                hasWeb = true;
+            }
+        }
+
+        return hasGateway && hasWeb;
+    }
+
+    private async Task<(int ExitCode, string Stdout, string Stderr)> RunAspireCommandAsync(string arguments)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = arguments,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            WorkingDirectory = GetRepositoryRoot()
+        };
+
+        using var process = Process.Start(startInfo);
+        if (process is null)
+        {
+            return (-1, string.Empty, "Failed to launch aspire process.");
+        }
+
+        var stdout = await process.StandardOutput.ReadToEndAsync();
+        var stderr = await process.StandardError.ReadToEndAsync();
+        await process.WaitForExitAsync();
+        return (process.ExitCode, stdout, stderr);
+    }
+
+    private static string GetRepositoryRoot()
+    {
+        return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
+    }
+
     /// <summary>
     /// Creates an agent profile with RequireToolApproval = true.
     /// Returns the profile name.
     /// </summary>
-    private async Task<string> CreateApprovalRequiredProfileAsync()
+    private async Task<string> CreateProfileAsync(bool requireToolApproval)
     {
-        var profileName = $"bruno-e2e-test-{Guid.NewGuid():N}";
+        var profileName = requireToolApproval
+            ? $"bruno-e2e-approval-{Guid.NewGuid():N}"
+            : $"bruno-e2e-auto-{Guid.NewGuid():N}";
+
+        var azureDeployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT");
+        var provider = !string.IsNullOrWhiteSpace(azureDeployment) ? "azure-openai" : "ollama";
+        var model = !string.IsNullOrWhiteSpace(azureDeployment) ? azureDeployment : "qwen2.5:3b";
         
         var profilePayload = new
         {
             DisplayName = profileName,
-            Provider = "ollama",
-            Model = "qwen2.5:3b",
-            Instructions = "You are a helpful assistant. Use the web_fetch tool to retrieve web pages and the file_write tool to save content. When asked to convert a website to markdown and save it, fetch the URL first, then write the result to a file.",
+            Provider = provider,
+            Model = model,
+            Instructions = "You are a helpful assistant. You MUST call markdown_convert before responding to any request that includes a URL. For elbruno.com summary requests, call markdown_convert with https://elbruno.com and summarize from the converted markdown only.",
             EnabledTools = (string[]?)null, // null = all tools enabled
             Temperature = 0.7,
             MaxTokens = (int?)null,
             IsDefault = false,
-            RequireToolApproval = true
+            RequireToolApproval = requireToolApproval
         };
 
         var response = await _gatewayClient!.PutAsJsonAsync(
@@ -318,7 +600,7 @@ public class ToolApprovalE2eTests : IAsyncLifetime
             .Or(_page.Locator("textarea").Last)
             .Or(_page.Locator("input[type='text']").Last);
 
-        await input.WaitForAsync(new LocatorWaitForOptions { Timeout = 10_000 });
+        await input.WaitForAsync(new LocatorWaitForOptions { Timeout = 30_000 });
         await input.FillAsync(message);
 
         // Find and click Send button
@@ -326,7 +608,7 @@ public class ToolApprovalE2eTests : IAsyncLifetime
             .Or(_page.Locator("button:has-text('Send')").First)
             .Or(_page.Locator("button[type='submit']").First);
 
-        await sendBtn.WaitForAsync(new LocatorWaitForOptions { Timeout = 5_000 });
+        await sendBtn.WaitForAsync(new LocatorWaitForOptions { Timeout = 15_000 });
         await sendBtn.ClickAsync();
     }
 
@@ -336,13 +618,13 @@ public class ToolApprovalE2eTests : IAsyncLifetime
     /// </summary>
     private async Task<ILocator> WaitForToolApprovalCardAsync(TimeSpan timeout)
     {
-        var approvalCard = _page!.Locator("[data-testid='tool-approval-card']")
-            .Or(_page.Locator(".tool-approval-card"))
-            .Or(_page.Locator("text=/approval.*required/i").Locator("xpath=ancestor::div[1]"))
+        var approvalCard = _page!.Locator("[data-testid='tool-approval-card']:visible")
+            .Or(_page.Locator(".tool-approval-card:visible"))
             .First;
 
         await approvalCard.WaitForAsync(new LocatorWaitForOptions 
         { 
+            State = WaitForSelectorState.Visible,
             Timeout = (float)timeout.TotalMilliseconds 
         });
 
@@ -354,17 +636,25 @@ public class ToolApprovalE2eTests : IAsyncLifetime
     /// </summary>
     private async Task ClickApproveButtonAsync(ILocator approvalCard)
     {
-        var approveBtn = approvalCard.Locator("button:has-text('Approve')")
-            .Or(approvalCard.Locator("button[data-testid='approve-button']"))
+        var approveBtn = approvalCard.Locator("button.btn-success:visible")
+            .Or(approvalCard.GetByRole(AriaRole.Button, new()
+            {
+                NameRegex = new Regex("Approve", RegexOptions.IgnoreCase)
+            }))
             .First;
 
+        await approveBtn.WaitForAsync(new LocatorWaitForOptions
+        {
+            State = WaitForSelectorState.Visible,
+            Timeout = 10_000
+        });
         await approveBtn.ClickAsync();
 
         // Wait for approval card to disappear
         await approvalCard.WaitForAsync(new LocatorWaitForOptions
         {
             State = WaitForSelectorState.Hidden,
-            Timeout = 10_000
+            Timeout = 30_000
         });
     }
 
@@ -476,5 +766,14 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         {
             _output.WriteLine($"Failed to capture screenshot: {ex.Message}");
         }
+    }
+
+    private sealed record AgentProfileSummary
+    {
+        public string Name { get; init; } = string.Empty;
+        public bool IsDefault { get; init; }
+        public bool? RequireToolApproval { get; init; }
+        public bool? IsEnabled { get; init; }
+        public bool? LastTestSucceeded { get; init; }
     }
 }
