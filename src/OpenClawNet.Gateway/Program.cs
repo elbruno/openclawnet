@@ -194,7 +194,8 @@ builder.Services.AddSingleton<FileSystemTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<FileSystemTool>());
 builder.Services.AddSingleton<ShellTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<ShellTool>());
-builder.Services.AddHttpClient<WebTool>();
+builder.Services.AddHttpClient<WebTool>(c =>
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; OpenClawNet/1.0; +https://github.com/elbruno/openclawnet)"));
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<WebTool>());
 builder.Services.Configure<WebToolOptions>(builder.Configuration.GetSection("Tools:Web"));
 builder.Services.AddTool<SchedulerTool>();
@@ -203,7 +204,8 @@ builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<BrowserTool>())
 
 // Markdown converter — uses ElBruno.MarkItDotNet to fetch a URL and return clean Markdown.
 builder.Services.AddMarkItDotNet();
-builder.Services.AddHttpClient(nameof(MarkItDownTool));
+builder.Services.AddHttpClient(nameof(MarkItDownTool), c =>
+    c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; OpenClawNet/1.0; +https://github.com/elbruno/openclawnet)"));
 builder.Services.AddSingleton<MarkItDownTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<MarkItDownTool>());
 

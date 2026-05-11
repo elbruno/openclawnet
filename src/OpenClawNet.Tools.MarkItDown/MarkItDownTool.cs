@@ -36,7 +36,7 @@ public sealed class MarkItDownTool : ITool
     public string Name => "markdown_convert";
 
     public string Description =>
-        "Convert a web URL (http/https) into clean Markdown by fetching the page and stripping HTML navigation, scripts, and styles. ONLY use this tool when the user explicitly asks to convert a URL to Markdown, summarize a web page, or download web content as Markdown. Do NOT use this tool for file operations, shell commands, or non-web tasks.";
+        "Convert a web URL (http/https) into clean Markdown by fetching the page and stripping HTML navigation, scripts, and styles. ONLY use this tool when the user explicitly asks to convert a URL to Markdown or download web content as Markdown. For simple website summarization (e.g. 'summarize this website'), use web_fetch instead — it fetches and returns the content, then you summarize. Do NOT use this tool for file operations, shell commands, or non-web tasks.";
 
     public ToolMetadata Metadata => new()
     {
@@ -55,7 +55,7 @@ public sealed class MarkItDownTool : ITool
         """),
         RequiresApproval = true, // Network egress to arbitrary URLs — same risk class as web_fetch
         Category = "web",
-        Tags = ["markdown", "web", "convert", "url", "summarize"]
+        Tags = ["markdown", "web", "convert", "url"]
     };
 
     public async Task<ToolResult> ExecuteAsync(ToolInput input, CancellationToken cancellationToken = default)
