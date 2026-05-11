@@ -23,6 +23,8 @@ using OpenClawNet.Tools.MarkItDown;
 using OpenClawNet.Tools.Calculator;
 using OpenClawNet.Tools.Embeddings;
 using OpenClawNet.Tools.GitHub;
+using OpenClawNet.Tools.Dashboard;
+using OpenClawNet.Tools.GoogleWorkspace;
 using OpenClawNet.Tools.HtmlQuery;
 using OpenClawNet.Tools.ImageEdit;
 using OpenClawNet.Tools.Text2Image;
@@ -229,6 +231,12 @@ builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<TextToSpeechToo
 // GitHub — read-only repo browsing via Octokit. Optional GITHUB_TOKEN secret enables higher rate limits.
 builder.Services.AddGitHubTool();
 
+// Dashboard — publish repository insights to external dashboard API. Requires approval.
+builder.Services.AddDashboardTool(builder.Configuration);
+
+// Google Workspace — Gmail and Calendar integration via Google APIs. S5 tools.
+builder.Services.AddGoogleWorkspaceTools(builder.Configuration);
+
 // Image editing — resize/convert/crop local images via SixLabors.ImageSharp.
 builder.Services.AddSingleton<ImageEditTool>();
 builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<ImageEditTool>());
@@ -377,6 +385,11 @@ using (var scope = app.Services.CreateScope())
     await profileStore.GetDefaultAsync();
 }
 
+if (await SecretsImportCommand.TryRunAsync(args, app.Services))
+    return;
+
+await builder.Configuration.AddResolvedVaultReferencesAsync(app.Services);
+
 // Register tools with the registry
 using (var scope = app.Services.CreateScope())
 {
@@ -426,6 +439,7 @@ app.MapAuditEndpoints();
 app.MapMcpServerEndpoints();
 app.MapMcpServerToolsEndpoints();
 app.MapSecretsEndpoints();
+app.MapGoogleOAuthEndpoints();
 app.MapJobScheduleEndpoints();
 app.MapJobStreamEndpoints();
 app.MapRuntimeSettingsEndpoints();

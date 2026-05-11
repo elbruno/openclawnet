@@ -9,6 +9,9 @@ namespace OpenClawNet.PlaywrightTests;
 /// </summary>
 public abstract class PlaywrightTestBase : IAsyncLifetime
 {
+    private const string VideoOutputDirectoryEnvVar = "OPENCLAW_PLAYWRIGHT_VIDEO_DIR";
+    private const string ScreenshotOutputDirectoryEnvVar = "OPENCLAW_PLAYWRIGHT_SCREENSHOT_DIR";
+
     private readonly AppHostFixture _fixture;
     private IBrowserContext? _context;
     private IPage? _page;
@@ -30,10 +33,30 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
-        _context = await _fixture.Browser.NewContextAsync(new BrowserNewContextOptions
+        var contextOptions = new BrowserNewContextOptions
         {
             IgnoreHTTPSErrors = true
-        });
+        };
+
+        var videoOutputDirectory = Environment.GetEnvironmentVariable(VideoOutputDirectoryEnvVar);
+        if (!string.IsNullOrWhiteSpace(videoOutputDirectory))
+        {
+            videoOutputDirectory = ResolveOutputDirectory(videoOutputDirectory);
+            Directory.CreateDirectory(videoOutputDirectory);
+            contextOptions.RecordVideoDir = videoOutputDirectory;
+            contextOptions.RecordVideoSize = new RecordVideoSize
+            {
+                Width = 1280,
+                Height = 720
+            };
+            contextOptions.ViewportSize = new ViewportSize
+            {
+                Width = 1280,
+                Height = 720
+            };
+        }
+
+        _context = await _fixture.Browser.NewContextAsync(contextOptions);
         _page = await _context.NewPageAsync();
         _page.SetDefaultTimeout(30_000);
     }
@@ -46,7 +69,8 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
 
     /// <summary>
     /// Wraps a test action and captures a screenshot on failure.
-    /// Screenshots are saved to TestResults/screenshots/ with format: {ClassName}_{MethodName}_{timestamp}.png
+    /// Screenshots are saved to TestResults/screenshots/ by default, or to
+    /// OPENCLAW_PLAYWRIGHT_SCREENSHOT_DIR when set for video-production runs.
     /// </summary>
     /// <param name="testAction">The test code to execute</param>
     /// <param name="testMethodName">The name of the calling test method (auto-populated)</param>
@@ -71,7 +95,15 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         {
             var className = GetType().Name;
             var timestamp = DateTime.Now.ToString("yyyyMMdd-HHmmss");
-            var screenshotDir = Path.Combine("TestResults", "screenshots");
+            var screenshotDir = Environment.GetEnvironmentVariable(ScreenshotOutputDirectoryEnvVar);
+            if (string.IsNullOrWhiteSpace(screenshotDir))
+            {
+                screenshotDir = Path.Combine("TestResults", "screenshots");
+            }
+            else
+            {
+                screenshotDir = ResolveOutputDirectory(screenshotDir);
+            }
             var filename = $"{className}_{testMethodName}_{timestamp}.png";
             var fullPath = Path.Combine(screenshotDir, filename);
 
@@ -89,6 +121,33 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         {
             Console.WriteLine($"Failed to capture screenshot: {ex.Message}");
         }
+    }
+
+    private static string ResolveOutputDirectory(string path)
+    {
+        if (Path.IsPathFullyQualified(path))
+        {
+            return path;
+        }
+
+        var repoRoot = FindRepositoryRoot(AppContext.BaseDirectory);
+        return Path.GetFullPath(Path.Combine(repoRoot, path));
+    }
+
+    private static string FindRepositoryRoot(string startDirectory)
+    {
+        var directory = new DirectoryInfo(startDirectory);
+        while (directory is not null)
+        {
+            if (Directory.Exists(Path.Combine(directory.FullName, ".git")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return Directory.GetCurrentDirectory();
     }
 
     /// <summary>

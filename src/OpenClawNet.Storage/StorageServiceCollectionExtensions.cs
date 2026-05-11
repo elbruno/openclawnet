@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,14 +11,17 @@ public static class StorageServiceCollectionExtensions
 {
     public static IServiceCollection AddOpenClawStorage(this IServiceCollection services, string? connectionString = null)
     {
+        services.AddSingleton(sp => new SharedInMemorySqliteConnection(ResolveConnectionString(sp, connectionString)));
+
         services.AddDbContextFactory<OpenClawDbContext>((sp, options) =>
         {
-            // IConfiguration is a singleton — safe to resolve from the root provider.
-            // Aspire injects ConnectionStrings:openclawnet-db as an env var; this reads it correctly.
-            var config = sp.GetService<IConfiguration>();
-            var connStr = config?.GetConnectionString("openclawnet-db")
-                ?? connectionString
-                ?? "Data Source=openclawnet.db";
+            var connStr = ResolveConnectionString(sp, connectionString);
+            if (IsInMemorySqlite(connStr))
+            {
+                options.UseSqlite(sp.GetRequiredService<SharedInMemorySqliteConnection>().Connection);
+                return;
+            }
+
             options.UseSqlite(connStr);
         });
 
@@ -77,13 +81,112 @@ public static class StorageServiceCollectionExtensions
         services.AddSingleton<IUserFolderQuota>(sp =>
             ActivatorUtilities.CreateInstance<UserFolderQuota>(sp));
 
+        services.AddOptions<EnvironmentSecretsStoreOptions>()
+            .Configure<IConfiguration>((opts, cfg) => cfg.GetSection(EnvironmentSecretsStoreOptions.SectionName).Bind(opts));
+
         services.AddScoped<IConversationStore, ConversationStore>();
         services.AddScoped<IAgentProfileStore, AgentProfileStore>();
         services.AddScoped<IModelProviderDefinitionStore, ModelProviderDefinitionStore>();
         services.AddScoped<IToolTestRecordStore, ToolTestRecordStore>();
-        services.AddScoped<ISecretsStore, SecretsStore>();
+        services.AddScoped<SecretsStore>();
+        services.AddScoped<EnvironmentSecretsStore>();
+        services.AddScoped<ISecretsStore>(ResolveSecretsStore);
+        services.AddScoped<SecretAccessAuditor>();
+        services.AddScoped<ISecretAccessAuditor>(sp => sp.GetRequiredService<SecretAccessAuditor>());
+        services.AddScoped<IVault, VaultService>();
+        services.AddSingleton<IVaultSecretRedactor, VaultSecretRedactor>();
+        services.AddSingleton<IVaultErrorShield, VaultErrorShield>();
+        services.AddSingleton<VaultConfigurationResolver>();
+        services.AddSingleton<IVaultCacheInvalidator>(sp => sp.GetRequiredService<VaultConfigurationResolver>());
         services.AddSingleton<OpenClawNet.Mcp.Abstractions.IMcpServerCatalog, McpServerCatalog>();
 
+        // S5-5: Register encrypted OAuth token store
+        services.AddSingleton<OpenClawNet.Tools.GoogleWorkspace.IGoogleOAuthTokenStore, EncryptedSqliteOAuthTokenStore>();
+
         return services;
+    }
+
+    private static ISecretsStore ResolveSecretsStore(IServiceProvider sp)
+    {
+        var configuration = sp.GetService<IConfiguration>();
+        var backends = configuration?.GetSection("Vault:Backends").Get<string[]>();
+        if (backends is null || backends.Length == 0)
+            return sp.GetRequiredService<SecretsStore>();
+
+        var stores = new List<ISecretsStore>();
+        foreach (var backend in backends)
+        {
+            if (string.IsNullOrWhiteSpace(backend))
+                continue;
+
+            switch (backend.Trim().ToLowerInvariant())
+            {
+                case "sqlite":
+                    stores.Add(sp.GetRequiredService<SecretsStore>());
+                    break;
+                case "environment":
+                    stores.Add(sp.GetRequiredService<EnvironmentSecretsStore>());
+                    break;
+                case "azurekeyvault":
+                    stores.Add(ResolveOptionalStore(
+                        sp,
+                        "OpenClawNet.Storage.Azure.AzureKeyVaultSecretsStore, OpenClawNet.Storage.Azure",
+                        backend));
+                    break;
+                default:
+                    throw new InvalidOperationException($"Unknown vault backend '{backend}'.");
+            }
+        }
+
+        if (stores.Count == 0)
+            return sp.GetRequiredService<SecretsStore>();
+
+        return stores.Count == 1
+            ? stores[0]
+            : new ChainedSecretsStore(stores);
+    }
+
+    private static ISecretsStore ResolveOptionalStore(IServiceProvider sp, string typeName, string backend)
+    {
+        var type = Type.GetType(typeName, throwOnError: false);
+        if (type is null)
+            throw new InvalidOperationException(
+                $"Vault backend '{backend}' requires '{typeName}' which was not found.");
+
+        if (sp.GetService(type) is ISecretsStore store)
+            return store;
+
+        throw new InvalidOperationException(
+            $"Vault backend '{backend}' is not registered. Call the corresponding Add*SecretsStore extension.");
+    }
+
+    private static string ResolveConnectionString(IServiceProvider sp, string? connectionString)
+    {
+        // IConfiguration is a singleton — safe to resolve from the root provider.
+        // Aspire injects ConnectionStrings:openclawnet-db as an env var; this reads it correctly.
+        var config = sp.GetService<IConfiguration>();
+        return config?.GetConnectionString("openclawnet-db")
+            ?? connectionString
+            ?? "Data Source=openclawnet.db";
+    }
+
+    private static bool IsInMemorySqlite(string connectionString)
+    {
+        var builder = new SqliteConnectionStringBuilder(connectionString);
+        return string.Equals(builder.DataSource, ":memory:", StringComparison.OrdinalIgnoreCase)
+            || builder.Mode == SqliteOpenMode.Memory;
+    }
+
+    private sealed class SharedInMemorySqliteConnection : IDisposable
+    {
+        public SharedInMemorySqliteConnection(string connectionString)
+        {
+            Connection = new SqliteConnection(connectionString);
+            Connection.Open();
+        }
+
+        public SqliteConnection Connection { get; }
+
+        public void Dispose() => Connection.Dispose();
     }
 }

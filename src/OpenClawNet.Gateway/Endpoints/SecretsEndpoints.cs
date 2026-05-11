@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OpenClawNet.Storage;
 
 namespace OpenClawNet.Gateway.Endpoints;
@@ -31,7 +32,63 @@ public static class SecretsEndpoints
         group.MapDelete("/{name}", async (string name, ISecretsStore store, CancellationToken ct) =>
             await store.DeleteAsync(name, ct) ? Results.NoContent() : Results.NotFound())
             .WithName("DeleteSecret");
+
+        group.MapGet("/{name}/versions", async (string name, ISecretsStore store, CancellationToken ct) =>
+            Results.Ok(await store.ListVersionsAsync(name, ct)))
+            .WithName("ListSecretVersions")
+            .WithDescription("Lists version numbers for a secret (metadata only, no values).");
+
+        group.MapPost("/{name}/rotate", async (string name, [FromBody] SecretRotateRequest req, ISecretsStore store, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(name)) return Results.BadRequest(new { error = "name is required" });
+            if (req?.NewValue is null) return Results.BadRequest(new { error = "newValue is required" });
+            try
+            {
+                await store.RotateAsync(name, req.NewValue, ct);
+                return Results.NoContent();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("RotateSecret")
+        .WithDescription("Creates a new secret version and makes it current atomically.");
+
+        group.MapPost("/{name}/recover", async (string name, ISecretsStore store, CancellationToken ct) =>
+            await store.RecoverAsync(name, ct) ? Results.NoContent() : Results.NotFound())
+            .WithName("RecoverSecret")
+            .WithDescription("Recovers a soft-deleted secret.");
+
+        group.MapDelete("/{name}/purge", async (
+            string name,
+            [FromHeader(Name = "X-Confirm-Purge")] string? confirmation,
+            ISecretsStore store,
+            CancellationToken ct) =>
+        {
+            if (!string.Equals(confirmation, name, StringComparison.Ordinal))
+            {
+                return Results.BadRequest(new
+                {
+                    error = $"Purge requires X-Confirm-Purge header with the exact secret name: {name}"
+                });
+            }
+
+            return await store.PurgeAsync(name, ct) ? Results.NoContent() : Results.NotFound();
+        })
+            .WithName("PurgeSecret")
+            .WithDescription("Permanently removes a secret and all versions after X-Confirm-Purge confirms the exact secret name.");
+
+        group.MapPost("/audit/verify", async (IDbContextFactory<OpenClawDbContext> dbFactory, CancellationToken ct) =>
+        {
+            await using var db = await dbFactory.CreateDbContextAsync(ct);
+            var isValid = await SecretAccessAuditHashChain.VerifyAsync(db, ct);
+            return Results.Ok(new { valid = isValid });
+        })
+        .WithName("VerifyAuditChain")
+        .WithDescription("Verifies the audit hash-chain for tamper detection.");
     }
 
     public sealed record SecretWriteRequest(string Value, string? Description);
+    public sealed record SecretRotateRequest(string NewValue);
 }

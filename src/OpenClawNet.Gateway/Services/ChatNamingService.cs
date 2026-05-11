@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
@@ -12,6 +11,10 @@ namespace OpenClawNet.Gateway.Services;
 /// </summary>
 public sealed class ChatNamingService
 {
+    private const string NewChatTitle = "New Chat";
+    private const string GenericFallbackTitle = "Mixed Topic Discussion";
+    private const string MathFallbackTitle = "Math Problem Solving";
+
     private readonly IModelClient _modelClient;
     private readonly ILogger<ChatNamingService> _logger;
 
@@ -41,7 +44,7 @@ public sealed class ChatNamingService
         CancellationToken ct = default)
     {
         if (!recentMessages.Any())
-            return "New Chat";
+            return NewChatTitle;
 
         // Take the last 5-10 messages, filtering to user/assistant content
         var contextMessages = recentMessages
@@ -50,18 +53,20 @@ public sealed class ChatNamingService
             .ToList();
 
         if (!contextMessages.Any())
-            return "New Chat";
+            return NewChatTitle;
 
         // Build context string
         var contextLines = new List<string>();
         foreach (var msg in contextMessages)
         {
             var prefix = msg.Role == "user" ? "User:" : "Assistant:";
-            var content = msg.Content.Length > 100 ? msg.Content[..100] + "..." : msg.Content;
+            var content = msg.Content ?? string.Empty;
+            content = content.Length > 100 ? content[..100] + "..." : content;
             contextLines.Add($"{prefix} {content}");
         }
 
         var contextString = string.Join("\n", contextLines);
+        var fallbackTitle = BuildFallbackTitle(contextMessages);
 
         try
         {
@@ -76,17 +81,16 @@ public sealed class ChatNamingService
             };
 
             var response = await _modelClient.CompleteAsync(request, ct);
-            var generatedName = response.Content.Trim();
-
-            // Sanitize the response
-            generatedName = generatedName.Trim('"', '\'', '*', '#', '`');
+            var generatedName = NormalizeTitle(response.Content);
 
             if (string.IsNullOrWhiteSpace(generatedName))
-                return "New Chat";
+                return fallbackTitle;
 
-            // Truncate if it exceeds 256 chars (reasonable limit)
-            if (generatedName.Length > 256)
-                generatedName = generatedName[..256];
+            if (generatedName.Equals(NewChatTitle, StringComparison.OrdinalIgnoreCase))
+                return fallbackTitle;
+
+            if (IsMathConversation(contextMessages) && !ContainsMathSignal(generatedName))
+                return fallbackTitle;
 
             _logger.LogInformation("Generated chat name: {GeneratedName}", generatedName);
             return generatedName;
@@ -94,7 +98,70 @@ public sealed class ChatNamingService
         catch (Exception ex)
         {
             _logger.LogWarning(ex, "Failed to generate chat name using LLM, using fallback");
-            return "New Chat";
+            return fallbackTitle;
         }
+    }
+
+    private static string NormalizeTitle(string? title)
+    {
+        var normalized = title?.Trim().Trim('"', '\'', '*', '#', '`');
+        if (string.IsNullOrWhiteSpace(normalized))
+        {
+            return string.Empty;
+        }
+
+        return normalized.Length > 256 ? normalized[..256] : normalized;
+    }
+
+    private static string BuildFallbackTitle(IEnumerable<ChatMessageEntity> messages)
+    {
+        return IsMathConversation(messages)
+            ? MathFallbackTitle
+            : GenericFallbackTitle;
+    }
+
+    private static bool IsMathConversation(IEnumerable<ChatMessageEntity> messages)
+    {
+        var text = string.Join(" ", messages.Select(m => m.Content ?? string.Empty)).ToLowerInvariant();
+        return ContainsAny(text, [
+            "math",
+            "arithmetic",
+            "algebra",
+            "equation",
+            "equations",
+            "calculus",
+            "derivative",
+            "integral",
+            "probability",
+            "statistics",
+            "matrix",
+            "matrices",
+            "linear algebra",
+            "number",
+            "numbers",
+            "solve ",
+            "solve."
+        ]);
+    }
+
+    private static bool ContainsMathSignal(string title)
+    {
+        return ContainsAny(title.ToLowerInvariant(), [
+            "math",
+            "arithmetic",
+            "algebra",
+            "calculus",
+            "probability",
+            "statistics",
+            "matrix",
+            "linear algebra",
+            "equation",
+            "number"
+        ]);
+    }
+
+    private static bool ContainsAny(string text, IEnumerable<string> needles)
+    {
+        return needles.Any(text.Contains);
     }
 }
