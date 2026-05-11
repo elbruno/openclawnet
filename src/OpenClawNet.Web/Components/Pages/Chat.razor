@@ -29,7 +29,10 @@
             @foreach (var s in _sessions)
             {
                 <div class="session-item rounded px-2 py-1 mb-1 @(s.Id == _currentSession?.Id ? "bg-primary text-white" : "bg-light")"
-                     style="cursor:pointer" @onclick="() => SwitchSession(s)">
+                     style="cursor:pointer"
+                     @onclick="() => SwitchSession(s)"
+                     data-testid="session-row"
+                     data-session-id="@s.Id">
                     <div class="small fw-semibold text-truncate" title="@s.Title">@s.Title</div>
                     <div class="small opacity-75">@s.UpdatedAt.ToLocalTime().ToString("MMM d, HH:mm")</div>
                 </div>
@@ -53,7 +56,7 @@
                 }
                 else
                 {
-                    <span class="fw-semibold">@_currentSession.Title</span>
+                    <span class="fw-semibold" data-testid="current-session-title">@_currentSession.Title</span>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="StartRename" title="Rename session">✏️</button>
                     <button class="btn btn-sm btn-outline-secondary py-0"
                             @onclick="AutoNameSessionAsync"

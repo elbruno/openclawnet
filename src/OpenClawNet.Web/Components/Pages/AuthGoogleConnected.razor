@@ -1,0 +1,51 @@
+@page "/auth/google/connected"
+@inject NavigationManager Navigation
+
+<PageTitle>Google Account Connected - OpenClawNet</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.Small" Class="py-8">
+    <MudPaper Elevation="2" Class="pa-8 text-center">
+        <MudIcon Icon="@Icons.Material.Filled.CheckCircle" Color="Color.Success" Size="Size.Large" Style="font-size: 4rem;" Class="mb-4" />
+        
+        <MudText Typo="Typo.h4" GutterBottom="true" Class="fw-bold">
+            Google Account Connected
+        </MudText>
+        
+        <MudText Typo="Typo.body1" Color="Color.Secondary" Class="mb-4">
+            Your Google account is now connected to OpenClawNet. You can now use Gmail and Calendar tools in your chat sessions.
+        </MudText>
+
+        <MudDivider Class="my-4" />
+
+        <MudText Typo="Typo.subtitle2" GutterBottom="true" Class="mb-2">
+            📧 Connected Scopes:
+        </MudText>
+        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.Email" Class="ma-1">
+            Gmail (read-only)
+        </MudChip>
+        <MudChip T="string" Size="Size.Small" Color="Color.Info" Icon="@Icons.Material.Filled.CalendarMonth" Class="ma-1">
+            Calendar (events)
+        </MudChip>
+
+        <MudDivider Class="my-4" />
+
+        <MudStack Row="true" Justify="Justify.Center" Spacing="3" Class="mt-5">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Href="/chat" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Chat" Class="me-2" />
+                Start Chatting
+            </MudButton>
+            <MudButton Variant="Variant.Outlined" Color="Color.Default" OnClick="CloseTab" Size="Size.Large">
+                <MudIcon Icon="@Icons.Material.Filled.Close" Class="me-2" />
+                Close This Tab
+            </MudButton>
+        </MudStack>
+    </MudPaper>
+</MudContainer>
+
+@code {
+    private void CloseTab()
+    {
+        // Try to close the tab/window (may be blocked by browser security)
+        Navigation.NavigateTo("/", forceLoad: false);
+    }
+}

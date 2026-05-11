@@ -58,8 +58,8 @@ else
     {
         <div class="d-flex align-items-center gap-2 mb-2">
             <span class="text-muted small">@_selected.Count selected</span>
-            <button class="btn btn-danger btn-sm" @onclick="DeleteSelected" disabled="@_bulkDeleting">
-                @if (_bulkDeleting)
+            <button class="btn btn-danger btn-sm" @onclick="ShowBulkDeleteConfirmation" disabled="@_deleteBusy" data-testid="sessions-delete-selected">
+                @if (_deleteBusy)
                 {
                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
                     <span>Deleting…</span>
@@ -103,7 +103,8 @@ else
                 <CellTemplate>
                     <input class="form-check-input" type="checkbox"
                            checked="@_selected.Contains(context.Item.Id)"
-                           @onchange="e => ToggleItem(context.Item.Id, e)" />
+                            @onchange="e => ToggleItem(context.Item.Id, e)"
+                            data-testid="session-select-@context.Item.Id" />
                 </CellTemplate>
             </TemplateColumn>
             <PropertyColumn Property="x => x.Title" Title="Title">
@@ -137,7 +138,10 @@ else
                     @if (_renamingId != s.Id)
                     {
                         <button class="btn btn-sm btn-outline-secondary me-1" @onclick="() => StartRename(s)" title="Rename">✏️</button>
-                        <button class="btn btn-sm btn-outline-danger" @onclick="() => DeleteSession(s.Id)" title="Delete">🗑</button>
+                        <button class="btn btn-sm btn-outline-danger"
+                                @onclick="() => ShowSingleDeleteConfirmation(s.Id)"
+                                title="Delete"
+                                data-testid="session-delete-@s.Id">🗑</button>
                     }
                 </CellTemplate>
             </TemplateColumn>
@@ -146,6 +150,45 @@ else
             <MudDataGridPager T="SessionDto" PageSizeOptions="new[] { 10, 25, 50, 100 }" />
         </PagerContent>
     </MudDataGrid>
+
+    @if (_showDeleteConfirmation)
+    {
+        <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="sessionsDeleteTitle" data-testid="session-delete-dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content border-danger">
+                    <div class="modal-header bg-danger text-white">
+                        <h5 class="modal-title" id="sessionsDeleteTitle" data-testid="session-delete-title">
+                            <span class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></span>
+                            Delete Session@( _pendingDeleteIds.Count == 1 ? string.Empty : "s")
+                        </h5>
+                        <button type="button" class="btn-close btn-close-white" aria-label="Close" @onclick="CancelDeleteConfirmation" disabled="@_deleteBusy"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if (_pendingDeleteIds.Count == 1)
+                        {
+                            var session = _sessions.FirstOrDefault(s => s.Id == _pendingDeleteIds[0]);
+                            <p class="mb-0">Are you sure you want to delete <strong>'@(session?.Title ?? "this session")'</strong>? This cannot be undone.</p>
+                        }
+                        else
+                        {
+                            <p class="mb-0">Are you sure you want to delete <strong>@_pendingDeleteIds.Count sessions</strong>? This cannot be undone.</p>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" @onclick="CancelDeleteConfirmation" disabled="@_deleteBusy" data-testid="session-delete-cancel">Cancel</button>
+                        <button type="button" class="btn btn-danger" @onclick="ConfirmDeleteConfirmation" disabled="@_deleteBusy" data-testid="session-delete-confirm">
+                            @if (_deleteBusy)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Delete
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-backdrop fade show"></div>
+    }
 }
 
 @code {
@@ -160,7 +203,9 @@ else
     private string _renameTitle = string.Empty;
 
     private readonly HashSet<Guid> _selected = [];
-    private bool _bulkDeleting;
+    private bool _deleteBusy;
+    private bool _showDeleteConfirmation;
+    private List<Guid> _pendingDeleteIds = [];
 
     private string _searchText = string.Empty;
     private string _dateFilter = "all";
@@ -236,6 +281,26 @@ else
 
     private void ClearSelection() => _selected.Clear();
 
+    private void ShowSingleDeleteConfirmation(Guid id)
+    {
+        _pendingDeleteIds = [id];
+        _showDeleteConfirmation = true;
+    }
+
+    private void ShowBulkDeleteConfirmation()
+    {
+        if (_selected.Count == 0) return;
+        _pendingDeleteIds = _selected.ToList();
+        _showDeleteConfirmation = true;
+    }
+
+    private void CancelDeleteConfirmation()
+    {
+        if (_deleteBusy) return;
+        _showDeleteConfirmation = false;
+        _pendingDeleteIds = [];
+    }
+
     // ── Filters ──
 
     private async Task OnSearchChanged(ChangeEventArgs e)
@@ -289,30 +354,41 @@ else
 
     // ── Bulk delete ──
 
-    private async Task DeleteSelected()
+    private async Task ConfirmDeleteConfirmation()
     {
-        if (_selected.Count == 0) return;
-        _bulkDeleting = true;
+        if (_pendingDeleteIds.Count == 0) return;
+        _deleteBusy = true;
         try
         {
             var client = HttpClientFactory.CreateClient("gateway");
-            var ids = _selected.ToList();
-            var response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, "api/sessions")
+            var ids = _pendingDeleteIds.ToList();
+            HttpResponseMessage response;
+            if (ids.Count == 1)
             {
-                Content = JsonContent.Create(new { ids })
-            });
+                response = await client.DeleteAsync($"api/sessions/{ids[0]}");
+            }
+            else
+            {
+                response = await client.SendAsync(new HttpRequestMessage(HttpMethod.Delete, "api/sessions")
+                {
+                    Content = JsonContent.Create(new { ids })
+                });
+            }
+
             if (response.IsSuccessStatusCode)
             {
                 _sessions.RemoveAll(s => ids.Contains(s.Id));
-                _selected.Clear();
+                _selected.RemoveWhere(id => ids.Contains(id));
                 ApplyFilters();
                 if (_grid is not null) await _grid.ReloadServerData();
+                _showDeleteConfirmation = false;
+                _pendingDeleteIds = [];
             }
         }
         catch { /* ignore */ }
         finally
         {
-            _bulkDeleting = false;
+            _deleteBusy = false;
         }
     }
 
@@ -351,20 +427,6 @@ else
         }
         catch { /* ignore */ }
         CancelRename();
-    }
-
-    private async Task DeleteSession(Guid id)
-    {
-        try
-        {
-            var client = HttpClientFactory.CreateClient("gateway");
-            await client.DeleteAsync($"api/sessions/{id}");
-            _sessions.RemoveAll(s => s.Id == id);
-            _selected.Remove(id);
-            ApplyFilters();
-            if (_grid is not null) await _grid.ReloadServerData();
-        }
-        catch { /* ignore */ }
     }
 
     private sealed record SessionDto(Guid Id, string Title, DateTime CreatedAt, DateTime UpdatedAt);

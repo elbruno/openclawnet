@@ -19,5 +19,13 @@ public class SecretEntity
     /// <summary>Optional human-readable description (e.g. "GitHub PAT for the github tool").</summary>
     public string? Description { get; set; }
 
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    public DateTime? DeletedAt { get; set; }
+
+    public DateTime? PurgeAfter { get; set; }
+
+    public ICollection<SecretVersionEntity> Versions { get; set; } = [];
 }

@@ -43,6 +43,10 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Core\OpenClawNet.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Web\OpenClawNet.Mcp.Web.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Dashboard\OpenClawNet.Tools.Dashboard.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Storage.Azure\OpenClawNet.Storage.Azure.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
   </ItemGroup>
 
 </Project>

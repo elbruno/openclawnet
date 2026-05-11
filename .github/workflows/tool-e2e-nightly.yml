@@ -8,9 +8,9 @@ name: Tool E2E Nightly
 # Manual: Actions → Tool E2E Nightly → Run workflow
 
 on:
-  schedule:
-    # 07:00 UTC = 03:00 EDT (America/New_York observes DST Mar-Nov)
-    - cron: '0 7 * * *'
+  # schedule:
+  #   # 07:00 UTC = 03:00 EDT (America/New_York observes DST Mar-Nov)
+  #   - cron: '0 7 * * *'
   
   workflow_dispatch:
     inputs:

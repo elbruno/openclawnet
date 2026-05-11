@@ -18,7 +18,7 @@ This guide covers the core tools you will use most often:
 - **`html_query`** — fetch a URL and run a CSS selector against the parsed HTML (powered by [AngleSharp](https://github.com/AngleSharp/AngleSharp))
 - **`schedule`** — create cron and one-shot jobs
 
-See the full list of credits in [ACKNOWLEDGMENTS.md](../../ACKNOWLEDGMENTS.md).
+See the full list of credits in [ACKNOWLEDGMENTS.md](../ACKNOWLEDGMENTS.md).
 
 > **Prerequisite:** A running OpenClaw .NET instance (see **[01-local-installation.md](./01-local-installation.md)**).
 
