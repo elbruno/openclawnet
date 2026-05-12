@@ -48,3 +48,10 @@ public sealed record SkillsChangesDto(
 
 /// <summary>4xx body shape for skills endpoints. Mirrors the W-4 problem pattern.</summary>
 public sealed record SkillsProblem(string Reason, string? Detail = null);
+
+/// <summary>Result of bulk delete operation with partial failure support.</summary>
+public sealed record BulkDeleteResult(
+    int SuccessCount,
+    int FailureCount,
+    Dictionary<string, string> Failures
+);

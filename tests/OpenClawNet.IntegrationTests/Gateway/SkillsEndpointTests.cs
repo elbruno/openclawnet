@@ -366,6 +366,80 @@ public sealed class SkillsEndpointTests : IClassFixture<SkillsEndpointTests.Fixt
     }
 
     // ====================================================================
+    // F1. POST /api/skills/bulk-delete
+    // ====================================================================
+
+    [Fact]
+    public async Task BulkDelete_AllInstalled_ReturnsSuccess()
+    {
+        await SeedSkill("installed", "skill-one");
+        await SeedSkill("installed", "skill-two");
+        await SeedSkill("installed", "skill-three");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-one", "skill-two", "skill-three" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(3);
+        result.GetProperty("failureCount").GetInt32().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task BulkDelete_PartialSuccess_ReturnsPartialResult()
+    {
+        await SeedSkill("installed", "skill-ok");
+        await SeedSkill("system", "skill-sys");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-ok", "skill-sys", "skill-notfound" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(1);
+        result.GetProperty("failureCount").GetInt32().Should().Be(2);
+        var failures = result.GetProperty("failures");
+        failures.GetProperty("skill-sys").GetString().Should().Contain("read-only");
+        failures.GetProperty("skill-notfound").GetString().Should().Contain("not found");
+    }
+
+    [Fact]
+    public async Task BulkDelete_AllFailed_ReturnsBadRequest()
+    {
+        await SeedSkill("system", "skill-sys");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-sys", "skill-notfound" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(0);
+        result.GetProperty("failureCount").GetInt32().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task BulkDelete_EmptyArray_ReturnsBadRequest()
+    {
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = Array.Empty<string>()
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+
+    // ====================================================================
     // G. GET /api/skills/changes-since/{snapshotId}
     // ====================================================================
 

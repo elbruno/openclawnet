@@ -418,13 +418,27 @@ OpenClaw .NET uses the Microsoft Agent Framework. To add a tool:
 
 The new tool appears in the **Settings → Tools** UI automatically. See `src/OpenClawNet.Tools.Scheduler/SchedulerTool.cs` for a reference implementation.
 
+
 ---
 
-## Tool Log
+## Monitoring Tool Execution
 
-Every tool invocation is recorded. Open the **Tool Log** page from the navigation to inspect a chronological timeline of recent calls, including arguments and results.
+Tool invocations are logged to the standard application logs. You can monitor tool calls in:
 
-![Tool Log page](images/20-tools/06-tool-log.png)
+- **Application logs** — View via `dotnet run` console output or configured logging sinks
+- **ILogger output** — Each tool execution logs start, completion, and duration at Information level
+
+For detailed debugging of tool behavior, enable verbose logging in your `appsettings.json`:
+
+```json
+{
+  "Logging": {
+    "LogLevel": {
+      "OpenClawNet.Tools": "Debug"
+    }
+  }
+}
+```
 
 ---
 

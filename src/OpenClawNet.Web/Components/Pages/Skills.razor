@@ -6,6 +6,7 @@
 @inject SkillsClient SkillsClient
 @inject JobsClient JobsClient
 @inject IJSRuntime JS
+@inject ILogger<Skills> Logger
 
 <PageTitle>OpenClaw .NET - Skills</PageTitle>
 
@@ -20,6 +21,15 @@
         </p>
     </div>
     <div class="d-flex gap-2">
+        @if (_selectedSkills.Count > 0)
+        {
+            <button class="btn btn-danger" type="button"
+                    data-testid="skills-bulk-delete-button"
+                    @onclick="BulkDeleteAsync"
+                    disabled="@_loading">
+                <span class="bi bi-trash me-1" aria-hidden="true"></span>Delete selected (@_selectedSkills.Count)
+            </button>
+        }
         <button class="btn btn-outline-secondary" type="button"
                 data-testid="skills-import-button"
                 @onclick="ShowImport" disabled="@_loading">
@@ -113,6 +123,17 @@ else
         <table class="table table-hover align-middle">
             <thead>
                 <tr>
+                    <th scope="col" style="width: 1%; white-space: nowrap;">
+                        @if (_activeTab == "installed" && _filtered.Count > 0)
+                        {
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox"
+                                       data-testid="skills-select-all"
+                                       checked="@_selectAll"
+                                       @onchange="OnSelectAllChanged" />
+                            </div>
+                        }
+                    </th>
                     <th scope="col">Name</th>
                     <th scope="col">Description</th>
                     <th scope="col">Layer</th>
@@ -128,6 +149,8 @@ else
                     <SkillCard Skill="skill"
                                AgentNames="_agentNames"
                                SelectedAgent="@_selectedAgent"
+                               IsSelected="@_selectedSkills.Contains(skill.Name)"
+                               OnSelectionChanged="OnSkillSelectionChanged"
                                OnView="OpenDrawer"
                                OnDelete="DeleteAsync"
                                OnEnabledChanged="OnEnabledChangedAsync" />
@@ -202,6 +225,10 @@ else
     private string? _drawerSkillName;
     private bool _showImport;
     private (string Reason, string? Detail, int StatusCode)? _importError;
+
+    // Selection state
+    private HashSet<string> _selectedSkills = new();
+    private bool _selectAll;
 
     protected override async Task OnInitializedAsync() => await LoadAsync();
 
@@ -308,7 +335,88 @@ else
     private void SelectTab(string key)
     {
         _activeTab = key;
+        // Clear selection when switching tabs (selection only for installed)
+        _selectedSkills.Clear();
+        _selectAll = false;
         ApplyFilter();
+    }
+
+    private void OnSelectAllChanged(ChangeEventArgs e)
+    {
+        _selectAll = e.Value is bool b && b;
+        _selectedSkills.Clear();
+        
+        if (_selectAll && _activeTab == "installed")
+        {
+            // Select all installed skills in current filtered view
+            foreach (var skill in _filtered.Where(s => string.Equals(s.Layer, "installed", StringComparison.OrdinalIgnoreCase)))
+            {
+                _selectedSkills.Add(skill.Name);
+            }
+        }
+        
+        StateHasChanged();
+    }
+
+    private void OnSkillSelectionChanged((string SkillName, bool IsSelected) e)
+    {
+        if (e.IsSelected)
+        {
+            _selectedSkills.Add(e.SkillName);
+        }
+        else
+        {
+            _selectedSkills.Remove(e.SkillName);
+        }
+
+        // Update select-all checkbox state
+        var installableInView = _filtered.Where(s => string.Equals(s.Layer, "installed", StringComparison.OrdinalIgnoreCase)).ToList();
+        _selectAll = installableInView.Count > 0 && installableInView.All(s => _selectedSkills.Contains(s.Name));
+        
+        StateHasChanged();
+    }
+
+    private async Task BulkDeleteAsync()
+    {
+        if (_selectedSkills.Count == 0) return;
+
+        var skillNames = string.Join(", ", _selectedSkills.Take(5));
+        if (_selectedSkills.Count > 5)
+        {
+            skillNames += $", and {_selectedSkills.Count - 5} more";
+        }
+
+        var confirmed = await JS.InvokeAsync<bool>(
+            "confirm",
+            $"Delete {_selectedSkills.Count} skill(s)? ({skillNames})\n\nThis cannot be undone.");
+        if (!confirmed) return;
+
+        _loading = true;
+        _pageError = null;
+        try
+        {
+            var result = await SkillsClient.BulkDeleteAsync(_selectedSkills.ToArray());
+            
+            _selectedSkills.Clear();
+            _selectAll = false;
+
+            if (result.FailureCount > 0)
+            {
+                var failureMessages = string.Join("; ", result.Failures.Select(kv => $"{kv.Key}: {kv.Value}"));
+                _pageError = $"Deleted {result.SuccessCount} skill(s). {result.FailureCount} failed: {failureMessages}";
+            }
+
+            await LoadAsync();
+        }
+        catch (Exception ex)
+        {
+            _pageError = $"Bulk delete failed: {ex.Message}";
+            Logger.LogError(ex, "Bulk delete failed");
+        }
+        finally
+        {
+            _loading = false;
+        }
     }
 
     private async Task OnCreatedAsync(SkillDto created)
