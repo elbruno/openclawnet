@@ -37,6 +37,31 @@ public interface ISecretsStore
     /// <summary>Permanently removes a secret and all of its versions.</summary>
     Task<bool> PurgeAsync(string name, CancellationToken ct = default) =>
         DeleteAsync(name, ct);
+
+    /// <summary>
+    /// Atomically sets multiple secrets (template bundle). Validates all fields before any writes occur.
+    /// The default implementation validates the bundle then iterates <see cref="SetAsync"/>; transactional
+    /// stores (e.g. <c>SecretsStore</c>) override this to wrap the writes in a single DB transaction.
+    /// Read-only stores will surface <see cref="NotSupportedException"/> from <see cref="SetAsync"/>.
+    /// </summary>
+    async Task SetBundleAsync(IReadOnlyDictionary<string, string> secrets, CancellationToken ct = default)
+    {
+        if (secrets is null || secrets.Count == 0)
+            throw new ArgumentException("Secret bundle cannot be empty.", nameof(secrets));
+
+        foreach (var (name, value) in secrets)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException("Secret name is required in bundle.", nameof(secrets));
+            if (value is null)
+                throw new ArgumentException($"Secret value is required for '{name}'.", nameof(secrets));
+        }
+
+        foreach (var (name, value) in secrets)
+        {
+            await SetAsync(name, value, description: null, ct).ConfigureAwait(false);
+        }
+    }
 }
 
 /// <summary>Metadata-only projection (no plaintext value) suitable for UI listings.</summary>

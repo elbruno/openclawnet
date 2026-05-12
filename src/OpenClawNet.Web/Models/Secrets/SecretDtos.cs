@@ -7,3 +7,5 @@ public sealed record SecretWriteRequest(string Value, string? Description);
 public sealed record SecretRotateRequest(string NewValue);
 
 public sealed record AuditVerifyResponse(bool Valid);
+
+public sealed record TemplateApplyRequest(string TemplateName, IReadOnlyDictionary<string, string> Secrets);

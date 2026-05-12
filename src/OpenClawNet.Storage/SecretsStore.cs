@@ -285,6 +285,70 @@ public sealed class SecretsStore : ISecretsStore, IDisposable
         });
     }
 
+    public async Task SetBundleAsync(IReadOnlyDictionary<string, string> secrets, CancellationToken ct = default)
+    {
+        if (secrets is null || secrets.Count == 0)
+            throw new ArgumentException("Secret bundle cannot be empty.", nameof(secrets));
+
+        // Validate all names and values before any writes
+        foreach (var (name, value) in secrets)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+                throw new ArgumentException($"Secret name is required in bundle.", nameof(secrets));
+            if (value is null)
+                throw new ArgumentException($"Secret value is required for '{name}'.", nameof(secrets));
+        }
+
+        await using var db = await _dbFactory.CreateDbContextAsync(ct);
+        
+        var now = DateTime.UtcNow;
+        foreach (var (name, value) in secrets)
+        {
+            var existing = await db.Secrets.FirstOrDefaultAsync(s => s.Name == name, ct);
+            var ciphertext = _protector.Protect(value);
+            if (existing is null)
+            {
+                db.Secrets.Add(new SecretEntity
+                {
+                    Name = name,
+                    EncryptedValue = ciphertext,
+                    Description = null,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    Versions =
+                    [
+                        new SecretVersionEntity
+                        {
+                            Id = Guid.NewGuid(),
+                            SecretName = name,
+                            Version = 1,
+                            EncryptedValue = ciphertext,
+                            CreatedAt = now,
+                            IsCurrent = true
+                        }
+                    ]
+                });
+            }
+            else
+            {
+                existing.EncryptedValue = ciphertext;
+                existing.UpdatedAt = now;
+                existing.DeletedAt = null;
+                existing.PurgeAfter = null;
+                await BackfillVersionAsync(db, name, ct).ConfigureAwait(false);
+                await AddCurrentVersionAsync(db, name, ciphertext, now, ct).ConfigureAwait(false);
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+
+        // Invalidate cache for all updated secrets
+        foreach (var name in secrets.Keys)
+        {
+            Invalidate(name);
+        }
+    }
+
     private void Invalidate(string name)
     {
         foreach (var invalidator in _cacheInvalidators)

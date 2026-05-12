@@ -87,8 +87,70 @@ public static class SecretsEndpoints
         })
         .WithName("VerifyAuditChain")
         .WithDescription("Verifies the audit hash-chain for tamper detection.");
+
+        group.MapPost("/templates/apply", async (
+            [FromBody] TemplateApplyRequest req,
+            ISecretsStore store,
+            ISecretAccessAuditor auditor,
+            CancellationToken ct) =>
+        {
+            if (req?.TemplateName is null) return Results.BadRequest(new { error = "templateName is required" });
+            if (req.Secrets is null || req.Secrets.Count == 0) return Results.BadRequest(new { error = "secrets dictionary is required" });
+
+            try
+            {
+                // Validate required fields based on template
+                var validationErrors = ValidateTemplate(req.TemplateName, req.Secrets);
+                if (validationErrors.Count > 0)
+                {
+                    return Results.BadRequest(new { error = "Validation failed", fields = validationErrors });
+                }
+
+                // Apply the bundle atomically
+                await store.SetBundleAsync(req.Secrets, ct);
+
+                // Audit the template apply action (without secret values)
+                var ctx = new VaultCallerContext(VaultCallerType.System, $"TemplateApply:{req.TemplateName}");
+                foreach (var secretName in req.Secrets.Keys)
+                {
+                    await auditor.RecordAsync(secretName, ctx, success: true, ct);
+                }
+
+                return Results.NoContent();
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+        })
+        .WithName("ApplySecretTemplate")
+        .WithDescription("Atomically applies a secret template bundle (e.g., Azure OpenAI). All fields are validated before any writes occur.");
+    }
+
+    private static Dictionary<string, string> ValidateTemplate(string templateName, IReadOnlyDictionary<string, string> secrets)
+    {
+        var errors = new Dictionary<string, string>();
+
+        if (templateName == "AzureOpenAI")
+        {
+            var requiredFields = new[] { "AzureOpenAI_Endpoint", "AzureOpenAI_ModelId", "AzureOpenAI_ApiKey" };
+            foreach (var field in requiredFields)
+            {
+                if (!secrets.ContainsKey(field) || string.IsNullOrWhiteSpace(secrets[field]))
+                {
+                    errors[field] = $"{field} is required";
+                }
+            }
+        }
+        else
+        {
+            errors["templateName"] = $"Unknown template: {templateName}";
+        }
+
+        return errors;
     }
 
     public sealed record SecretWriteRequest(string Value, string? Description);
     public sealed record SecretRotateRequest(string NewValue);
+    public sealed record TemplateApplyRequest(string TemplateName, IReadOnlyDictionary<string, string> Secrets);
 }

@@ -66,6 +66,13 @@ public sealed class SecretsVaultClient
         return payload?.Valid ?? false;
     }
 
+    public async Task ApplyTemplateAsync(string templateName, IReadOnlyDictionary<string, string> secrets, CancellationToken ct = default)
+    {
+        var request = new TemplateApplyRequest(templateName, secrets);
+        var response = await _http.PostAsJsonAsync("api/secrets/templates/apply", request, ct).ConfigureAwait(false);
+        await EnsureSuccessAsync(response, ct).ConfigureAwait(false);
+    }
+
     private static async Task EnsureSuccessAsync(HttpResponseMessage response, CancellationToken ct)
     {
         if (response.IsSuccessStatusCode)
