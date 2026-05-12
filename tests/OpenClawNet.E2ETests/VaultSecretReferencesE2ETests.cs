@@ -111,8 +111,8 @@ public sealed class VaultSecretReferencesE2ETests : IClassFixture<GatewayE2EFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(payload);
         Assert.False(payload.Success);
-        Assert.Contains("Failed to resolve vault reference", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"vault://{missingSecretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Secure configuration could not be resolved", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain($"vault://{missingSecretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -137,8 +137,8 @@ public sealed class VaultSecretReferencesE2ETests : IClassFixture<GatewayE2EFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(payload);
         Assert.False(payload.Success);
-        Assert.Contains("Failed to resolve vault reference", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"vault://{secretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Secure configuration could not be resolved", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain($"vault://{secretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]
@@ -250,8 +250,8 @@ public sealed class VaultSecretReferencesE2ETests : IClassFixture<GatewayE2EFact
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.NotNull(payload);
         Assert.False(payload.Success);
-        Assert.Contains("Failed to resolve vault reference", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
-        Assert.Contains($"vault://{missingSecretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains("Secure configuration could not be resolved", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain($"vault://{missingSecretName}", payload.Message ?? string.Empty, StringComparison.OrdinalIgnoreCase);
     }
 
     [Fact]

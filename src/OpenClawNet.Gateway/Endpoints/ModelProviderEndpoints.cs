@@ -179,7 +179,8 @@ public static class ModelProviderEndpoints
             }
             catch (Exception ex)
             {
-                var errorMsg = $"Test failed: {ex.Message}";
+                var sanitized = VaultReferenceSanitizer.SanitizeFailureMessage(ex.Message) ?? ex.Message;
+                var errorMsg = $"Test failed: {sanitized}";
                 def.IsSupported = false;
                 def.LastTestSucceeded = false;
                 def.LastTestError = errorMsg.Length > 1000 ? errorMsg[..1000] : errorMsg;
@@ -201,7 +202,7 @@ public static class ModelProviderEndpoints
         HasApiKey: !string.IsNullOrEmpty(d.ApiKey),
         d.DeploymentName, d.AuthMode, d.IsSupported, d.CreatedAt, d.UpdatedAt,
         d.LastTestedAt, d.LastTestSucceeded, d.LastTestError,
-        ApiKey: GetVaultReferenceOrNull(d.ApiKey)
+        ApiKey: GetApiKeyDisplayValue(d.ApiKey)
     );
 
     private static ModelProviderDefinition BuildDefinition(string name, ModelProviderRequest request, ModelProviderDefinition? existing) => new()
@@ -219,9 +220,9 @@ public static class ModelProviderEndpoints
         UpdatedAt = DateTime.UtcNow
     };
 
-    private static string? GetVaultReferenceOrNull(string? value) =>
+    private static string? GetApiKeyDisplayValue(string? value) =>
         VaultConfigurationResolver.TryParseVaultReference(value, out _)
-            ? value
+            ? VaultReferenceSanitizer.RedactedReferenceDisplay
             : null;
 }
 

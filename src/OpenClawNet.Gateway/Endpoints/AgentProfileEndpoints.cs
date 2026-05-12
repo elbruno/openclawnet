@@ -316,7 +316,8 @@ public static class AgentProfileEndpoints
             catch (Exception ex)
             {
                 logger.LogWarning(ex, "Agent test '{Name}' failed", name);
-                var errorMsg = $"Test failed: {ex.Message}";
+                var sanitized = VaultReferenceSanitizer.SanitizeFailureMessage(ex.Message) ?? ex.Message;
+                var errorMsg = $"Test failed: {sanitized}";
                 var truncatedError = errorMsg.Length > 1000 ? errorMsg[..1000] : errorMsg;
                 if (entity is not null)
                 {
@@ -345,7 +346,7 @@ public static class AgentProfileEndpoints
             : p.EnabledTools.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
         p.Temperature, p.MaxTokens, p.IsDefault, p.RequireToolApproval, p.IsEnabled,
         p.LastTestedAt, p.LastTestSucceeded, p.LastTestError, p.Kind.ToString(),
-        p.Endpoint, GetVaultReferenceOrNull(p.ApiKey), p.DeploymentName, p.AuthMode);
+        p.Endpoint, GetApiKeyDisplayValue(p.ApiKey), p.DeploymentName, p.AuthMode);
 
     private static AgentProfile BuildProfile(string name, AgentProfileRequest request, AgentProfile? existing)
     {
@@ -384,9 +385,9 @@ public static class AgentProfileEndpoints
         };
     }
 
-    private static string? GetVaultReferenceOrNull(string? value) =>
+    private static string? GetApiKeyDisplayValue(string? value) =>
         VaultConfigurationResolver.TryParseVaultReference(value, out _)
-            ? value
+            ? VaultReferenceSanitizer.RedactedReferenceDisplay
             : null;
 }
 
