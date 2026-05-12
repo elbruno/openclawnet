@@ -80,6 +80,50 @@ public sealed class ChatNamingServiceTests
     }
 
     [Fact]
+    public async Task GenerateNameAsync_CollapsesWhitespaceBeforePersisting()
+    {
+        var modelClient = new Mock<IModelClient>();
+        modelClient
+            .Setup(c => c.CompleteAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse
+            {
+                Content = "  Math\n   Problem\tSolving  ",
+                Role = ChatMessageRole.Assistant,
+                Model = "test-model"
+            });
+
+        var service = new ChatNamingService(modelClient.Object, NullLogger<ChatNamingService>.Instance);
+        var title = await service.GenerateNameAsync([
+            new ChatMessageEntity { Role = "user", Content = "Can you solve math problems?" },
+            new ChatMessageEntity { Role = "assistant", Content = "Yes, send me one." }
+        ]);
+
+        title.Should().Be("Math Problem Solving");
+    }
+
+    [Fact]
+    public async Task GenerateNameAsync_CapsTitlesAtEightWords()
+    {
+        var modelClient = new Mock<IModelClient>();
+        modelClient
+            .Setup(c => c.CompleteAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ChatResponse
+            {
+                Content = "Planning A Scenic Weekend Trip Along The Oregon Coast Together",
+                Role = ChatMessageRole.Assistant,
+                Model = "test-model"
+            });
+
+        var service = new ChatNamingService(modelClient.Object, NullLogger<ChatNamingService>.Instance);
+        var title = await service.GenerateNameAsync([
+            new ChatMessageEntity { Role = "user", Content = "Let's plan a scenic weekend trip." },
+            new ChatMessageEntity { Role = "assistant", Content = "Sure, where do you want to go?" }
+        ]);
+
+        title.Should().Be("Planning A Scenic Weekend Trip Along The Oregon");
+    }
+
+    [Fact]
     public async Task GenerateNameAsync_WhenNoMessages_ReturnsNewChat()
     {
         var modelClient = new Mock<IModelClient>();

@@ -110,6 +110,17 @@ public sealed class ChatNamingService
             return string.Empty;
         }
 
+        var words = normalized
+            .Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries)
+            .Take(8)
+            .ToArray();
+
+        if (words.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        normalized = string.Join(" ", words);
         return normalized.Length > 256 ? normalized[..256] : normalized;
     }
 

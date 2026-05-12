@@ -10,8 +10,6 @@ namespace OpenClawNet.PlaywrightTests;
 [Collection("AppHost")]
 public sealed class ChatAutoNameTests : PlaywrightTestBase
 {
-    private int _assistantCompleteCount;
-
     public ChatAutoNameTests(AppHostFixture fixture) : base(fixture)
     {
     }
@@ -43,19 +41,20 @@ public sealed class ChatAutoNameTests : PlaywrightTestBase
             await Assertions.Expect(sessionTitle).ToHaveTextAsync("New Chat", new() { Timeout = 15_000 });
 
             await SendMessageAsync("Can you solve math problems?");
-            await SendMessageAsync("Ok, let's start easy: solve 2 + 8.");
 
             var autoNameButton = Page.Locator("[data-testid='auto-name-btn']");
             await Assertions.Expect(autoNameButton).ToBeEnabledAsync(new() { Timeout = 15_000 });
             await autoNameButton.ClickAsync();
 
+            await Assertions.Expect(sessionTitle).Not.ToHaveTextAsync("New Chat", new() { Timeout = 30_000 });
             var renamedTitle = (await sessionTitle.TextContentAsync())?.Trim();
             Assert.False(string.IsNullOrWhiteSpace(renamedTitle));
             Assert.NotEqual("New Chat", renamedTitle);
 
-            var persistedSession = await client.GetFromJsonAsync<SessionDto>($"/api/sessions/{session.Id}");
-            Assert.NotNull(persistedSession);
-            Assert.Equal(renamedTitle, persistedSession!.Title);
+            var sessionRow = Page.Locator($"[data-testid='session-row'][data-session-id='{session.Id}']");
+            await Assertions.Expect(sessionRow).ToContainTextAsync(renamedTitle, new() { Timeout = 15_000 });
+
+            await WaitForPersistedTitleAsync(client, session.Id, renamedTitle!);
 
             await Page.ReloadAsync(new PageReloadOptions
             {
@@ -63,9 +62,9 @@ public sealed class ChatAutoNameTests : PlaywrightTestBase
                 Timeout = 60_000
             });
 
-            await Assertions.Expect(sessionTitle).Not.ToHaveTextAsync("New Chat", new() { Timeout = 15_000 });
-            var sessionRow = Page.Locator($"[data-testid='session-row'][data-session-id='{session.Id}']");
+            await Assertions.Expect(sessionTitle).ToHaveTextAsync(renamedTitle, new() { Timeout = 15_000 });
             await Assertions.Expect(sessionRow).Not.ToContainTextAsync("New Chat", new() { Timeout = 15_000 });
+            await Assertions.Expect(sessionRow).ToContainTextAsync(renamedTitle, new() { Timeout = 15_000 });
         });
     }
 
@@ -73,13 +72,34 @@ public sealed class ChatAutoNameTests : PlaywrightTestBase
     {
         var input = Page.Locator("[data-testid='chat-input']");
         var sendButton = Page.Locator("[data-testid='chat-send']");
+        var assistantMessages = Page.Locator("[data-testid='assistant-message-complete']");
+        var countBefore = await assistantMessages.CountAsync();
 
         await input.FillAsync(message);
         await sendButton.ClickAsync();
 
-        _assistantCompleteCount++;
-        await Assertions.Expect(Page.Locator("[data-testid='assistant-message-complete']"))
-            .ToHaveCountAsync(_assistantCompleteCount, new() { Timeout = 180_000 });
+        await Assertions.Expect(assistantMessages)
+            .ToHaveCountAsync(countBefore + 1, new() { Timeout = 180_000 });
+    }
+
+    private static async Task WaitForPersistedTitleAsync(HttpClient client, Guid sessionId, string expectedTitle)
+    {
+        var deadline = DateTime.UtcNow.AddSeconds(30);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            var persistedSession = await client.GetFromJsonAsync<SessionDto>($"/api/sessions/{sessionId}");
+            if (persistedSession?.Title == expectedTitle)
+            {
+                return;
+            }
+
+            await Task.Delay(500);
+        }
+
+        var latestSession = await client.GetFromJsonAsync<SessionDto>($"/api/sessions/{sessionId}");
+        Assert.NotNull(latestSession);
+        Assert.Equal(expectedTitle, latestSession!.Title);
     }
 
     private sealed record SessionDto
