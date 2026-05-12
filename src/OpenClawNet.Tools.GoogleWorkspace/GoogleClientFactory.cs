@@ -18,7 +18,6 @@ namespace OpenClawNet.Tools.GoogleWorkspace;
 public sealed class GoogleClientFactory : IGoogleClientFactory
 {
     private const string ApplicationName = "OpenClawNet";
-    private const string GoogleTokenEndpoint = "https://oauth2.googleapis.com/token";
     private const int RefreshWindowSeconds = 60; // Refresh if token expires within 60 seconds
     
     private readonly IGoogleOAuthTokenStore _tokenStore;
@@ -149,7 +148,7 @@ public sealed class GoogleClientFactory : IGoogleClientFactory
             };
 
             var response = await httpClient.PostAsync(
-                GoogleTokenEndpoint,
+                _options.TokenEndpoint,
                 new FormUrlEncodedContent(refreshRequest),
                 cancellationToken);
 

@@ -119,13 +119,13 @@ public sealed class GoogleOAuthFlowE2ETests : IClassFixture<GoogleOAuthE2EFactor
 
         // Verify WireMock received token exchange request
         var requests = _factory.GoogleTokenEndpoint.LogEntries
-            .Where(e => e.RequestMessage.Path == "/token" && e.RequestMessage.Method == "POST")
+            .Where(e => e.RequestMessage.Path.StartsWith("/token", StringComparison.OrdinalIgnoreCase)
+                     && e.RequestMessage.Method == "POST"
+                     && e.RequestMessage.Body?.Contains("code=fake_auth_code", StringComparison.Ordinal) == true)
             .ToList();
-        requests.Should().Contain(r => r.RequestMessage.Body != null && r.RequestMessage.Body.Contains("code=fake_auth_code"),
-            "Google token endpoint should have been called with the auth code");
+        requests.Should().ContainSingle("Google token endpoint should have been called exactly once for this callback");
 
-        var tokenRequest = requests.First(r => r.RequestMessage.Body != null && r.RequestMessage.Body.Contains("code=fake_auth_code"))
-            .RequestMessage.Body!;
+        var tokenRequest = requests.Single().RequestMessage.Body!;
         tokenRequest.Should().Contain("grant_type=authorization_code");
         tokenRequest.Should().Contain("code_verifier=");
 

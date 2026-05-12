@@ -15,10 +15,6 @@ namespace OpenClawNet.Gateway.Endpoints;
 public static class GoogleOAuthEndpoints
 {
     private static readonly ActivitySource ActivitySource = new("OpenClawNet.Tools.GoogleWorkspace");
-    
-    private const string GoogleAuthorizationEndpoint = "https://accounts.google.com/o/oauth2/v2/auth";
-    private const string GoogleTokenEndpoint = "https://oauth2.googleapis.com/token";
-    private const string GoogleRevokeEndpoint = "https://oauth2.googleapis.com/revoke";
 
     public static void MapGoogleOAuthEndpoints(this WebApplication app)
     {
@@ -90,7 +86,7 @@ public static class GoogleOAuthEndpoints
 
             // Build Google authorization URL
             var scopes = string.Join(" ", opts.Scopes);
-            var authUrl = new StringBuilder(GoogleAuthorizationEndpoint);
+            var authUrl = new StringBuilder(opts.AuthorizationEndpoint);
             authUrl.Append($"?client_id={Uri.EscapeDataString(opts.ClientId)}");
             authUrl.Append($"&redirect_uri={Uri.EscapeDataString(opts.RedirectUri)}");
             authUrl.Append("&response_type=code");
@@ -147,7 +143,7 @@ public static class GoogleOAuthEndpoints
         if (flowState is null)
         {
             logger.LogWarning("OAuth callback with invalid or expired state parameter");
-            return Results.BadRequest(new { error = "Invalid or expired state parameter" });
+            return Results.BadRequest(new { error = "invalid or expired state parameter" });
         }
 
         var userId = flowState.UserId;
@@ -169,11 +165,8 @@ public static class GoogleOAuthEndpoints
                 ["code_verifier"] = flowState.CodeVerifier
             };
 
-            var tokenEndpoint = string.IsNullOrWhiteSpace(opts.TokenEndpoint)
-                ? GoogleTokenEndpoint
-                : opts.TokenEndpoint;
             var response = await httpClient.PostAsync(
-                tokenEndpoint,
+                opts.TokenEndpoint,
                 new FormUrlEncodedContent(tokenRequest),
                 ct);
 
@@ -251,10 +244,7 @@ public static class GoogleOAuthEndpoints
                 try
                 {
                     var httpClient = httpClientFactory.CreateClient();
-                    var revokeEndpoint = string.IsNullOrWhiteSpace(options.Value.RevokeEndpoint)
-                        ? GoogleRevokeEndpoint
-                        : options.Value.RevokeEndpoint;
-                    var revokeUrl = $"{revokeEndpoint}?token={Uri.EscapeDataString(tokenSet.RefreshToken)}";
+                    var revokeUrl = $"{options.Value.RevokeEndpoint}?token={Uri.EscapeDataString(tokenSet.RefreshToken)}";
                     var revokeResponse = await httpClient.PostAsync(revokeUrl, null, ct);
 
                     if (revokeResponse.IsSuccessStatusCode)

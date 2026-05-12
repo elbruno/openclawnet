@@ -29,6 +29,11 @@ public sealed class GoogleWorkspaceOptions
     public string RedirectUri { get; set; } = "";
 
     /// <summary>
+    /// Google OAuth authorization endpoint. Overridable for integration testing.
+    /// </summary>
+    public string AuthorizationEndpoint { get; set; } = "https://accounts.google.com/o/oauth2/v2/auth";
+
+    /// <summary>
     /// OAuth token endpoint (default: Google OAuth token endpoint).
     /// </summary>
     public string TokenEndpoint { get; set; } = "https://oauth2.googleapis.com/token";
