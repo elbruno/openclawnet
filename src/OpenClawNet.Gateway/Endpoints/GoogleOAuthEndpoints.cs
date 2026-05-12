@@ -188,9 +188,24 @@ public static class GoogleOAuthEndpoints
             using var tokenDoc = JsonDocument.Parse(tokenResponseJson);
             var root = tokenDoc.RootElement;
 
-            var accessToken = root.GetProperty("access_token").GetString()!;
-            var refreshToken = root.GetProperty("refresh_token").GetString()!;
-            var expiresIn = root.GetProperty("expires_in").GetInt32();
+            if (!root.TryGetProperty("access_token", out var accessTokenProp)
+                || string.IsNullOrWhiteSpace(accessTokenProp.GetString()))
+            {
+                logger.LogError("Google token response did not contain a valid access_token");
+                return Results.Problem("OAuth token response was missing access_token", statusCode: 500);
+            }
+
+            if (!root.TryGetProperty("expires_in", out var expiresInProp))
+            {
+                logger.LogError("Google token response did not contain expires_in");
+                return Results.Problem("OAuth token response was missing expires_in", statusCode: 500);
+            }
+
+            var accessToken = accessTokenProp.GetString()!;
+            var refreshToken = root.TryGetProperty("refresh_token", out var refreshTokenProp)
+                ? refreshTokenProp.GetString() ?? string.Empty
+                : string.Empty;
+            var expiresIn = expiresInProp.GetInt32();
             var scope = root.GetProperty("scope").GetString() ?? "";
 
             var tokenSet = new OpenClawNet.Tools.GoogleWorkspace.GoogleTokenSet(
