@@ -134,6 +134,16 @@
                                        DecidedBy="@msg.ToolDecidedBy"
                                        DecidedAt="@msg.ToolDecidedAt" />
                 }
+                else if (msg.MessageType == "ToolExecution")
+                {
+                    <div class="mb-3" data-testid="tool-execution-log">
+                        <div class="d-inline-block p-2 rounded bg-light border border-info-subtle" style="max-width:80%;word-wrap:break-word;white-space:pre-wrap;">
+                            <div><strong>🔧 @msg.ToolName</strong> executed</div>
+                            <div class="small text-muted">Approval flow: @msg.ToolDecidedBy</div>
+                        </div>
+                        <div class="small text-muted mt-1">system · @msg.Timestamp.ToString("HH:mm")</div>
+                    </div>
+                }
                 else
                 {
                     <div class="mb-3 @(msg.Role == "user" ? "text-end" : "")"
@@ -244,6 +254,8 @@
     private string _streamingContent = string.Empty;
     private string _currentToolName = string.Empty;
     private string _pendingApprovalTool = string.Empty;
+    private bool _currentToolHadApprovalRequest;
+    private string? _currentToolApprovalSource;
     private AgentConsolePanel? _consolePanel;
 
     // Wave 5 PR-B (Vasquez): hidden sentinels Playwright can WaitForAsync on.
@@ -437,6 +449,8 @@
         _streamingContent = string.Empty;
         _currentToolName = string.Empty;
         _pendingApprovalTool = string.Empty;
+        _currentToolHadApprovalRequest = false;
+        _currentToolApprovalSource = null;
         _connectionError = null;
 
         try
@@ -467,6 +481,10 @@
         _currentSession = s;
         _messages.Clear();
         _streamingContent = string.Empty;
+        _currentToolName = string.Empty;
+        _pendingApprovalTool = string.Empty;
+        _currentToolHadApprovalRequest = false;
+        _currentToolApprovalSource = null;
 
         // Load existing messages
         try
@@ -680,6 +698,7 @@
                         //   { "type":"tool_approval", "requestId":"guid", "toolName":"…",
                         //     "toolDescription":"…", "toolArgsJson":"…" }
                         _pendingApprovalTool = evt.ToolName ?? evt.Content ?? string.Empty;
+                        _currentToolHadApprovalRequest = true;
                         if (evt.RequestId is { } reqId && reqId != Guid.Empty)
                         {
                             PendingApproval = new PendingApprovalRequest(
@@ -701,6 +720,7 @@
                     case "tool_approval_resolved":
                         // Phase B: Approval resolved — add bubble to messages and clear pending card
                         _pendingApprovalTool = string.Empty;
+                        _currentToolApprovalSource = evt.DecisionSource;
                         PendingApproval = null;
                         if (evt.ToolName is not null)
                         {
@@ -722,6 +742,8 @@
                     case "tool_start":
                         _pendingApprovalTool = string.Empty;
                         _currentToolName = evt.Content ?? evt.ToolName ?? string.Empty;
+                        if (!string.IsNullOrWhiteSpace(evt.DecisionSource))
+                            _currentToolApprovalSource = evt.DecisionSource;
                         if (_consolePanel != null)
                         {
                             var startDetails = $"Tool: {_currentToolName}\n" +
@@ -731,13 +753,30 @@
                         await InvokeAsync(StateHasChanged);
                         break;
                     case "tool_complete":
+                        var completedToolName = evt.ToolName ?? _currentToolName;
+                        var approvalSource = ResolveToolApprovalSource(
+                            evt.DecisionSource,
+                            _currentToolApprovalSource,
+                            _currentToolHadApprovalRequest);
+
+                        _messages.Add(new ChatDisplayMessage(
+                            Role: "system",
+                            Content: $"Tool executed: {completedToolName}",
+                            Timestamp: DateTime.Now,
+                            MessageType: "ToolExecution",
+                            ToolName: completedToolName,
+                            ToolDecidedBy: approvalSource));
+
                         if (_consolePanel != null)
                         {
-                            var completeDetails = $"Tool: {_currentToolName}\n" +
+                            var completeDetails = $"Tool: {completedToolName}\n" +
+                                $"Approval flow: {approvalSource}\n" +
                                 $"Completed: {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff}";
-                            await _consolePanel.AddEntry($"{_currentToolName} completed", "success", completeDetails);
+                            await _consolePanel.AddEntry($"{completedToolName} completed", "success", completeDetails);
                         }
                         _currentToolName = string.Empty;
+                        _currentToolHadApprovalRequest = false;
+                        _currentToolApprovalSource = null;
                         _toolCompleteCount++;
                         await InvokeAsync(StateHasChanged);
                         break;
@@ -788,6 +827,8 @@
             _streamingContent = string.Empty;
             _currentToolName = string.Empty;
             _pendingApprovalTool = string.Empty;
+            _currentToolHadApprovalRequest = false;
+            _currentToolApprovalSource = null;
             _streamCts?.Dispose();
             _streamCts = null;
             await InvokeAsync(StateHasChanged);
@@ -859,5 +900,19 @@
         public bool? Approved { get; init; }
         public string? DecisionSource { get; init; }
         public DateTime? DecidedAt { get; init; }
+    }
+
+    private static string ResolveToolApprovalSource(string? eventDecisionSource, string? cachedDecisionSource, bool hadApprovalRequest)
+    {
+        var source = !string.IsNullOrWhiteSpace(eventDecisionSource)
+            ? eventDecisionSource
+            : cachedDecisionSource;
+
+        if (!string.IsNullOrWhiteSpace(source))
+            return source!;
+
+        return hadApprovalRequest
+            ? "manual-approval"
+            : "auto-approved-or-not-required";
     }
 }

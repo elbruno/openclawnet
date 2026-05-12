@@ -139,7 +139,7 @@ public class ToolMatrixE2ETests : PlaywrightTestBase
 
             // Bruno's exact scenario that was failing in chat:
             // summarize the latest content from a website.
-            await SendChatMessageAsync("Summarize the latest content of the https://elbruno.com website");
+            await SendChatMessageAsync("Use markdown_convert with https://elbruno.com, then summarize the latest content in 3 bullets.");
             await LogStepAsync("Prompt sent — waiting for markdown_convert approval card");
 
             // Wait for first approval card
@@ -220,6 +220,11 @@ public class ToolMatrixE2ETests : PlaywrightTestBase
             await Page.WaitForTimeoutAsync(8_000);
             var cardCount = await ApprovalCard().CountAsync();
             Assert.Equal(0, cardCount);
+
+            var toolExecutionLog = Page.Locator("[data-testid='tool-execution-log']").First;
+            await toolExecutionLog.WaitForAsync(new LocatorWaitForOptions { Timeout = 90_000 });
+            var toolExecutionText = (await toolExecutionLog.InnerTextAsync()).Trim();
+            Assert.Contains("markdown_convert", toolExecutionText, StringComparison.OrdinalIgnoreCase);
 
             var assistantMessage = Page.Locator(".assistant-message, [data-role='assistant']").Last;
             await assistantMessage.WaitForAsync(new LocatorWaitForOptions { Timeout = 90_000 });
