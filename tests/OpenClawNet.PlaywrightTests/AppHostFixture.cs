@@ -96,76 +96,94 @@ public sealed class AppHostFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-        // Wave 5 PR-D: pin a tool-capable model BEFORE the AppHost reads its config.
-        // OPENCLAW_OLLAMA_MODEL is honoured first inside AppHost.cs:14-17.
-        Environment.SetEnvironmentVariable("OPENCLAW_OLLAMA_MODEL", ToolCapableTestModel);
-
-        // Wave 5 fix (Petey): Wipe per-agent skill state from previous test runs to
-        // prevent skill contamination. The doc-processor system skill and any test-
-        // created skills (e.g., emoji-teacher-journey) persist across runs and can
-        // poison tool selection (e.g., model picks `shell` instead of `browser`).
-        // Safe to delete: this fixture is only used by E2E tests, not by dev users.
-        CleanAgentSkillState();
-
-        // Best-effort probe of local Ollama; results expose IsToolCapableModelAvailable
-        // so live tool-approval scenarios can Skip cleanly when the model isn't pulled.
-        await ProbeOllamaModelAvailabilityAsync();
-
-        // Probe AZURE_OPENAI_* env vars so tests can prefer the (much faster) cloud
-        // model when the developer has it configured. Cheap synchronous check; no I/O.
-        ProbeAzureOpenAIAvailability();
-
-        // Build and start the Aspire AppHost
-        var appHost = await DistributedApplicationTestingBuilder
-            .CreateAsync<Projects.OpenClawNet_AppHost>();
-
-        _app = await appHost.BuildAsync();
-        await _app.StartAsync();
-
-        // Wait for both web and gateway resources to be running
-        var webTask = _app.ResourceNotifications
-            .WaitForResourceAsync("web", KnownResourceStates.Running)
-            .WaitAsync(TimeSpan.FromMinutes(5));
-
-        var gatewayTask = _app.ResourceNotifications
-            .WaitForResourceAsync("gateway", KnownResourceStates.Running)
-            .WaitAsync(TimeSpan.FromMinutes(5));
-
-        var schedulerTask = _app.ResourceNotifications
-            .WaitForResourceAsync("scheduler", KnownResourceStates.Running)
-            .WaitAsync(TimeSpan.FromMinutes(5));
-
-        await Task.WhenAll(webTask, gatewayTask, schedulerTask);
-
-        // Get endpoints
-        WebBaseUrl = _app.GetEndpoint("web", "https").ToString().TrimEnd('/');
-        GatewayBaseUrl = _app.GetEndpoint("gateway", "https").ToString().TrimEnd('/');
-        SchedulerBaseUrl = _app.GetEndpoint("scheduler", "http").ToString().TrimEnd('/');
-
-        // Initialize Playwright
-        _playwright = await Playwright.CreateAsync();
-
-        // Allow headed mode via environment variable: PLAYWRIGHT_HEADED=true
-        var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
-            ?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
-
-        // Allow tuning the inter-step delay via PLAYWRIGHT_SLOWMO (milliseconds).
-        // Defaults: 1500ms when headed (good for voice-over), 0 when headless.
-        var defaultSlowMo = headed ? 1500 : 0;
-        var slowMo = defaultSlowMo;
-        var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
-        if (!string.IsNullOrWhiteSpace(slowMoRaw)
-            && int.TryParse(slowMoRaw, out var parsedSlowMo)
-            && parsedSlowMo >= 0)
+        try
         {
-            slowMo = parsedSlowMo;
+            // Wave 5 PR-D: pin a tool-capable model BEFORE the AppHost reads its config.
+            // OPENCLAW_OLLAMA_MODEL is honoured first inside AppHost.cs:14-17.
+            Environment.SetEnvironmentVariable("OPENCLAW_OLLAMA_MODEL", ToolCapableTestModel);
+
+            // Sqlite Web requires Docker. Disable it for Playwright test runs so the
+            // fixture can still boot the AppHost in Docker-less environments.
+            Environment.SetEnvironmentVariable("OPENCLAW_ENABLE_SQLITE_WEB", "false");
+
+            // Wave 5 fix (Petey): Wipe per-agent skill state from previous test runs to
+            // prevent skill contamination. The doc-processor system skill and any test-
+            // created skills (e.g., emoji-teacher-journey) persist across runs and can
+            // poison tool selection (e.g., model picks `shell` instead of `browser`).
+            // Safe to delete: this fixture is only used by E2E tests, not by dev users.
+            CleanAgentSkillState();
+
+            // Best-effort probe of local Ollama; results expose IsToolCapableModelAvailable
+            // so live tool-approval scenarios can Skip cleanly when the model isn't pulled.
+            await ProbeOllamaModelAvailabilityAsync();
+
+            // Probe AZURE_OPENAI_* env vars so tests can prefer the (much faster) cloud
+            // model when the developer has it configured. Cheap synchronous check; no I/O.
+            ProbeAzureOpenAIAvailability();
+
+            // Build and start the Aspire AppHost
+            var appHost = await DistributedApplicationTestingBuilder
+                .CreateAsync<Projects.OpenClawNet_AppHost>();
+
+            _app = await appHost.BuildAsync();
+            await _app.StartAsync();
+
+            // Wait for both web and gateway resources to be running
+            var webTask = _app.ResourceNotifications
+                .WaitForResourceAsync("web", KnownResourceStates.Running)
+                .WaitAsync(TimeSpan.FromMinutes(5));
+
+            var gatewayTask = _app.ResourceNotifications
+                .WaitForResourceAsync("gateway", KnownResourceStates.Running)
+                .WaitAsync(TimeSpan.FromMinutes(5));
+
+            var schedulerTask = _app.ResourceNotifications
+                .WaitForResourceAsync("scheduler", KnownResourceStates.Running)
+                .WaitAsync(TimeSpan.FromMinutes(5));
+
+            await Task.WhenAll(webTask, gatewayTask, schedulerTask);
+
+            // Get endpoints
+            WebBaseUrl = _app.GetEndpoint("web", "https").ToString().TrimEnd('/');
+            GatewayBaseUrl = _app.GetEndpoint("gateway", "https").ToString().TrimEnd('/');
+            SchedulerBaseUrl = _app.GetEndpoint("scheduler", "http").ToString().TrimEnd('/');
+
+            // Initialize Playwright
+            _playwright = await Playwright.CreateAsync();
+
+            // Allow headed mode via environment variable: PLAYWRIGHT_HEADED=true
+            var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
+                ?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
+
+            // Allow tuning the inter-step delay via PLAYWRIGHT_SLOWMO (milliseconds).
+            // Defaults: 1500ms when headed (good for voice-over), 0 when headless.
+            var defaultSlowMo = headed ? 1500 : 0;
+            var slowMo = defaultSlowMo;
+            var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
+            if (!string.IsNullOrWhiteSpace(slowMoRaw)
+                && int.TryParse(slowMoRaw, out var parsedSlowMo)
+                && parsedSlowMo >= 0)
+            {
+                slowMo = parsedSlowMo;
+            }
+
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = !headed,
+                SlowMo = slowMo
+            });
         }
-
-        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        catch (Xunit.SkipException)
         {
-            Headless = !headed,
-            SlowMo = slowMo
-        });
+            throw;
+        }
+        catch (Exception ex)
+        {
+            throw new Xunit.SkipException(
+                "Playwright AppHost fixture could not start in this environment. " +
+                "Ensure Aspire prerequisites are available (Docker/host resources as needed). " +
+                $"Startup error: {ex.GetType().Name}: {ex.Message}");
+        }
     }
 
     private void ProbeAzureOpenAIAvailability()

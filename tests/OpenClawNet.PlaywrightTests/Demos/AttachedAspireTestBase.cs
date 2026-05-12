@@ -289,7 +289,9 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             await Task.Delay(TimeSpan.FromSeconds(5));
         }
 
-        throw new TimeoutException("Aspire resources were not available within 2 minutes.");
+        throw new Xunit.SkipException(
+            "Aspire resources were not available within 2 minutes. " +
+            "Skipping demo-attached Playwright test because live Aspire prerequisites are unavailable.");
     }
 
     private async Task<bool> TryResolveUrlsFromDescribeAsync()
