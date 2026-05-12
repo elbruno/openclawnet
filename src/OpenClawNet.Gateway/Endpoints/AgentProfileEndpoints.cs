@@ -35,34 +35,35 @@ public static class AgentProfileEndpoints
         .WithName("GetAgentProfile")
         .WithDescription("Returns a specific agent profile by name");
 
+        group.MapPost("/", async (AgentProfileRequest request, IAgentProfileStore store, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return Results.BadRequest(new { error = "Profile name is required." });
+
+            var existing = await store.GetAsync(request.Name, ct);
+            var profile = BuildProfile(request.Name, request, existing);
+
+            await store.SaveAsync(profile, ct);
+            return existing is null
+                ? Results.Created($"/api/agent-profiles/{profile.Name}", ToResponse(profile))
+                : Results.Ok(ToResponse(profile));
+        })
+        .WithName("CreateAgentProfile")
+        .WithDescription("Creates or updates an agent profile from a request body that includes the profile name");
+
         group.MapPut("/{name}", async (string name, AgentProfileRequest request, IAgentProfileStore store, CancellationToken ct) =>
         {
-            var kind = ProfileKind.Standard;
-            if (!string.IsNullOrWhiteSpace(request.Kind) &&
-                !Enum.TryParse(request.Kind, ignoreCase: true, out kind))
-            {
-                return Results.BadRequest(new { error = $"Unknown kind '{request.Kind}'. Use Standard, System, or ToolTester." });
-            }
+            var existing = await store.GetAsync(name, ct);
+            AgentProfile profile;
 
-            var profile = new AgentProfile
+            try
             {
-                Name = name,
-                DisplayName = request.DisplayName,
-                Provider = request.Provider,
-                Model = request.Model,
-                Instructions = request.Instructions,
-                EnabledTools = request.EnabledTools is { Length: > 0 }
-                    ? string.Join(", ", request.EnabledTools)
-                    : null,
-                Temperature = request.Temperature,
-                MaxTokens = request.MaxTokens,
-                IsDefault = request.IsDefault,
-                Kind = kind,
-                RequireToolApproval = request.RequireToolApproval,
-                IsEnabled = request.IsEnabled ?? true,
-                CreatedAt = DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow,
-            };
+                profile = BuildProfile(name, request, existing);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
 
             // Only Standard profiles may be marked as default. Defensively coerce so
             // a malformed client request doesn't promote a System/ToolTester to default.
@@ -343,7 +344,50 @@ public static class AgentProfileEndpoints
             ? null
             : p.EnabledTools.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
         p.Temperature, p.MaxTokens, p.IsDefault, p.RequireToolApproval, p.IsEnabled,
-        p.LastTestedAt, p.LastTestSucceeded, p.LastTestError, p.Kind.ToString());
+        p.LastTestedAt, p.LastTestSucceeded, p.LastTestError, p.Kind.ToString(),
+        p.Endpoint, GetVaultReferenceOrNull(p.ApiKey), p.DeploymentName, p.AuthMode);
+
+    private static AgentProfile BuildProfile(string name, AgentProfileRequest request, AgentProfile? existing)
+    {
+        var kind = ProfileKind.Standard;
+        if (!string.IsNullOrWhiteSpace(request.Kind) &&
+            !Enum.TryParse(request.Kind, ignoreCase: true, out kind))
+        {
+            throw new ArgumentException($"Unknown kind '{request.Kind}'. Use Standard, System, or ToolTester.");
+        }
+
+        return new AgentProfile
+        {
+            Name = name,
+            DisplayName = request.DisplayName,
+            Provider = request.Provider,
+            Model = request.Model ?? existing?.Model,
+            Endpoint = request.Endpoint ?? existing?.Endpoint,
+            ApiKey = string.IsNullOrEmpty(request.ApiKey) ? existing?.ApiKey : request.ApiKey,
+            DeploymentName = request.DeploymentName ?? existing?.DeploymentName,
+            AuthMode = request.AuthMode ?? existing?.AuthMode,
+            Instructions = request.Instructions,
+            EnabledTools = request.EnabledTools is { Length: > 0 }
+                ? string.Join(", ", request.EnabledTools)
+                : null,
+            Temperature = request.Temperature,
+            MaxTokens = request.MaxTokens,
+            IsDefault = request.IsDefault,
+            Kind = kind,
+            RequireToolApproval = request.RequireToolApproval,
+            IsEnabled = request.IsEnabled ?? existing?.IsEnabled ?? true,
+            LastTestedAt = existing?.LastTestedAt,
+            LastTestSucceeded = existing?.LastTestSucceeded,
+            LastTestError = existing?.LastTestError,
+            CreatedAt = existing?.CreatedAt ?? DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+    }
+
+    private static string? GetVaultReferenceOrNull(string? value) =>
+        VaultConfigurationResolver.TryParseVaultReference(value, out _)
+            ? value
+            : null;
 }
 
 public sealed record AgentProfileResponse(
@@ -361,7 +405,11 @@ public sealed record AgentProfileResponse(
     DateTime? LastTestedAt,
     bool? LastTestSucceeded,
     string? LastTestError,
-    string Kind);
+    string Kind,
+    string? Endpoint = null,
+    string? ApiKey = null,
+    string? DeploymentName = null,
+    string? AuthMode = null);
 
 public sealed record SetEnabledRequest(bool IsEnabled);
 
@@ -379,6 +427,10 @@ public sealed record AgentProfileRequest(
     string? DisplayName,
     string? Provider,
     string? Model,
+    string? Endpoint,
+    string? ApiKey,
+    string? DeploymentName,
+    string? AuthMode,
     string? Instructions,
     string[]? EnabledTools,
     double? Temperature,
@@ -386,4 +438,5 @@ public sealed record AgentProfileRequest(
     bool IsDefault,
     bool RequireToolApproval = true,
     bool? IsEnabled = true,
-    string? Kind = "Standard");
+    string? Kind = "Standard",
+    string? Name = null);

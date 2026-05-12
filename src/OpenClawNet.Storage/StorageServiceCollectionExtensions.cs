@@ -98,6 +98,7 @@ public static class StorageServiceCollectionExtensions
         services.AddSingleton<IVaultErrorShield, VaultErrorShield>();
         services.AddSingleton<VaultConfigurationResolver>();
         services.AddSingleton<IVaultCacheInvalidator>(sp => sp.GetRequiredService<VaultConfigurationResolver>());
+        services.AddScoped<RuntimeVaultResolver>();
         services.AddSingleton<OpenClawNet.Mcp.Abstractions.IMcpServerCatalog, McpServerCatalog>();
 
         // S5-5: Register encrypted OAuth token store

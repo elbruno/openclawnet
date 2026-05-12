@@ -21,7 +21,11 @@ public enum VaultCallerType
 
 public sealed class VaultException : InvalidOperationException
 {
-    public VaultException() : base("Vault secret resolution failed.") { }
+    public VaultException() : base("Vault secret not found or unavailable.") { }
 
-    public VaultException(Exception innerException) : base("Vault secret resolution failed.", innerException) { }
+    public VaultException(string message) : base(message) { }
+
+    public VaultException(Exception innerException) : base("Vault secret not found or unavailable.", innerException) { }
+
+    public VaultException(string message, Exception innerException) : base(message, innerException) { }
 }

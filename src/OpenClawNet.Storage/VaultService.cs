@@ -26,7 +26,7 @@ public sealed class VaultService : IVault
         if (string.IsNullOrWhiteSpace(name))
         {
             await _auditor.RecordAsync("<invalid>", ctx, success: false, ct).ConfigureAwait(false);
-            throw new VaultException();
+            throw new VaultException("Vault secret reference is invalid.");
         }
 
         try
@@ -36,8 +36,7 @@ public sealed class VaultService : IVault
             await _auditor.RecordAsync(name, ctx, success, ct).ConfigureAwait(false);
 
             _logger.LogInformation(
-                "Vault secret resolved: secretName={SecretName}, callerType={CallerType}, success={Success}",
-                name,
+                "Vault secret resolved: callerType={CallerType}, success={Success}",
                 ctx.CallerType,
                 success);
 
@@ -45,7 +44,7 @@ public sealed class VaultService : IVault
                 _redactor.TrackResolvedValue(value);
 
             if (!success)
-                throw new VaultException();
+                throw new VaultException("Vault secret not found or unavailable.");
 
             return value;
         }
@@ -57,8 +56,7 @@ public sealed class VaultService : IVault
         {
             await _auditor.RecordAsync(name, ctx, success: false, ct).ConfigureAwait(false);
             _logger.LogWarning(
-                "Vault secret resolution failed: secretName={SecretName}, callerType={CallerType}, success=False, errorClass={ErrorClass}",
-                name,
+                "Vault secret resolution failed: callerType={CallerType}, success=False, errorClass={ErrorClass}",
                 ctx.CallerType,
                 ex.GetType().Name);
             throw new VaultException(ex);

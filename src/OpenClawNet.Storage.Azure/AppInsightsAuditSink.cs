@@ -22,7 +22,6 @@ public sealed class AppInsightsAuditSink : ISecretAccessAuditor
         await _inner.RecordAsync(secretName, ctx, success, ct).ConfigureAwait(false);
 
         var telemetry = new EventTelemetry("VaultSecretAccess");
-        telemetry.Properties["SecretName"] = secretName;
         telemetry.Properties["CallerType"] = ctx.CallerType.ToString();
         telemetry.Properties["CallerId"] = ctx.CallerId;
         telemetry.Properties["SessionId"] = ctx.SessionId ?? string.Empty;

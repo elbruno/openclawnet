@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -10,10 +11,10 @@
     <PackageReference Include="Microsoft.Agents.AI" Version="1.1.0" />
     <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.4.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.7" />
   </ItemGroup>
 
   <PropertyGroup>

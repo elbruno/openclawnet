@@ -75,8 +75,7 @@ public sealed class SecretAccessAuditor : ISecretAccessAuditor
         }
 
         _logger.LogInformation(
-            "Vault secret access audited: secretName={SecretName}, callerType={CallerType}, success={Success}",
-            secretName,
+            "Vault secret access audited: callerType={CallerType}, success={Success}",
             ctx.CallerType,
             success);
     }

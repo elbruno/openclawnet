@@ -8,6 +8,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OpenClawNet.Agent;
 using OpenClawNet.Gateway.Endpoints;
@@ -165,14 +166,30 @@ public sealed class ChatEndpointProfileTests
         builder.Services.AddSingleton(runtimeSettings);
 
         var resolverLogger = Mock.Of<ILogger<ProviderResolver>>();
+        
+        // Register vault resolver
+        var fakeVault = new FakeVault();
+        var configResolver = new VaultConfigurationResolver(TimeProvider.System, TimeSpan.FromMinutes(5));
+        var vaultResolver = new RuntimeVaultResolver(fakeVault, configResolver, NullLogger<RuntimeVaultResolver>.Instance);
+        builder.Services.AddSingleton(vaultResolver);
+        
         builder.Services.AddSingleton(sp => new ProviderResolver(
             sp.GetRequiredService<IModelProviderDefinitionStore>(),
             sp.GetRequiredService<RuntimeModelSettings>(),
+            sp.GetRequiredService<RuntimeVaultResolver>(),
             resolverLogger));
 
         var app = builder.Build();
         app.MapChatEndpoints();
         await app.StartAsync();
         return app;
+    }
+    
+    private sealed class FakeVault : IVault
+    {
+        public Task<string?> ResolveAsync(string name, VaultCallerContext ctx, CancellationToken ct = default)
+        {
+            return Task.FromResult<string?>(null);
+        }
     }
 }

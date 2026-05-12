@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OpenClawNet.Gateway.Services;
 using OpenClawNet.Storage;
@@ -17,7 +18,15 @@ public sealed class ProviderResolverTests
     private ProviderResolver CreateResolver(string provider = "ollama", string? model = "fallback-model", string? endpoint = "http://fallback:11434")
     {
         var runtimeSettings = CreateRuntimeSettings(provider, model, endpoint);
-        return new ProviderResolver(_mockStore.Object, runtimeSettings, _logger.Object);
+        var vaultResolver = CreateVaultResolver();
+        return new ProviderResolver(_mockStore.Object, runtimeSettings, vaultResolver, _logger.Object);
+    }
+    
+    private static RuntimeVaultResolver CreateVaultResolver()
+    {
+        var fakeVault = new FakeVault();
+        var configResolver = new VaultConfigurationResolver(TimeProvider.System, TimeSpan.FromMinutes(5));
+        return new RuntimeVaultResolver(fakeVault, configResolver, NullLogger<RuntimeVaultResolver>.Instance);
     }
 
     private static RuntimeModelSettings CreateRuntimeSettings(
@@ -152,5 +161,13 @@ public sealed class ProviderResolverTests
         result.DeploymentName.Should().Be("gpt-4o-deployment");
         result.AuthMode.Should().Be("api-key");
         result.DefinitionName.Should().Be("azure-prod");
+    }
+    
+    private sealed class FakeVault : IVault
+    {
+        public Task<string?> ResolveAsync(string name, VaultCallerContext ctx, CancellationToken ct = default)
+        {
+            return Task.FromResult<string?>(null);
+        }
     }
 }
