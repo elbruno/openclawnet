@@ -32,7 +32,7 @@ namespace OpenClawNet.PlaywrightTests;
 [Trait("Category", "RequiresModel")]
 public class WebsiteWatcherE2ETests : IAsyncLifetime
 {
-    private const string TargetUrl = "http://elbruno.com";
+    private const string TargetUrl = "https://elbruno.com";
     private const string AzureProviderName = "azure-openai-e2e";
     private const string AzureProfileName = "website-watcher-azure-e2e";
 
