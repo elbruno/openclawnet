@@ -219,7 +219,7 @@ else
         try
         {
             var http = HttpClientFactory.CreateClient("scheduler");
-            var request = new { rootPath = _newStoragePath };
+            var request = new StorageUpdateRequestDto { RootPath = _newStoragePath };
             var response = await http.PutAsJsonAsync("/api/storage/location", request);
             
             if (response.IsSuccessStatusCode)
@@ -234,8 +234,7 @@ else
             else
             {
                 _storageSaveSuccess = false;
-                var errorResult = await response.Content.ReadFromJsonAsync<StorageUpdateDto>();
-                _storageError = errorResult?.Message ?? $"Failed with status {response.StatusCode}";
+                _storageError = await ExtractStorageErrorAsync(response);
             }
         }
         catch (Exception ex)
@@ -257,6 +256,42 @@ else
         }
     }
 
+    private static async Task<string> ExtractStorageErrorAsync(HttpResponseMessage response)
+    {
+        var payload = await response.Content.ReadAsStringAsync();
+
+        if (string.IsNullOrWhiteSpace(payload))
+            return $"Failed with status {(int)response.StatusCode} ({response.StatusCode})";
+
+        try
+        {
+            var storageError = System.Text.Json.JsonSerializer.Deserialize<StorageUpdateDto>(payload, new System.Text.Json.JsonSerializerOptions(System.Text.Json.JsonSerializerDefaults.Web));
+            if (!string.IsNullOrWhiteSpace(storageError?.Message))
+                return storageError.Message;
+        }
+        catch
+        {
+            // Fall through to generic parsing paths.
+        }
+
+        try
+        {
+            using var doc = System.Text.Json.JsonDocument.Parse(payload);
+            if (doc.RootElement.TryGetProperty("detail", out var detail) && detail.ValueKind == System.Text.Json.JsonValueKind.String)
+                return detail.GetString() ?? $"Failed with status {(int)response.StatusCode} ({response.StatusCode})";
+            if (doc.RootElement.TryGetProperty("title", out var title) && title.ValueKind == System.Text.Json.JsonValueKind.String)
+                return title.GetString() ?? $"Failed with status {(int)response.StatusCode} ({response.StatusCode})";
+        }
+        catch
+        {
+            // Ignore non-JSON payloads.
+        }
+
+        return payload.Length <= 300
+            ? payload
+            : payload[..300] + "...";
+    }
+
     private sealed class SchedulerSettingsDto
     {
         public int MaxConcurrentJobs { get; set; } = 3;
@@ -276,6 +311,11 @@ else
         public bool Success { get; set; }
         public string Message { get; set; } = string.Empty;
         public string? NewPath { get; set; }
+    }
+
+    private sealed class StorageUpdateRequestDto
+    {
+        public string RootPath { get; set; } = string.Empty;
     }
 }
 

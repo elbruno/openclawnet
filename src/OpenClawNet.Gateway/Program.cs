@@ -42,6 +42,7 @@ using OpenClawNet.Mcp.Web;
 using OpenClawNet.Channels.Adapters;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.Configuration.AddJsonFile("storage-settings.json", optional: true, reloadOnChange: false);
 
 // Aspire service defaults
 builder.AddServiceDefaults();

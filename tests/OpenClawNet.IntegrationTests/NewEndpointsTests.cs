@@ -108,6 +108,37 @@ public sealed class NewEndpointsTests(GatewayWebAppFactory factory)
     }
 
     [Fact]
+    public async Task UpdateStorageLocation_AcceptsAbsoluteWindowsStylePath()
+    {
+        var client = factory.CreateClient();
+        var driveRoot = Path.GetPathRoot(Path.GetTempPath()) ?? "C:\\";
+        var targetPath = Path.Combine(driveRoot, "openclawnet-storage-e2e");
+
+        var resp = await client.PutAsJsonAsync("/api/storage/location", new { rootPath = targetPath });
+        resp.EnsureSuccessStatusCode();
+
+        var result = await resp.Content.ReadFromJsonAsync<StorageUpdateResponse>(JsonOpts);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeTrue();
+        result.NewPath.Should().NotBeNullOrWhiteSpace();
+        Path.GetFullPath(result.NewPath!).Should().Be(Path.GetFullPath(targetPath));
+    }
+
+    [Fact]
+    public async Task UpdateStorageLocation_ReturnsTypedErrorPayload_ForInvalidPath()
+    {
+        var client = factory.CreateClient();
+
+        var resp = await client.PutAsJsonAsync("/api/storage/location", new { rootPath = "relative-path" });
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+
+        var result = await resp.Content.ReadFromJsonAsync<StorageUpdateResponse>(JsonOpts);
+        result.Should().NotBeNull();
+        result!.Success.Should().BeFalse();
+        result.Message.ToLowerInvariant().Should().Contain("absolute");
+    }
+
+    [Fact]
     public async Task SearchRuns_FiltersByStatus()
     {
         var client = factory.CreateClient();

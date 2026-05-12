@@ -22,38 +22,26 @@ public static class StorageEndpoints
         .WithDescription("Returns the current storage directory configuration");
 
         // PUT /api/storage/location
-        group.MapPut("/location", async (StorageUpdateRequest request, 
-                                         IConfiguration configuration,
+        group.MapPut("/location", async (StorageUpdateRequest request,
+                                         IHostEnvironment hostEnvironment,
                                          ILogger<StorageOptions> logger) =>
         {
             try
             {
                 // Validate input
                 if (string.IsNullOrWhiteSpace(request.RootPath))
-                    return Results.BadRequest(new StorageUpdateResponse(
-                        Success: false,
-                        Message: "Root path cannot be empty",
-                        NewPath: null
-                    ));
+                    return StorageUpdateError(StatusCodes.Status400BadRequest, "Root path cannot be empty");
 
                 // Check if path is absolute
                 if (!Path.IsPathRooted(request.RootPath))
-                    return Results.BadRequest(new StorageUpdateResponse(
-                        Success: false,
-                        Message: "Path must be absolute",
-                        NewPath: null
-                    ));
+                    return StorageUpdateError(StatusCodes.Status400BadRequest, "Path must be absolute");
 
                 // Normalize path
                 var normalizedPath = Path.GetFullPath(request.RootPath);
 
                 // Validate not in system roots
                 if (IsSystemPath(normalizedPath))
-                    return Results.BadRequest(new StorageUpdateResponse(
-                        Success: false,
-                        Message: "Cannot use system directories (Windows, Program Files, System32, etc.)",
-                        NewPath: null
-                    ));
+                    return StorageUpdateError(StatusCodes.Status400BadRequest, "Cannot use system directories (Windows, Program Files, System32, etc.)");
 
                 // Check if we can create the directory
                 try
@@ -62,17 +50,11 @@ public static class StorageEndpoints
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    return Results.Problem(
-                        detail: "Permission denied: Cannot create or write to the specified path",
-                        statusCode: 403
-                    );
+                    return StorageUpdateError(StatusCodes.Status403Forbidden, "Permission denied: Cannot create or write to the specified path");
                 }
                 catch (IOException ex)
                 {
-                    return Results.Problem(
-                        detail: $"IO error: {ex.Message}",
-                        statusCode: 500
-                    );
+                    return StorageUpdateError(StatusCodes.Status500InternalServerError, $"IO error: {ex.Message}");
                 }
 
                 // Test write permissions
@@ -84,22 +66,16 @@ public static class StorageEndpoints
                 }
                 catch (UnauthorizedAccessException)
                 {
-                    return Results.Problem(
-                        detail: "Permission denied: Path is not writable",
-                        statusCode: 403
-                    );
+                    return StorageUpdateError(StatusCodes.Status403Forbidden, "Permission denied: Path is not writable");
                 }
                 catch (IOException ex)
                 {
-                    return Results.Problem(
-                        detail: $"IO error while testing write permissions: {ex.Message}",
-                        statusCode: 500
-                    );
+                    return StorageUpdateError(StatusCodes.Status500InternalServerError, $"IO error while testing write permissions: {ex.Message}");
                 }
 
                 // Persist to appsettings.json
-                var settingsPath = Path.Combine(AppContext.BaseDirectory, "appsettings.json");
-                var fallbackPath = Path.Combine(AppContext.BaseDirectory, "storage-settings.json");
+                var settingsPath = Path.Combine(hostEnvironment.ContentRootPath, "appsettings.json");
+                var fallbackPath = Path.Combine(hostEnvironment.ContentRootPath, "storage-settings.json");
                 
                 // Try to update existing appsettings.json, or create storage-settings.json
                 string configFileUsed;
@@ -122,15 +98,20 @@ public static class StorageEndpoints
             catch (Exception ex)
             {
                 logger.LogError(ex, "Error updating storage location");
-                return Results.Problem(
-                    detail: $"Unexpected error: {ex.Message}",
-                    statusCode: 500
-                );
+                return StorageUpdateError(StatusCodes.Status500InternalServerError, $"Unexpected error: {ex.Message}");
             }
         })
         .WithName("UpdateStorageLocation")
         .WithDescription("Updates the storage root path (requires restart to take effect)");
     }
+
+    private static IResult StorageUpdateError(int statusCode, string message) =>
+        Results.Json(
+            new StorageUpdateResponse(
+                Success: false,
+                Message: message,
+                NewPath: null),
+            statusCode: statusCode);
 
     /// <summary>
     /// Validates that a path is not in protected system directories
