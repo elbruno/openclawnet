@@ -3,6 +3,7 @@
 // Tests: import button, single file, folder archive, duplicates, invalid files, UX flow, error handling
 
 using System.IO.Compression;
+using System.Net;
 using System.Net.Http.Json;
 using Microsoft.Playwright;
 
@@ -372,35 +373,17 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                 await File.WriteAllTextAsync(tempTxtFile, "This is a text file, not markdown");
                 await LogStepAsync("📝 Created invalid .txt file");
 
-                await Page.GotoAsync($"{Fixture.WebBaseUrl}/skills", new PageGotoOptions
-                {
-                    WaitUntil = WaitUntilState.NetworkIdle,
-                    Timeout = 60_000
-                });
-
-                var importButton = Page.Locator("[data-testid='skills-import-button']");
-                await importButton.ClickAsync();
-
-                // Wait for modal and file input to be mounted
-                var fileInput = Page.Locator("input[type='file']").First;
-                await fileInput.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 10_000 });
-                await fileInput.SetInputFilesAsync(tempTxtFile);
-                await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                await Task.Delay(500);
+                await NavigateToSkillsPageAsync();
+                await OpenImportDialogAsync();
+                await UploadImportFileAsync(tempTxtFile);
                 await LogStepAsync("📤 .txt file upload attempted");
 
-                // Verify rejection via API call
-                using var client = Fixture.CreateGatewayHttpClient();
-                using var txtContent = new MultipartFormDataContent();
-                using var txtStream = new StreamContent(File.OpenRead(tempTxtFile));
-                txtContent.Add(txtStream, "file", Path.GetFileName(tempTxtFile));
-                
-                var txtResponse = await client.PostAsync("/api/skills/import", txtContent);
-                Assert.True(
-                    txtResponse.StatusCode == System.Net.HttpStatusCode.BadRequest,
-                    $"Expected 400 for .txt file, got {txtResponse.StatusCode}"
-                );
-                await LogStepAsync($"✅ .txt file rejected with 400 Bad Request");
+                await ExpectImportErrorAsync(
+                    "Unsupported File Type",
+                    "Only .md and .zip files are supported.",
+                    ".txt");
+                await LogStepAsync("✅ Unsupported extension shown in UI");
+                await DismissImportErrorAsync();
 
                 // Test 2: .md file with malformed frontmatter
                 var badContent = """
@@ -412,31 +395,21 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                     """;
 
                 await File.WriteAllTextAsync(tempBadMdFile, badContent);
-
-                await importButton.ClickAsync();
-                await LogStepAsync("📝 Created .md file with invalid frontmatter - import button clicked");
-                // Wait for modal and file input to be mounted
-                var fileInput2 = Page.Locator("input[type='file']").First;
-                await fileInput2.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 10_000 });
-                await fileInput2.SetInputFilesAsync(tempBadMdFile);
-                await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                await Task.Delay(500);
+                await LogStepAsync("📝 Created .md file with invalid frontmatter");
+                await UploadImportFileAsync(tempBadMdFile);
                 await LogStepAsync("📤 Malformed .md file upload attempted");
 
-                // Verify malformed file is rejected
-                using var mdContent = new MultipartFormDataContent();
-                using var mdStream = new StreamContent(File.OpenRead(tempBadMdFile));
-                mdContent.Add(mdStream, "file", Path.GetFileName(tempBadMdFile));
-                
-                var mdResponse = await client.PostAsync("/api/skills/import", mdContent);
-                Assert.True(
-                    mdResponse.StatusCode == System.Net.HttpStatusCode.BadRequest,
-                    $"Expected 400 for malformed .md, got {mdResponse.StatusCode}"
-                );
-                await LogStepAsync($"✅ Malformed .md rejected with 400 Bad Request");
+                await ExpectImportErrorAsync(
+                    "Malformed Skill",
+                    "The skill file format is invalid.",
+                    "frontmatter");
+                await LogStepAsync("✅ Malformed markdown shown in UI");
 
                 // Verify page remains responsive
+                await CloseImportDialogAsync();
+                var importButton = Page.GetByTestId("skills-import-button");
                 await Assertions.Expect(importButton).ToBeVisibleAsync();
+                await Assertions.Expect(importButton).ToBeEnabledAsync();
                 await LogStepAsync("✅ UI remains responsive after validation errors");
             }
             finally
@@ -538,6 +511,9 @@ public class SkillsImportE2ETests : PlaywrightTestBase
             var tempDir = Path.Combine(Directory.GetCurrentDirectory(), $"error-test-{Guid.NewGuid():N}");
             var emptyZip = Path.Combine(Directory.GetCurrentDirectory(), $"empty-{Guid.NewGuid():N}.zip");
             var hugeFile = Path.Combine(Directory.GetCurrentDirectory(), $"huge-{Guid.NewGuid():N}.md");
+            var importedSpecialSkillName = $"special-char-skill-{Guid.NewGuid():N}".Substring(0, 32);
+            var specialName = $"skill-with-ñ-测试-{Guid.NewGuid():N}.md";
+            var specialFile = Path.Combine(Directory.GetCurrentDirectory(), specialName);
 
             try
             {
@@ -546,45 +522,22 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                 ZipFile.CreateFromDirectory(tempDir, emptyZip);
                 await LogStepAsync("📦 Created empty zip archive");
 
-                await Page.GotoAsync($"{Fixture.WebBaseUrl}/skills", new PageGotoOptions
-                {
-                    WaitUntil = WaitUntilState.NetworkIdle,
-                    Timeout = 60_000
-                });
-
-                var importButton = Page.Locator("[data-testid='skills-import-button']");
-
-                // Attempt to upload empty zip
-                await importButton.ClickAsync();
-                // Wait for modal and file input to be mounted
-                var fileInput = Page.Locator("input[type='file']").First;
-                await fileInput.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 10_000 });
-                await fileInput.SetInputFilesAsync(emptyZip);
-                await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                await Task.Delay(500);
+                var importButton = await NavigateToSkillsPageAsync();
+                await OpenImportDialogAsync(importButton);
+                await UploadImportFileAsync(emptyZip);
                 await LogStepAsync("📤 Empty zip upload attempted");
 
-                // Verify error handling
-                using var client = Fixture.CreateGatewayHttpClient();
-                using var emptyContent = new MultipartFormDataContent();
-                using var emptyStream = new StreamContent(File.OpenRead(emptyZip));
-                emptyContent.Add(emptyStream, "file", Path.GetFileName(emptyZip));
-                
-                var emptyResponse = await client.PostAsync("/api/skills/import", emptyContent);
-                Assert.True(
-                    emptyResponse.StatusCode == System.Net.HttpStatusCode.BadRequest ||
-                    emptyResponse.StatusCode == System.Net.HttpStatusCode.InternalServerError,
-                    $"Empty zip should be rejected, got {emptyResponse.StatusCode}"
-                );
-                await LogStepAsync($"✅ Empty zip handled gracefully with {emptyResponse.StatusCode}");
+                await ExpectImportErrorAsync(
+                    "Malformed Skill",
+                    "The skill file format is invalid.",
+                    "SKILL.md");
+                await LogStepAsync("✅ Empty zip handled gracefully in UI");
+                await DismissImportErrorAsync();
 
                 // Test 2: File with special characters in name
-                var specialName = $"skill-with-ñ-测试-{Guid.NewGuid():N}.md";
-                var specialFile = Path.Combine(Directory.GetCurrentDirectory(), specialName);
-                
                 var specialContent = $"""
                     ---
-                    name: special-char-skill
+                    name: {importedSpecialSkillName}
                     description: Test special characters
                     ---
                     # Special Char Test
@@ -592,14 +545,12 @@ public class SkillsImportE2ETests : PlaywrightTestBase
 
                 await File.WriteAllTextAsync(specialFile, specialContent);
 
-                await importButton.ClickAsync();
-                await LogStepAsync($"📝 Created file with special characters: {specialName} - import button clicked");
-                // Wait for modal and file input to be mounted
-                var fileInput2 = Page.Locator("input[type='file']").First;
-                await fileInput2.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 10_000 });
-                await fileInput2.SetInputFilesAsync(specialFile);
-                await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                await Task.Delay(500);
+                await LogStepAsync($"📝 Created file with special characters: {specialName}");
+                await UploadImportFileAsync(specialFile);
+                await WaitForImportSuccessAsync();
+                using var client = Fixture.CreateGatewayHttpClient();
+                var specialResponse = await WaitForSkillAsync(client, importedSpecialSkillName);
+                Assert.True(specialResponse.IsSuccessStatusCode, $"Expected imported special-char skill, got {specialResponse.StatusCode}");
                 await LogStepAsync("✅ Special character filename handled");
 
                 // Test 3: Very large file (edge case)
@@ -617,29 +568,23 @@ public class SkillsImportE2ETests : PlaywrightTestBase
                 await File.WriteAllTextAsync(hugeFile, largeContent);
                 await LogStepAsync("📝 Created large test file (5+ MB)");
 
-                await importButton.ClickAsync();
-                var fileInput3 = Page.Locator("input[type='file']").First;
-                await fileInput3.SetInputFilesAsync(hugeFile);
-                
-                // Large file upload might timeout, which is acceptable error handling
-                try
-                {
-                    await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
-                    await Task.Delay(500);
-                    await LogStepAsync("ℹ️ Large file upload processed");
-                }
-                catch (TimeoutException)
-                {
-                    await LogStepAsync("✅ Large file upload timeout handled gracefully");
-                }
+                await OpenImportDialogAsync(importButton);
+                await UploadImportFileAsync(hugeFile);
+                await ExpectImportErrorAsync(
+                    "File Too Large",
+                    "The skill file is too large",
+                    "exceeds");
+                await LogStepAsync("✅ Large file upload rejected gracefully");
 
                 // Verify UI recovery
+                await CloseImportDialogAsync();
                 await Assertions.Expect(importButton).ToBeVisibleAsync(new() { Timeout = 5_000 });
+                await Assertions.Expect(importButton).ToBeEnabledAsync();
                 await LogStepAsync("✅ UI recovered from error scenarios");
             }
             finally
             {
-                foreach (var f in new[] { emptyZip, hugeFile })
+                foreach (var f in new[] { emptyZip, hugeFile, specialFile })
                 {
                     if (File.Exists(f)) File.Delete(f);
                 }
@@ -648,4 +593,116 @@ public class SkillsImportE2ETests : PlaywrightTestBase
             }
         });
     }
+
+    private async Task<ILocator> NavigateToSkillsPageAsync()
+    {
+        var importButton = Page.GetByTestId("skills-import-button");
+
+        Exception? lastException = null;
+        for (var attempt = 1; attempt <= 4; attempt++)
+        {
+            try
+            {
+                await Page.GotoAsync($"{Fixture.WebBaseUrl}/skills", new PageGotoOptions
+                {
+                    WaitUntil = WaitUntilState.DOMContentLoaded,
+                    Timeout = 20_000
+                });
+
+                await Assertions.Expect(importButton).ToBeVisibleAsync(new() { Timeout = 15_000 });
+                await Assertions.Expect(importButton).ToBeEnabledAsync();
+                await Page.WaitForTimeoutAsync(500);
+                return importButton;
+            }
+            catch (Exception ex) when ((ex is PlaywrightException || ex is TimeoutException) && attempt < 4)
+            {
+                lastException = ex;
+                await LogStepAsync($"⏳ Skills page load attempt {attempt} failed; retrying");
+                await Page.WaitForTimeoutAsync(3_000);
+            }
+        }
+
+        throw lastException ?? new TimeoutException("Failed to navigate to skills page.");
+    }
+
+    private async Task OpenImportDialogAsync(ILocator? importButton = null)
+    {
+        importButton ??= Page.GetByTestId("skills-import-button");
+        await Page.WaitForTimeoutAsync(500);
+
+        for (var attempt = 1; attempt <= 3; attempt++)
+        {
+            await importButton.ClickAsync();
+            try
+            {
+                await Assertions.Expect(ImportDialog).ToBeVisibleAsync(new() { Timeout = 3_000 });
+                return;
+            }
+            catch (PlaywrightException) when (attempt < 3)
+            {
+                await LogStepAsync($"⏳ Import dialog did not open on click {attempt}; retrying");
+                await Page.WaitForTimeoutAsync(500);
+            }
+        }
+
+        await Assertions.Expect(ImportDialog).ToBeVisibleAsync(new() { Timeout = 10_000 });
+    }
+
+    private async Task UploadImportFileAsync(string path)
+    {
+        var fileInput = ImportDialog.Locator("input[type='file']").First;
+        await fileInput.WaitForAsync(new() { State = WaitForSelectorState.Attached, Timeout = 10_000 });
+        await fileInput.SetInputFilesAsync(path);
+    }
+
+    private async Task WaitForImportSuccessAsync()
+    {
+        await Assertions.Expect(ImportDialog).Not.ToBeVisibleAsync(new() { Timeout = 15_000 });
+        await Assertions.Expect(Page.GetByTestId("skills-import-button")).ToBeVisibleAsync(new() { Timeout = 10_000 });
+    }
+
+    private async Task<HttpResponseMessage> WaitForSkillAsync(HttpClient client, string skillName)
+    {
+        HttpResponseMessage? lastResponse = null;
+        for (var attempt = 1; attempt <= 10; attempt++)
+        {
+            lastResponse?.Dispose();
+            lastResponse = await client.GetAsync($"/api/skills/{skillName}");
+            if (lastResponse.IsSuccessStatusCode)
+            {
+                return lastResponse;
+            }
+
+            await Page.WaitForTimeoutAsync(1_000);
+        }
+
+        return lastResponse ?? new HttpResponseMessage(HttpStatusCode.NotFound);
+    }
+
+    private async Task ExpectImportErrorAsync(string title, string messageContains, string? detailContains = null)
+    {
+        await Assertions.Expect(ImportErrorAlert).ToBeVisibleAsync(new() { Timeout = 10_000 });
+        await Assertions.Expect(ImportErrorAlert).ToContainTextAsync(title);
+        await Assertions.Expect(ImportErrorAlert).ToContainTextAsync(messageContains);
+        if (!string.IsNullOrWhiteSpace(detailContains))
+        {
+            await Assertions.Expect(ImportErrorAlert).ToContainTextAsync(detailContains);
+        }
+    }
+
+    private async Task DismissImportErrorAsync()
+    {
+        await ImportDialog.GetByRole(AriaRole.Button, new() { Name = "Dismiss" }).ClickAsync();
+        await Assertions.Expect(ImportErrorAlert).Not.ToBeVisibleAsync(new() { Timeout = 10_000 });
+    }
+
+    private async Task CloseImportDialogAsync()
+    {
+        var closeButton = ImportDialog.Locator(".modal-header .btn-close");
+        await closeButton.ClickAsync();
+        await Assertions.Expect(ImportDialog).Not.ToBeVisibleAsync(new() { Timeout = 10_000 });
+    }
+
+    private ILocator ImportDialog => Page.Locator("[role='dialog'][aria-labelledby='importSkillsTitle']");
+    private ILocator ImportErrorAlert => ImportDialog.Locator(".alert[role='alert']").First;
 }
