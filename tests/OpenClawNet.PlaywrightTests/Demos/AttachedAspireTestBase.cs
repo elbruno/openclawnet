@@ -101,6 +101,8 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     private IBrowser? _browser;
     private IPage? _page;
     private bool _startedAspireForRun;
+    private bool _isReady;
+    private string? _startupSkipReason;
 
     /// <summary>
     /// The Blazor Web frontend URL (e.g., https://localhost:7294).
@@ -118,35 +120,58 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// The active Playwright page. Tests can use this directly for navigation and assertions.
     /// Disposed automatically when the test class completes.
     /// </summary>
-    protected IPage Page => _page ?? throw new InvalidOperationException("Page not initialized");
+    protected IPage Page
+    {
+        get
+        {
+            EnsureReadyOrSkip();
+            return _page ?? throw new InvalidOperationException("Page not initialized");
+        }
+    }
 
     public async Task InitializeAsync()
     {
-        await ResolveOrStartAspireAsync();
-
-        // Initialize Playwright — ALWAYS headed for demo tests.
-        _playwright = await Playwright.CreateAsync();
-
-        // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
-        // Match the AppHostFixture pattern (lines ~141–160) for consistency.
-        var defaultSlowMo = 1500;
-        var slowMo = defaultSlowMo;
-        var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
-        if (!string.IsNullOrWhiteSpace(slowMoRaw)
-            && int.TryParse(slowMoRaw, out var parsedSlowMo)
-            && parsedSlowMo >= 0)
+        try
         {
-            slowMo = parsedSlowMo;
+            await ResolveOrStartAspireAsync();
+
+            // Initialize Playwright — ALWAYS headed for demo tests.
+            _playwright = await Playwright.CreateAsync();
+
+            // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
+            // Match the AppHostFixture pattern (lines ~141–160) for consistency.
+            var defaultSlowMo = 1500;
+            var slowMo = defaultSlowMo;
+            var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
+            if (!string.IsNullOrWhiteSpace(slowMoRaw)
+                && int.TryParse(slowMoRaw, out var parsedSlowMo)
+                && parsedSlowMo >= 0)
+            {
+                slowMo = parsedSlowMo;
+            }
+
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = false, // ALWAYS headed for demo visibility
+                SlowMo = slowMo
+            });
+
+            // Create a new page for this test class.
+            _page = await _browser.NewPageAsync();
+            _isReady = true;
         }
-
-        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        catch (Xunit.SkipException ex)
         {
-            Headless = false, // ALWAYS headed for demo visibility
-            SlowMo = slowMo
-        });
-
-        // Create a new page for this test class.
-        _page = await _browser.NewPageAsync();
+            _isReady = false;
+            _startupSkipReason = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _isReady = false;
+            _startupSkipReason =
+                "Attached Aspire demo prerequisites are unavailable. " +
+                $"Startup error: {ex.GetType().Name}: {ex.Message}";
+        }
     }
 
     public async Task DisposeAsync()
@@ -173,6 +198,8 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// </summary>
     protected HttpClient CreateGatewayHttpClient()
     {
+        EnsureReadyOrSkip();
+
         var handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -233,9 +260,15 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// </summary>
     protected async Task WithScreenshotOnFailure(Func<Task> action)
     {
+        EnsureReadyOrSkip();
+
         try
         {
             await action();
+        }
+        catch (Xunit.SkipException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -246,6 +279,11 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             await LogStepAsync($"❌ Test failed. Screenshot saved: {screenshotPath}");
             throw new Exception($"Test failed. Screenshot: {screenshotPath}", ex);
         }
+    }
+
+    private void EnsureReadyOrSkip()
+    {
+        Skip.IfNot(_isReady, _startupSkipReason ?? "Attached Aspire demo prerequisites are unavailable.");
     }
 
     private async Task ResolveOrStartAspireAsync()
@@ -380,9 +418,33 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             return (-1, string.Empty, "Failed to launch aspire process.");
         }
 
-        var stdout = await process.StandardOutput.ReadToEndAsync();
-        var stderr = await process.StandardError.ReadToEndAsync();
-        await process.WaitForExitAsync();
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+        var waitForExitTask = process.WaitForExitAsync();
+        var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
+
+        if (await Task.WhenAny(waitForExitTask, timeoutTask) != waitForExitTask)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Process may already be terminating.
+            }
+
+            var timedOutStdout = await stdoutTask;
+            var timedOutStderr = await stderrTask;
+            return (
+                -1,
+                timedOutStdout,
+                $"{timedOutStderr}{Environment.NewLine}Aspire command timed out after 30 seconds: aspire {arguments}");
+        }
+
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+        await waitForExitTask;
         return (process.ExitCode, stdout, stderr);
     }
 
