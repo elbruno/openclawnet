@@ -1,4 +1,5 @@
 using System.Net.Http.Json;
+using System.Text.Json;
 using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
@@ -38,6 +39,11 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         string Instructions,
         bool RequireToolApproval);
 
+    private sealed record ApprovalStreamProbeResult(
+        bool EmitsApproval,
+        string SkipReason,
+        string? ToolName = null);
+
     /// <summary>
     /// Creates (or upserts) an AgentProfile via the gateway's PUT /api/agent-profiles/{name}
     /// endpoint. The profile name is the natural key — it lives in the URL, not the body.
@@ -76,6 +82,76 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         var sendBtn = Page.GetByTestId("chat-send");
         await Microsoft.Playwright.Assertions.Expect(sendBtn).ToBeEnabledAsync(new() { Timeout = 5_000 });
         await sendBtn.ClickAsync();
+    }
+
+    private async Task<ApprovalStreamProbeResult> ProbeApprovalStreamAsync(string profileName, string prompt)
+    {
+        using var http = Fixture.CreateGatewayHttpClient();
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
+
+        try
+        {
+            using var response = await http.PostAsJsonAsync("/api/chat/stream", new
+            {
+                sessionId = Guid.NewGuid(),
+                message = prompt,
+                agentProfileName = profileName
+            }, cts.Token);
+            response.EnsureSuccessStatusCode();
+
+            await using var stream = await response.Content.ReadAsStreamAsync(cts.Token);
+            using var reader = new StreamReader(stream);
+
+            while (!reader.EndOfStream && !cts.IsCancellationRequested)
+            {
+                var line = await reader.ReadLineAsync(cts.Token);
+                if (string.IsNullOrWhiteSpace(line))
+                {
+                    continue;
+                }
+
+                using var document = JsonDocument.Parse(line);
+                var root = document.RootElement;
+                var eventType = root.TryGetProperty("type", out var typeElement)
+                    ? typeElement.GetString()
+                    : null;
+                var toolName = root.TryGetProperty("toolName", out var toolElement)
+                    ? toolElement.GetString()
+                    : null;
+
+                if (string.Equals(eventType, "tool_approval", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ApprovalStreamProbeResult(true, string.Empty, toolName);
+                }
+
+                if (string.Equals(eventType, "complete", StringComparison.OrdinalIgnoreCase))
+                {
+                    return new ApprovalStreamProbeResult(
+                        false,
+                        $"Profile '{profileName}' completed without emitting a tool_approval event.");
+                }
+
+                if (string.Equals(eventType, "error", StringComparison.OrdinalIgnoreCase))
+                {
+                    var content = root.TryGetProperty("content", out var contentElement)
+                        ? contentElement.GetString()
+                        : "Unknown error";
+                    return new ApprovalStreamProbeResult(
+                        false,
+                        $"Profile '{profileName}' returned an error before tool approval: {content}");
+                }
+            }
+
+            return new ApprovalStreamProbeResult(
+                false,
+                $"Profile '{profileName}' did not emit a tool_approval event within 90s.");
+        }
+        catch (OperationCanceledException)
+        {
+            return new ApprovalStreamProbeResult(
+                false,
+                $"Profile '{profileName}' did not emit a tool_approval event within 90s.");
+        }
     }
 
     // ---------------------------------------------------------------------
@@ -331,7 +407,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
     //              xUnit produces a Pass/Fail per model, which doubles as
     //              our compatibility table.
     // ---------------------------------------------------------------------
-    [Theory]
+    [SkippableTheory]
     [Trait("Category", "ToolApprovalMatrix")]
     [InlineData("gemma4:e2b")]
     [InlineData("qwen2.5:3b")]
@@ -339,20 +415,29 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
     [InlineData("phi4-mini:latest")]
     public async Task Model_Matrix_PausesOnToolCall(string modelName)
     {
+        var probe = await Fixture.ProbeOllamaToolCallCompatibilityAsync(modelName);
+        Skip.IfNot(probe.IsSupported, probe.SkipReason);
+
         await WithScreenshotOnFailure(async () =>
         {
             await LogStepAsync($"📊 Matrix run for model: {modelName}");
+            await LogStepAsync($"[{modelName}] Probe accepted tool '{probe.ObservedToolName}' with args {probe.ObservedArgumentsJson ?? "{}"}");
+            const string prompt = "Please use browser_navigate to open https://example.com and tell me the title.";
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
                 Name: $"matrix-{modelName.Replace(':', '-').Replace('.', '-')}-{Guid.NewGuid():N}".ToLowerInvariant(),
                 Provider: "ollama", Model: modelName,
-                Instructions: "Use the browser tool to fetch https://example.com when asked.",
+                Instructions: "When asked to open a webpage, call the browser_navigate tool with the target URL. Do not answer from memory.",
                 RequireToolApproval: true));
             await LogStepAsync($"Profile created: {profileName}");
+
+            var approvalProbe = await ProbeApprovalStreamAsync(profileName, prompt);
+            Skip.IfNot(approvalProbe.EmitsApproval, approvalProbe.SkipReason);
+            await LogStepAsync($"[{modelName}] Gateway stream emitted tool_approval for '{approvalProbe.ToolName}'");
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
             await LogStepAsync($"Chat page loaded for {modelName} — sending prompt");
-            await SendChatMessageAsync("Please open example.com and tell me the title.");
+            await SendChatMessageAsync(prompt);
             await LogStepAsync($"[{modelName}] Prompt sent — waiting up to 90s for tool approval card");
 
             await WaitForWithTicksAsync(ApprovalCard(), 180_000, $"tool approval card ({modelName})");

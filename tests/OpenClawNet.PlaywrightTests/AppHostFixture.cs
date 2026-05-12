@@ -1,4 +1,7 @@
+using System.Collections.Concurrent;
 using System.Net;
+using System.Net.Http.Json;
+using System.Text.Json;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
@@ -13,6 +16,12 @@ namespace OpenClawNet.PlaywrightTests;
 /// </summary>
 public sealed class AppHostFixture : IAsyncLifetime
 {
+    public sealed record OllamaToolCallProbeResult(
+        bool IsSupported,
+        string SkipReason,
+        string? ObservedToolName = null,
+        string? ObservedArgumentsJson = null);
+
     /// <summary>
     /// Ollama model used by the AppHost for E2E tests. Matches the AppHost default
     /// (<c>gemma4:e2b</c>) so tests exercise the same model real users hit. Per
@@ -24,6 +33,8 @@ public sealed class AppHostFixture : IAsyncLifetime
     private DistributedApplication? _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
+    private readonly ConcurrentDictionary<string, Lazy<Task<OllamaToolCallProbeResult>>> _ollamaToolCallProbeCache =
+        new(StringComparer.OrdinalIgnoreCase);
 
     public string WebBaseUrl { get; private set; } = string.Empty;
     public string GatewayBaseUrl { get; private set; } = string.Empty;
@@ -68,6 +79,12 @@ public sealed class AppHostFixture : IAsyncLifetime
     /// <summary>True when EITHER local Ollama model OR Azure OpenAI is configured.</summary>
     public bool IsAnyToolCapableModelAvailable =>
         IsToolCapableModelAvailable || IsAzureOpenAIAvailable;
+
+    public Task<OllamaToolCallProbeResult> ProbeOllamaToolCallCompatibilityAsync(string modelName)
+        => _ollamaToolCallProbeCache
+            .GetOrAdd(modelName, static model => new Lazy<Task<OllamaToolCallProbeResult>>(
+                () => ProbeOllamaToolCallCompatibilityCoreAsync(model)))
+            .Value;
 
     /// <summary>
     /// Creates an HttpClient configured for the gateway endpoint with SSL validation disabled.
@@ -320,6 +337,114 @@ public sealed class AppHostFixture : IAsyncLifetime
             IsToolCapableModelAvailable = false;
             ToolCapableModelSkipReason =
                 $"Could not reach Ollama at {ollamaBase} ({ex.GetType().Name}: {ex.Message}); cannot verify '{ToolCapableTestModel}'.";
+        }
+    }
+
+    private static async Task<OllamaToolCallProbeResult> ProbeOllamaToolCallCompatibilityCoreAsync(string modelName)
+    {
+        var ollamaBase = Environment.GetEnvironmentVariable("OLLAMA_BASE_URL")
+            ?? "http://localhost:11434";
+
+        var payload = new
+        {
+            model = modelName,
+            stream = false,
+            messages = new object[]
+            {
+                new
+                {
+                    role = "system",
+                    content = "Use the provided browser_navigate tool when the user asks to open example.com. Do not answer from memory."
+                },
+                new
+                {
+                    role = "user",
+                    content = "Please use browser_navigate to open https://example.com and tell me the title."
+                }
+            },
+            tools = new object[]
+            {
+                new
+                {
+                    type = "function",
+                    function = new
+                    {
+                        name = "browser_navigate",
+                        description = "Navigate the headless browser to a URL.",
+                        parameters = new
+                        {
+                            type = "object",
+                            properties = new
+                            {
+                                url = new
+                                {
+                                    type = "string",
+                                    description = "URL to navigate to"
+                                }
+                            },
+                            required = new[] { "url" }
+                        }
+                    }
+                }
+            }
+        };
+
+        try
+        {
+            using var http = new HttpClient { BaseAddress = new Uri(ollamaBase), Timeout = TimeSpan.FromSeconds(120) };
+            using var response = await http.PostAsJsonAsync("/api/chat", payload);
+            if (!response.IsSuccessStatusCode)
+            {
+                return new OllamaToolCallProbeResult(
+                    IsSupported: false,
+                    SkipReason: $"Ollama probe for '{modelName}' returned {(int)response.StatusCode} {response.ReasonPhrase}.");
+            }
+
+            await using var stream = await response.Content.ReadAsStreamAsync();
+            using var document = await JsonDocument.ParseAsync(stream);
+
+            if (!document.RootElement.TryGetProperty("message", out var message) ||
+                !message.TryGetProperty("tool_calls", out var toolCalls) ||
+                toolCalls.ValueKind != JsonValueKind.Array ||
+                toolCalls.GetArrayLength() == 0)
+            {
+                return new OllamaToolCallProbeResult(
+                    IsSupported: false,
+                    SkipReason: $"Ollama model '{modelName}' did not emit any tool call during a direct browser_navigate probe.");
+            }
+
+            var firstToolCall = toolCalls[0];
+            var function = firstToolCall.TryGetProperty("function", out var functionElement)
+                ? functionElement
+                : default;
+            var observedName = function.ValueKind == JsonValueKind.Object &&
+                               function.TryGetProperty("name", out var nameElement)
+                ? nameElement.GetString()
+                : null;
+            var observedArguments = function.ValueKind == JsonValueKind.Object &&
+                                    function.TryGetProperty("arguments", out var argumentsElement)
+                ? argumentsElement.GetRawText()
+                : null;
+
+            if (!string.Equals(observedName, "browser_navigate", StringComparison.OrdinalIgnoreCase))
+            {
+                var reason = string.IsNullOrWhiteSpace(observedName)
+                    ? $"Ollama model '{modelName}' emitted a malformed tool call (missing function name) during the browser_navigate probe."
+                    : $"Ollama model '{modelName}' emitted '{observedName}' instead of 'browser_navigate' during the direct tool-call probe.";
+                return new OllamaToolCallProbeResult(false, reason, observedName, observedArguments);
+            }
+
+            return new OllamaToolCallProbeResult(
+                IsSupported: true,
+                SkipReason: string.Empty,
+                ObservedToolName: observedName,
+                ObservedArgumentsJson: observedArguments);
+        }
+        catch (Exception ex)
+        {
+            return new OllamaToolCallProbeResult(
+                IsSupported: false,
+                SkipReason: $"Could not verify Ollama tool-call compatibility for '{modelName}' at {ollamaBase} ({ex.GetType().Name}: {ex.Message}).");
         }
     }
 
