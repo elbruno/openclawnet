@@ -39,6 +39,8 @@ public sealed class AppHostFixture : IAsyncLifetime
     public string WebBaseUrl { get; private set; } = string.Empty;
     public string GatewayBaseUrl { get; private set; } = string.Empty;
     public string SchedulerBaseUrl { get; private set; } = string.Empty;
+    public bool IsReady { get; private set; }
+    public string? StartupSkipReason { get; private set; }
     public IBrowser Browser => _browser ?? throw new InvalidOperationException("Fixture not initialized");
 
     /// <summary>
@@ -196,6 +198,7 @@ public sealed class AppHostFixture : IAsyncLifetime
                 Headless = !headed,
                 SlowMo = slowMo
             });
+            IsReady = true;
         }
         catch (Xunit.SkipException)
         {
@@ -203,10 +206,13 @@ public sealed class AppHostFixture : IAsyncLifetime
         }
         catch (Exception ex)
         {
-            throw new Xunit.SkipException(
+            IsReady = false;
+            StartupSkipReason =
                 "Playwright AppHost fixture could not start in this environment. " +
                 "Ensure Aspire prerequisites are available (Docker/host resources as needed). " +
-                $"Startup error: {ex.GetType().Name}: {ex.Message}");
+                $"Startup error: {ex.GetType().Name}: {ex.Message}";
+
+            Console.WriteLine($"[AppHostFixture] {StartupSkipReason}");
         }
     }
 

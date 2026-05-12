@@ -33,6 +33,13 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
+        if (!_fixture.IsReady)
+        {
+            throw new Xunit.SkipException(
+                _fixture.StartupSkipReason
+                ?? "Playwright AppHost fixture did not initialize successfully.");
+        }
+
         var contextOptions = new BrowserNewContextOptions
         {
             IgnoreHTTPSErrors = true
