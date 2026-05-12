@@ -28,7 +28,7 @@ public class SkillEnableMatrixTests : TestContext, IDisposable
     public void RendersOneToggle_PerAgent()
     {
         var skill = MakeSkill(("chat-bot", true), ("analyst", false));
-        var cut = RenderComponent<SkillEnableMatrix>(p => p
+        var cut = Render<SkillEnableMatrix>(p => p
             .Add(x => x.Skill, skill)
             .Add(x => x.Agents, new[] { "chat-bot", "analyst" }));
 
@@ -45,7 +45,7 @@ public class SkillEnableMatrixTests : TestContext, IDisposable
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.NoContent));
 
         var skill = MakeSkill(("chat-bot", false));
-        var cut = RenderComponent<SkillEnableMatrix>(p => p
+        var cut = Render<SkillEnableMatrix>(p => p
             .Add(x => x.Skill, skill)
             .Add(x => x.Agents, new[] { "chat-bot" }));
 

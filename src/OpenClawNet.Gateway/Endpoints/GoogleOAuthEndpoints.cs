@@ -44,7 +44,7 @@ public static class GoogleOAuthEndpoints
     }
 
     private static async Task<IResult> StartOAuthFlow(
-        [FromQuery] string userId,
+        [FromQuery] string? userId,
         [FromServices] OpenClawNet.Tools.GoogleWorkspace.IOAuthFlowStateStore flowStateStore,
         [FromServices] IOptions<OpenClawNet.Tools.GoogleWorkspace.GoogleWorkspaceOptions> options,
         [FromServices] ILogger<Program> logger,
@@ -169,8 +169,11 @@ public static class GoogleOAuthEndpoints
                 ["code_verifier"] = flowState.CodeVerifier
             };
 
+            var tokenEndpoint = string.IsNullOrWhiteSpace(opts.TokenEndpoint)
+                ? GoogleTokenEndpoint
+                : opts.TokenEndpoint;
             var response = await httpClient.PostAsync(
-                GoogleTokenEndpoint,
+                tokenEndpoint,
                 new FormUrlEncodedContent(tokenRequest),
                 ct);
 
@@ -217,8 +220,9 @@ public static class GoogleOAuthEndpoints
     }
 
     private static async Task<IResult> DisconnectGoogle(
-        [FromQuery] string userId,
+        [FromQuery] string? userId,
         [FromServices] OpenClawNet.Tools.GoogleWorkspace.IGoogleOAuthTokenStore tokenStore,
+        [FromServices] IOptions<OpenClawNet.Tools.GoogleWorkspace.GoogleWorkspaceOptions> options,
         [FromServices] IHttpClientFactory httpClientFactory,
         [FromServices] ILogger<Program> logger,
         CancellationToken ct)
@@ -247,7 +251,10 @@ public static class GoogleOAuthEndpoints
                 try
                 {
                     var httpClient = httpClientFactory.CreateClient();
-                    var revokeUrl = $"{GoogleRevokeEndpoint}?token={Uri.EscapeDataString(tokenSet.RefreshToken)}";
+                    var revokeEndpoint = string.IsNullOrWhiteSpace(options.Value.RevokeEndpoint)
+                        ? GoogleRevokeEndpoint
+                        : options.Value.RevokeEndpoint;
+                    var revokeUrl = $"{revokeEndpoint}?token={Uri.EscapeDataString(tokenSet.RefreshToken)}";
                     var revokeResponse = await httpClient.PostAsync(revokeUrl, null, ct);
 
                     if (revokeResponse.IsSuccessStatusCode)

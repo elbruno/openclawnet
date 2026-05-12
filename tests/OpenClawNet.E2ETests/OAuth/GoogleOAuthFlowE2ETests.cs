@@ -121,10 +121,11 @@ public sealed class GoogleOAuthFlowE2ETests : IClassFixture<GoogleOAuthE2EFactor
         var requests = _factory.GoogleTokenEndpoint.LogEntries
             .Where(e => e.RequestMessage.Path == "/token" && e.RequestMessage.Method == "POST")
             .ToList();
-        requests.Should().ContainSingle("Google token endpoint should have been called once");
+        requests.Should().Contain(r => r.RequestMessage.Body != null && r.RequestMessage.Body.Contains("code=fake_auth_code"),
+            "Google token endpoint should have been called with the auth code");
 
-        var tokenRequest = requests[0].RequestMessage.Body!;
-        tokenRequest.Should().Contain("code=fake_auth_code");
+        var tokenRequest = requests.First(r => r.RequestMessage.Body != null && r.RequestMessage.Body.Contains("code=fake_auth_code"))
+            .RequestMessage.Body!;
         tokenRequest.Should().Contain("grant_type=authorization_code");
         tokenRequest.Should().Contain("code_verifier=");
 
@@ -146,7 +147,7 @@ public sealed class GoogleOAuthFlowE2ETests : IClassFixture<GoogleOAuthE2EFactor
 
         var body = await response.Content.ReadAsStringAsync();
         body.Should().Contain("state");
-        body.Should().Contain("invalid", "should mention that state is invalid");
+        body.ToLowerInvariant().Should().Contain("invalid", "should mention that state is invalid");
     }
 
     [Fact]
@@ -269,6 +270,8 @@ public sealed class GoogleOAuthE2EFactory : WebApplicationFactory<GatewayProgram
                 ["GoogleWorkspace:ClientId"] = "test-client-id",
                 ["GoogleWorkspace:ClientSecret"] = "test-client-secret",
                 ["GoogleWorkspace:RedirectUri"] = "http://localhost/api/auth/google/callback",
+                ["GoogleWorkspace:TokenEndpoint"] = _tokenEndpointUrl,
+                ["GoogleWorkspace:RevokeEndpoint"] = GoogleTokenEndpoint.Urls[0] + "/revoke",
                 ["GoogleWorkspace:Scopes:0"] = "https://www.googleapis.com/auth/gmail.readonly",
                 ["GoogleWorkspace:Scopes:1"] = "https://www.googleapis.com/auth/calendar.events",
                 

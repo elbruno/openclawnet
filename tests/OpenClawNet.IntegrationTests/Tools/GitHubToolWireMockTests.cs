@@ -143,7 +143,7 @@ public sealed class GitHubToolWireMockTests : IAsyncLifetime
         _serviceProvider = services.BuildServiceProvider();
 
         // Resolve GitHubTool from DI
-        var gitHubTool = _serviceProvider.GetRequiredService<ITool[]>()
+        var gitHubTool = _serviceProvider.GetServices<ITool>()
             .OfType<GitHubTool>()
             .FirstOrDefault();
         

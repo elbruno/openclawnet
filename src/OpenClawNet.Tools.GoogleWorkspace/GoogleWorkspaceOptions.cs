@@ -29,6 +29,16 @@ public sealed class GoogleWorkspaceOptions
     public string RedirectUri { get; set; } = "";
 
     /// <summary>
+    /// OAuth token endpoint (default: Google OAuth token endpoint).
+    /// </summary>
+    public string TokenEndpoint { get; set; } = "https://oauth2.googleapis.com/token";
+
+    /// <summary>
+    /// OAuth revoke endpoint (default: Google OAuth revoke endpoint).
+    /// </summary>
+    public string RevokeEndpoint { get; set; } = "https://oauth2.googleapis.com/revoke";
+
+    /// <summary>
     /// OAuth scopes to request. Default: minimal read-only access.
     /// gmail.readonly: Read Gmail messages (no send/modify)
     /// calendar.events: Create/edit calendar events (not full calendar admin)

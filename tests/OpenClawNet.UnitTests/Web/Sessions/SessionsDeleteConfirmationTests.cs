@@ -12,7 +12,7 @@ using SessionsPage = OpenClawNet.Web.Components.Pages.Sessions;
 
 namespace OpenClawNet.UnitTests.Web.Sessions;
 
-public class SessionsDeleteConfirmationTests : MudBlazorTestContext, IDisposable
+public class SessionsDeleteConfirmationTests : MudBlazorTestContext
 {
     private readonly Mock<HttpMessageHandler> _handler = new();
     private readonly Mock<IHttpClientFactory> _httpClientFactory = new();
@@ -28,7 +28,7 @@ public class SessionsDeleteConfirmationTests : MudBlazorTestContext, IDisposable
         _httpClientFactory.Setup(f => f.CreateClient("gateway")).Returns(_client);
         Services.AddSingleton(_httpClientFactory.Object);
 
-        RenderComponent<MudPopoverProvider>();
+        Render<MudPopoverProvider>();
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class SessionsDeleteConfirmationTests : MudBlazorTestContext, IDisposable
             .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedDelete = req)
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.NoContent));
 
-        var cut = RenderComponent<SessionsPage>();
+        var cut = Render<SessionsPage>();
 
         cut.WaitForAssertion(() =>
         {
@@ -81,7 +81,7 @@ public class SessionsDeleteConfirmationTests : MudBlazorTestContext, IDisposable
             .Callback<HttpRequestMessage, CancellationToken>((req, _) => capturedDelete = req)
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.NoContent));
 
-        var cut = RenderComponent<SessionsPage>();
+        var cut = Render<SessionsPage>();
 
         cut.WaitForAssertion(() =>
         {
@@ -91,10 +91,11 @@ public class SessionsDeleteConfirmationTests : MudBlazorTestContext, IDisposable
 
         cut.Find($"[data-testid='session-select-{sessionA}']").Change(true);
         cut.Find($"[data-testid='session-select-{sessionB}']").Change(true);
+        cut.WaitForAssertion(() => cut.Find("[data-testid='sessions-delete-selected']"));
         cut.Find("[data-testid='sessions-delete-selected']").Click();
 
         cut.FindAll("[data-testid='session-delete-dialog']").Should().NotBeEmpty();
-        cut.Find("[data-testid='session-delete-title']").TextContent.Should().Contain("Delete 2 sessions");
+        cut.Find("[data-testid='session-delete-dialog']").TextContent.Should().Contain("delete 2 sessions");
         capturedDelete.Should().BeNull("bulk delete should not fire until the user confirms");
 
         cut.Find("[data-testid='session-delete-confirm']").Click();

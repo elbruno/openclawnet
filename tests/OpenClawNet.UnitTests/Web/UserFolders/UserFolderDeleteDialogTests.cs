@@ -32,7 +32,7 @@ public class UserFolderDeleteDialogTests : TestContext, IDisposable
     [Fact]
     public void DeleteButton_DisabledByDefault_WhenInputIsEmpty()
     {
-        var cut = RenderComponent<UserFolderDeleteDialog>(p => p
+        var cut = Render<UserFolderDeleteDialog>(p => p
             .Add(x => x.Visible, true)
             .Add(x => x.FolderName, "samples")
             .Add(x => x.Client, _client));
@@ -48,7 +48,7 @@ public class UserFolderDeleteDialogTests : TestContext, IDisposable
     [InlineData("samplesX")]   // extra char
     public void DeleteButton_StaysDisabled_WhenTypedDoesNotMatchExactly(string typed)
     {
-        var cut = RenderComponent<UserFolderDeleteDialog>(p => p
+        var cut = Render<UserFolderDeleteDialog>(p => p
             .Add(x => x.Visible, true)
             .Add(x => x.FolderName, "samples")
             .Add(x => x.Client, _client));
@@ -62,7 +62,7 @@ public class UserFolderDeleteDialogTests : TestContext, IDisposable
     [Fact]
     public void DeleteButton_Enables_OnExactMatch()
     {
-        var cut = RenderComponent<UserFolderDeleteDialog>(p => p
+        var cut = Render<UserFolderDeleteDialog>(p => p
             .Add(x => x.Visible, true)
             .Add(x => x.FolderName, "samples")
             .Add(x => x.Client, _client));
@@ -82,7 +82,7 @@ public class UserFolderDeleteDialogTests : TestContext, IDisposable
             .ReturnsAsync(new HttpResponseMessage(HttpStatusCode.NoContent));
 
         string? deletedName = null;
-        var cut = RenderComponent<UserFolderDeleteDialog>(p => p
+        var cut = Render<UserFolderDeleteDialog>(p => p
             .Add(x => x.Visible, true)
             .Add(x => x.FolderName, "samples")
             .Add(x => x.Client, _client)
@@ -107,7 +107,7 @@ public class UserFolderDeleteDialogTests : TestContext, IDisposable
                 Content = JsonContent.Create(new UserFolderProblem("ConfirmationRequired"))
             });
 
-        var cut = RenderComponent<UserFolderDeleteDialog>(p => p
+        var cut = Render<UserFolderDeleteDialog>(p => p
             .Add(x => x.Visible, true)
             .Add(x => x.FolderName, "samples")
             .Add(x => x.Client, _client));

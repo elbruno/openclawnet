@@ -1,6 +1,8 @@
 // Issue #153 - Skills page: bulk select and bulk delete support
 // E2E tests for bulk selection and deletion of skills
 
+using System.Net.Http.Json;
+using FluentAssertions;
 using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
@@ -49,7 +51,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             var count = await skillRows.CountAsync();
             if (count > 0)
             {
-                var firstRow = skillRows.First();
+                var firstRow = skillRows.First;
                 var checkbox = firstRow.Locator("input[type='checkbox']");
                 await Assertions.Expect(checkbox).ToBeVisibleAsync();
             }
@@ -124,7 +126,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             await LogStepAsync("Check first skill checkbox");
-            var firstCheckbox = Page.Locator("input[type='checkbox'][data-testid^='skill-select-']").First();
+            var firstCheckbox = Page.Locator("input[type='checkbox'][data-testid^='skill-select-']").First;
             await firstCheckbox.CheckAsync();
 
             await LogStepAsync("Verify delete button appears");
@@ -273,7 +275,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             await Page.WaitForLoadStateAsync(LoadState.NetworkIdle);
 
             await LogStepAsync("Check a skill checkbox");
-            var firstCheckbox = Page.Locator("input[type='checkbox'][data-testid^='skill-select-']").First();
+            var firstCheckbox = Page.Locator("input[type='checkbox'][data-testid^='skill-select-']").First;
             await firstCheckbox.CheckAsync();
 
             await LogStepAsync("Verify delete button appears");
@@ -300,7 +302,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     private async Task<List<string>> CreateTestSkillsAsync(int count)
     {
         var skillNames = new List<string>();
-        var gatewayUrl = Fixture.GatewayUrl;
+        var gatewayUrl = Fixture.GatewayBaseUrl;
 
         for (int i = 0; i < count; i++)
         {
