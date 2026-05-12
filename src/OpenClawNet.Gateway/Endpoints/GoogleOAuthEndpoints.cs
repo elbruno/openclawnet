@@ -53,7 +53,9 @@ public static class GoogleOAuthEndpoints
         if (string.IsNullOrWhiteSpace(userId))
         {
             logger.LogWarning("OAuth start attempted with missing userId");
-            return Results.BadRequest(new { error = "userId parameter is required" });
+            return Results.Json(
+                new { error = "userId parameter is required" },
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         var opts = options.Value;
@@ -227,7 +229,9 @@ public static class GoogleOAuthEndpoints
         if (string.IsNullOrWhiteSpace(userId))
         {
             logger.LogWarning("OAuth disconnect attempted with missing userId");
-            return Results.BadRequest(new { error = "userId parameter is required" });
+            return Results.Json(
+                new { error = "userId parameter is required" },
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         try
