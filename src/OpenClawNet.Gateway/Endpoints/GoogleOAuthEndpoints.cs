@@ -145,7 +145,9 @@ public static class GoogleOAuthEndpoints
         if (flowState is null)
         {
             logger.LogWarning("OAuth callback with invalid or expired state parameter");
-            return Results.BadRequest(new { error = "invalid or expired state parameter" });
+            return Results.Json(
+                new { error = "invalid or expired state parameter" },
+                statusCode: StatusCodes.Status400BadRequest);
         }
 
         var userId = flowState.UserId;
