@@ -2,7 +2,6 @@
 // E2E tests for bulk selection and deletion of skills
 
 using System.Net.Http.Json;
-using FluentAssertions;
 using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
@@ -177,7 +176,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             Page.Dialog += async (_, dialog) =>
             {
                 await LogStepAsync($"Dialog appeared: {dialog.Message}");
-                dialog.Message.Should().Contain("Delete");
+                Assert.Contains("Delete", dialog.Message, StringComparison.OrdinalIgnoreCase);
                 await dialog.AcceptAsync();
             };
 

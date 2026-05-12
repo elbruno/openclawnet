@@ -1,3 +1,4 @@
+using System.Net;
 using Aspire.Hosting;
 using Aspire.Hosting.ApplicationModel;
 using Aspire.Hosting.Testing;
@@ -148,6 +149,12 @@ public sealed class AppHostFixture : IAsyncLifetime
             GatewayBaseUrl = _app.GetEndpoint("gateway", "https").ToString().TrimEnd('/');
             SchedulerBaseUrl = _app.GetEndpoint("scheduler", "http").ToString().TrimEnd('/');
 
+            // Resource state "Running" can be reached before HTTP endpoints are fully accepting requests.
+            await WaitForEndpointReadyAsync($"{GatewayBaseUrl}/health");
+            await WaitForEndpointReadyAsync($"{SchedulerBaseUrl}/health");
+            await WaitForEndpointReadyAsync($"{WebBaseUrl}/health");
+            await WaitForEndpointReadyAsync($"{WebBaseUrl}/secrets-vault");
+
             // Initialize Playwright
             _playwright = await Playwright.CreateAsync();
 
@@ -184,6 +191,47 @@ public sealed class AppHostFixture : IAsyncLifetime
                 "Ensure Aspire prerequisites are available (Docker/host resources as needed). " +
                 $"Startup error: {ex.GetType().Name}: {ex.Message}");
         }
+    }
+
+    private static async Task WaitForEndpointReadyAsync(string url)
+    {
+        var deadline = DateTime.UtcNow.AddMinutes(2);
+        Exception? lastException = null;
+        HttpStatusCode? lastStatusCode = null;
+
+        using var handler = new HttpClientHandler
+        {
+            ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
+        };
+        using var client = new HttpClient(handler)
+        {
+            Timeout = TimeSpan.FromSeconds(10)
+        };
+
+        while (DateTime.UtcNow < deadline)
+        {
+            try
+            {
+                using var response = await client.GetAsync(url);
+                lastStatusCode = response.StatusCode;
+                if (response.IsSuccessStatusCode)
+                {
+                    return;
+                }
+            }
+            catch (Exception ex)
+            {
+                lastException = ex;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(1));
+        }
+
+        throw new TimeoutException(
+            $"Timed out waiting for endpoint '{url}' to become ready. " +
+            $"Last status: {lastStatusCode?.ToString() ?? "<none>"}. " +
+            $"Last error: {lastException?.Message ?? "<none>"}",
+            lastException);
     }
 
     private void ProbeAzureOpenAIAvailability()
