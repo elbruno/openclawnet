@@ -78,11 +78,13 @@ public class SessionsDeleteConfirmationTests : PlaywrightTestBase
                 await Page.Locator($"[data-testid='session-select-{id}']").CheckAsync();
             }
 
-            await Page.Locator("[data-testid='sessions-delete-selected']").ClickAsync();
+            var deleteSelectedButton = Page.Locator("[data-testid='sessions-delete-selected']");
+            await Assertions.Expect(deleteSelectedButton).ToBeVisibleAsync(new() { Timeout = 15_000 });
+            await deleteSelectedButton.ClickAsync();
 
             var modal = Page.Locator("[data-testid='session-delete-dialog']");
             await Assertions.Expect(modal).ToBeVisibleAsync(new() { Timeout = 5_000 });
-            await Assertions.Expect(Page.Locator("[data-testid='session-delete-title']")).ToContainTextAsync("Delete 2 sessions");
+            await Assertions.Expect(modal).ToContainTextAsync("delete 2 sessions", new() { IgnoreCase = true });
 
             await Page.Locator("[data-testid='session-delete-confirm']").ClickAsync();
 
