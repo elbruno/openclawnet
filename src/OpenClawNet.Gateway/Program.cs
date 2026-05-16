@@ -158,20 +158,20 @@ builder.Services.Configure<OpenClawNet.Models.GitHubCopilot.GitHubCopilotOptions
 });
 
 // MAF IAgentProvider registrations (Phase 1 — alongside existing IModelClient)
-builder.Services.AddSingleton<OllamaAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<OllamaAgentProvider>());
-builder.Services.AddSingleton<AzureOpenAIAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<AzureOpenAIAgentProvider>());
-builder.Services.AddSingleton<FoundryAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<FoundryAgentProvider>());
-builder.Services.AddSingleton<FoundryLocalAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<FoundryLocalAgentProvider>());
-builder.Services.AddSingleton<GitHubCopilotAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<GitHubCopilotAgentProvider>());
+builder.Services.AddScoped<OllamaAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<OllamaAgentProvider>());
+builder.Services.AddScoped<AzureOpenAIAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<AzureOpenAIAgentProvider>());
+builder.Services.AddScoped<FoundryAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<FoundryAgentProvider>());
+builder.Services.AddScoped<FoundryLocalAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<FoundryLocalAgentProvider>());
+builder.Services.AddScoped<GitHubCopilotAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<GitHubCopilotAgentProvider>());
 
 // RuntimeAgentProvider routes to the active provider based on settings
-builder.Services.AddSingleton<RuntimeAgentProvider>();
-builder.Services.AddSingleton<IAgentProvider>(sp => sp.GetRequiredService<RuntimeAgentProvider>());
+builder.Services.AddScoped<RuntimeAgentProvider>();
+builder.Services.AddScoped<IAgentProvider>(sp => sp.GetRequiredService<RuntimeAgentProvider>());
 
 // Skills (K-1b — real registry replaces K-1a stub)
 // Wires ISkillsRegistry → OpenClawNetSkillsRegistry. Eagerly seeds the
