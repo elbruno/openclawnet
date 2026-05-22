@@ -24,7 +24,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 1: Bulk select checkbox column appears on installed tab
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkSelect_CheckboxColumnVisible_OnInstalledTab()
     {
@@ -62,7 +62,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 2: Select-all checkbox selects all installed skills
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkSelect_SelectAll_SelectsAllInstalledSkills()
     {
@@ -105,7 +105,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 3: Individual checkbox selection
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkSelect_IndividualCheckbox_TogglesSelection()
     {
@@ -146,7 +146,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 4: Bulk delete with confirmation
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkDelete_WithConfirmation_DeletesSkills()
     {
@@ -177,7 +177,11 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             Page.Dialog += async (_, dialog) =>
             {
                 await LogStepAsync($"Dialog appeared: {dialog.Message}");
+<<<<<<< HEAD
                 Assert.Contains("Delete", dialog.Message, StringComparison.OrdinalIgnoreCase);
+=======
+                Assert.Contains("Delete", dialog.Message);
+>>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
                 await dialog.AcceptAsync();
             };
 
@@ -202,7 +206,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 5: Cancel bulk delete
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkDelete_CancelConfirmation_DoesNotDelete()
     {
@@ -254,7 +258,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     // TEST 6: Selection clears when switching tabs
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsBulkDelete")]
     public async Task BulkSelect_SwitchTabs_ClearsSelection()
     {
@@ -302,7 +306,11 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     private async Task<List<string>> CreateTestSkillsAsync(int count)
     {
         var skillNames = new List<string>();
+<<<<<<< HEAD
         var gatewayUrl = Fixture.GatewayBaseUrl;
+=======
+        using var client = Fixture.CreateGatewayHttpClient();
+>>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
 
         for (int i = 0; i < count; i++)
         {
@@ -311,7 +319,6 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
 
             await LogStepAsync($"Creating test skill: {skillName}");
 
-            using var client = new HttpClient { BaseAddress = new Uri(gatewayUrl) };
             var response = await client.PostAsJsonAsync("/api/skills", new
             {
                 name = skillName,

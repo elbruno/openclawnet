@@ -1,5 +1,6 @@
 using Aspire.Hosting;
 using Aspire.Hosting.Testing;
+using System.Linq;
 using Xunit;
 
 namespace OpenClawNet.IntegrationTests.Jobs.Aspire;
@@ -60,20 +61,26 @@ public abstract class AspireLiveTestBase : IAsyncLifetime
         {
             // Use reflection to load the AppHost assembly at runtime to avoid compile-time
             // ambiguity with the Gateway's Program class.
-            var appHostAssembly = System.Reflection.Assembly.LoadFrom(
-                Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", "..", "..", "src", "OpenClawNet.AppHost", "bin", "Debug", "net10.0", "OpenClawNet.AppHost.dll"));
+            var appHostAssemblyPath = ResolveAppHostAssemblyPath();
+            var appHostAssembly = System.Reflection.Assembly.LoadFrom(appHostAssemblyPath);
             
             var appHostProgramType = appHostAssembly.GetType("Program")
                 ?? throw new InvalidOperationException("Could not find Program type in AppHost assembly.");
 
             // Call DistributedApplicationTestingBuilder.CreateAsync<TEntryPoint>() using reflection.
-            var createMethod = typeof(DistributedApplicationTestingBuilder)
-                .GetMethod(nameof(DistributedApplicationTestingBuilder.CreateAsync), 
-                           System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)?
-                .MakeGenericMethod(appHostProgramType)
-                ?? throw new InvalidOperationException("Could not find CreateAsync method on DistributedApplicationTestingBuilder.");
+            var createMethodDefinition = typeof(DistributedApplicationTestingBuilder)
+                .GetMethods(System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static)
+                .FirstOrDefault(m =>
+                    m.Name == nameof(DistributedApplicationTestingBuilder.CreateAsync) &&
+                    m.IsGenericMethodDefinition &&
+                    m.GetGenericArguments().Length == 1 &&
+                    m.GetParameters().Length == 1 &&
+                    m.GetParameters()[0].ParameterType == typeof(CancellationToken))
+                ?? throw new InvalidOperationException("Could not find generic CreateAsync<TEntryPoint>(CancellationToken) on DistributedApplicationTestingBuilder.");
 
-            var builderTask = (Task<IDistributedApplicationTestingBuilder>?)createMethod.Invoke(null, null)
+            var createMethod = createMethodDefinition.MakeGenericMethod(appHostProgramType);
+
+            var builderTask = (Task<IDistributedApplicationTestingBuilder>?)createMethod.Invoke(null, new object?[] { CancellationToken.None })
                 ?? throw new InvalidOperationException("CreateAsync returned null.");
             
             Builder = await builderTask;
@@ -99,6 +106,41 @@ public abstract class AspireLiveTestBase : IAsyncLifetime
                           $"Error: {ex.GetType().Name}: {ex.Message}";
             throw new SkipException(message);
         }
+    }
+
+    private static string ResolveAppHostAssemblyPath()
+    {
+        // Resolve from repository root instead of relying on fixed ".." depth from test output.
+        // This avoids incorrect paths like C:\src\src\OpenClawNet.AppHost\... in some environments.
+        var current = new DirectoryInfo(AppContext.BaseDirectory);
+        while (current is not null)
+        {
+            var solutionPath = Path.Combine(current.FullName, "OpenClawNet.slnx");
+            if (File.Exists(solutionPath))
+            {
+                var appHostAssemblyPath = Path.Combine(
+                    current.FullName,
+                    "src",
+                    "OpenClawNet.AppHost",
+                    "bin",
+                    "Debug",
+                    "net10.0",
+                    "OpenClawNet.AppHost.dll");
+
+                if (File.Exists(appHostAssemblyPath))
+                {
+                    return appHostAssemblyPath;
+                }
+
+                throw new FileNotFoundException(
+                    $"Resolved repository root at '{current.FullName}', but AppHost assembly was not found at '{appHostAssemblyPath}'.");
+            }
+
+            current = current.Parent;
+        }
+
+        throw new DirectoryNotFoundException(
+            $"Could not locate repository root containing OpenClawNet.slnx from base directory '{AppContext.BaseDirectory}'.");
     }
 
     public virtual async Task DisposeAsync()
