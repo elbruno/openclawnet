@@ -1,5 +1,6 @@
 using System.Runtime.CompilerServices;
 using Microsoft.Playwright;
+using Xunit;
 
 namespace OpenClawNet.PlaywrightTests;
 
@@ -33,11 +34,17 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
+<<<<<<< HEAD
         if (!_fixture.IsReady)
         {
             throw new Xunit.SkipException(
                 _fixture.StartupSkipReason
                 ?? "Playwright AppHost fixture did not initialize successfully.");
+=======
+        if (!_fixture.IsAppHostAvailable)
+        {
+            throw new SkipException(_fixture.AppHostUnavailableReason);
+>>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
         }
 
         var contextOptions = new BrowserNewContextOptions

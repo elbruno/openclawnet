@@ -33,7 +33,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Verify Skills import button exists in UI, is clickable, and opens file picker
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportButton_ExistsAndClickable_OpensFilePicker()
     {
@@ -85,7 +85,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Single .md file import: select file, upload, skill appears in registry
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportSingle_MarkdownFile_SucceedsAndAppearsInRegistry()
     {
@@ -167,7 +167,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Folder (.zip) import: extract, validate SKILL.md, appears in registry
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportFolder_ZipArchive_ExtractsAndAppearsInRegistry()
     {
@@ -261,7 +261,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Try importing skill with existing name: expect 409 Conflict error
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportDuplicates_ExistingSkillName_ReturnsConflictError()
     {
@@ -358,7 +358,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Try uploading invalid files (.txt, corrupted zip, bad frontmatter): expect errors
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportInvalid_BadFiles_ReturnsValidationErrors()
     {
@@ -428,7 +428,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // UX flow: progress visible, success message shown, errors dismissible
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportUsability_ProgressAndMessages_EnhanceUxFlow()
     {
@@ -502,7 +502,7 @@ public class SkillsImportE2ETests : PlaywrightTestBase
     // Comprehensive error handling: network errors, validation errors, edge cases
     // ====================================================================
 
-    [Fact]
+    [SkippableFact]
     [Trait("Feature", "SkillsImport")]
     public async Task E2eImportErrors_ComprehensiveErrorHandling_GracefulFailures()
     {
