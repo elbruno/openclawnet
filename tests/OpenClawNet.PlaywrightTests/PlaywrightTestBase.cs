@@ -34,17 +34,11 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
 
     public virtual async Task InitializeAsync()
     {
-<<<<<<< HEAD
         if (!_fixture.IsReady)
         {
             throw new Xunit.SkipException(
                 _fixture.StartupSkipReason
                 ?? "Playwright AppHost fixture did not initialize successfully.");
-=======
-        if (!_fixture.IsAppHostAvailable)
-        {
-            throw new SkipException(_fixture.AppHostUnavailableReason);
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
         }
 
         var contextOptions = new BrowserNewContextOptions
@@ -171,7 +165,7 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     protected async Task LogStepAsync(string message)
     {
         var stamp = DateTime.Now.ToString("HH:mm:ss");
-        Console.WriteLine($"[{stamp}] 🧪 {message}");
+        Console.WriteLine($"[{stamp}] ≡ƒº¬ {message}");
         if (_page is null) return;
         try
         {
@@ -188,12 +182,12 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
                         + 'pointer-events:none;';
                     document.body.appendChild(el);
                 }
-                el.textContent = '🧪 E2E: ' + text;
+                el.textContent = '≡ƒº¬ E2E: ' + text;
             }", message);
         }
         catch
         {
-            // Page navigation can race the eval — non-fatal.
+            // Page navigation can race the eval ΓÇö non-fatal.
         }
     }
 
@@ -213,15 +207,16 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
             {
                 await locator.First.WaitForAsync(new LocatorWaitForOptions { Timeout = tick });
                 var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
-                await LogStepAsync($"✅ {what} appeared after {elapsed}s");
+                await LogStepAsync($"Γ£à {what} appeared after {elapsed}s");
                 return;
             }
             catch (TimeoutException)
             {
                 var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
-                await LogStepAsync($"⏳ Still waiting for {what}... {elapsed}s elapsed");
+                await LogStepAsync($"ΓÅ│ Still waiting for {what}... {elapsed}s elapsed");
             }
         }
         throw new TimeoutException($"Timeout {timeoutMs}ms exceeded waiting for {what}");
     }
 }
+

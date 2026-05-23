@@ -17,15 +17,15 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.7" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.7" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.8" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
     <PackageReference Include="ModelContextProtocol" Version="1.3.0" />
     <PackageReference Include="Moq" Version="4.20.72" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.7" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.7" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="10.0.8" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.8" />
     <PackageReference Include="MudBlazor" Version="9.3.0" />
     <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.2" />
     <PackageReference Include="ExtendedNumerics.BigDecimal" Version="3003.0.0.346" />
@@ -75,6 +75,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.Tools.Memory\OpenClawNet.Tools.Memory.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Web\OpenClawNet.Web.csproj">
       <!-- Copy all Web project satellite assemblies to test output -->
       <Private>true</Private>

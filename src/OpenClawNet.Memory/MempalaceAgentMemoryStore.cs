@@ -190,7 +190,21 @@ public sealed class MempalaceAgentMemoryStore : IAgentMemoryStore, IAsyncDisposa
                 dict[kvp.Key] = kvp.Value;
             }
         }
-        var ts = entry.Timestamp ?? DateTime.UtcNow;
+
+        if (!string.IsNullOrWhiteSpace(entry.Kind))
+        {
+            dict["kind"] = entry.Kind;
+        }
+        if (entry.Importance is { } importance)
+        {
+            dict["importance"] = Math.Clamp(importance, 0.0, 1.0);
+        }
+        if (!string.IsNullOrWhiteSpace(entry.SourceSessionId))
+        {
+            dict["sourceSessionId"] = entry.SourceSessionId;
+        }
+
+        var ts = entry.Timestamp ?? DateTimeOffset.UtcNow;
         dict["timestamp"] = ts.ToString("O");
         return dict;
     }

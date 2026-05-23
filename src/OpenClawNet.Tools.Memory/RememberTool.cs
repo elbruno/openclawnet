@@ -64,6 +64,10 @@ public sealed class RememberTool : ITool
                     "description": "Optional importance score in [0,1]. Defaults to 0.5.",
                     "minimum": 0,
                     "maximum": 1
+                },
+                "sourceSessionId": {
+                    "type": "string",
+                    "description": "Optional chat/session identifier this memory came from."
                 }
             },
             "required": ["content"]
@@ -91,21 +95,28 @@ public sealed class RememberTool : ITool
 
         var metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         var kind = input.GetStringArgument("kind");
-        if (!string.IsNullOrWhiteSpace(kind)) metadata["kind"] = kind;
+        if (!string.IsNullOrWhiteSpace(kind)) metadata["kind"] = kind.Trim();
 
-        double? importance = null;
-        try { importance = input.GetArgument<double?>("importance"); }
-        catch (JsonException) { /* tolerate noisy LLM args */ }
-        if (importance is { } imp)
+        var importance = 0.5;
+        try
         {
-            var clamped = Math.Clamp(imp, 0.0, 1.0);
-            metadata["importance"] = clamped.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+            var parsed = input.GetArgument<double?>("importance");
+            if (parsed is { } v)
+            {
+                importance = Math.Clamp(v, 0.0, 1.0);
+            }
         }
+        catch (JsonException) { /* tolerate noisy LLM args */ }
+        metadata["importance"] = importance.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+        var sourceSessionId = input.GetStringArgument("sourceSessionId");
 
-        var entry = new MemoryEntry(content, metadata.Count == 0 ? null : metadata)
-        {
-            Timestamp = DateTime.UtcNow
-        };
+        var entry = new MemoryEntry(
+            Content: content,
+            Kind: string.IsNullOrWhiteSpace(kind) ? null : kind.Trim(),
+            Importance: importance,
+            Timestamp: DateTimeOffset.UtcNow,
+            SourceSessionId: string.IsNullOrWhiteSpace(sourceSessionId) ? null : sourceSessionId.Trim(),
+            Metadata: metadata.Count == 0 ? null : metadata);
 
         try
         {

@@ -177,11 +177,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
             Page.Dialog += async (_, dialog) =>
             {
                 await LogStepAsync($"Dialog appeared: {dialog.Message}");
-<<<<<<< HEAD
                 Assert.Contains("Delete", dialog.Message, StringComparison.OrdinalIgnoreCase);
-=======
-                Assert.Contains("Delete", dialog.Message);
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
                 await dialog.AcceptAsync();
             };
 
@@ -306,11 +302,7 @@ public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
     private async Task<List<string>> CreateTestSkillsAsync(int count)
     {
         var skillNames = new List<string>();
-<<<<<<< HEAD
-        var gatewayUrl = Fixture.GatewayBaseUrl;
-=======
         using var client = Fixture.CreateGatewayHttpClient();
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
 
         for (int i = 0; i < count; i++)
         {

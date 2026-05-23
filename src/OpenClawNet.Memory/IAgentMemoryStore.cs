@@ -48,16 +48,18 @@ public interface IAgentMemoryStore
 /// Represents a memory entry to be stored.
 /// </summary>
 /// <param name="Content">Memory content (will be embedded for semantic search).</param>
+/// <param name="Kind">Optional memory category (for example: fact, preference, episode).</param>
+/// <param name="Importance">Optional normalized importance score in [0,1].</param>
+/// <param name="Timestamp">Optional creation timestamp. Defaults to UTC now when omitted.</param>
+/// <param name="SourceSessionId">Optional source session identifier that produced this memory.</param>
 /// <param name="Metadata">Optional metadata (key-value pairs for filtering/display).</param>
 public sealed record MemoryEntry(
     string Content,
-    IReadOnlyDictionary<string, string>? Metadata = null)
-{
-    /// <summary>
-    /// Timestamp when the memory was created (set by caller).
-    /// </summary>
-    public DateTime? Timestamp { get; init; }
-}
+    string? Kind = null,
+    double? Importance = null,
+    DateTimeOffset? Timestamp = null,
+    string? SourceSessionId = null,
+    IReadOnlyDictionary<string, string>? Metadata = null);
 
 /// <summary>
 /// Represents a memory search result with similarity scoring.
