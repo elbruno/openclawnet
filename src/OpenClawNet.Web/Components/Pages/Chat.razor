@@ -17,7 +17,8 @@
 
     @* ── Sessions panel ── *@
     <div class="sessions-panel border rounded p-2 d-flex flex-column" style="width:210px;min-width:180px;overflow-y:auto;">
-        <button class="btn btn-primary btn-sm mb-2 w-100" @onclick="NewSession" disabled="@_isStreaming">
+        <button class="btn btn-primary btn-sm mb-2 w-100" @onclick="NewSession" disabled="@_isStreaming"
+                data-testid="new-chat-btn">
             + New Chat
         </button>
         @if (_loadingSessions)
@@ -73,6 +74,8 @@
                         }
                     </button>
                     <button class="btn btn-sm btn-outline-secondary py-0" @onclick="CopyShareLinkAsync" title="Copy shareable session link">🔗</button>
+                    <a class="btn btn-sm btn-outline-secondary py-0" href="/jobs"
+                       data-testid="view-jobs-link" title="View scheduled jobs">🗓 Jobs</a>
                 }
             </div>
         }
@@ -118,9 +121,44 @@
             }
             @if (_messages.Count == 0 && string.IsNullOrEmpty(_connectionError))
             {
-                <div class="text-center text-muted mt-5">
+                <div class="text-center text-muted mt-4 mb-3">
                     <h4>🦞 Welcome to OpenClaw .NET</h4>
                     <p>Start a conversation with your AI assistant.</p>
+                </div>
+
+                @* ── Browse & Summarize quick-start ── *@
+                <div class="mx-auto mb-3" style="max-width:540px;" data-testid="browse-summarize-panel">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-body py-3 px-4">
+                            <h6 class="card-title mb-1">🌐 Browse &amp; Summarize</h6>
+                            <p class="text-muted small mb-2">Enter a URL — the agent will fetch it, convert to Markdown, and give you a summary.</p>
+                            <div class="input-group input-group-sm">
+                                <input type="url" class="form-control" placeholder="https://example.com"
+                                       data-testid="browse-url-input"
+                                       @bind="_browseUrl" @bind:event="oninput"
+                                       @onkeydown="HandleBrowseKeyDownAsync"
+                                       disabled="@_isStreaming" />
+                                <button class="btn btn-primary" @onclick="SendBrowseSummarizeAsync"
+                                        data-testid="browse-summarize-btn"
+                                        disabled="@(_isStreaming || string.IsNullOrWhiteSpace(_browseUrl))">
+                                    Go
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                @* ── Quick prompts ── *@
+                <div class="d-flex flex-wrap justify-content-center gap-2" data-testid="quick-prompts">
+                    @foreach (var qp in _quickPrompts)
+                    {
+                        <button class="btn btn-outline-secondary btn-sm"
+                                @onclick="() => SendQuickPromptAsync(qp.Prompt)"
+                                data-testid="quick-prompt"
+                                disabled="@_isStreaming">
+                            @qp.Label
+                        </button>
+                    }
                 </div>
             }
 
@@ -246,6 +284,9 @@
     [SupplyParameterFromQuery(Name = "profile")]
     public string? ProfileParam { get; set; }
 
+    [SupplyParameterFromQuery(Name = "new")]
+    public string? NewChatParam { get; set; }
+
     private readonly CancellationTokenSource _componentCts = new();
     private CancellationTokenSource? _streamCts;
     private long _lastRenderTick;
@@ -342,6 +383,16 @@
     private Dictionary<string, ProviderInfoDto> _providerLookup = new();
     private string _selectedProfileName = "default";
 
+    // Browse & Summarize quick-start
+    private string _browseUrl = string.Empty;
+
+    private static readonly (string Label, string Prompt)[] _quickPrompts =
+    [
+        ("👋 Say hello", "Hello! What can you help me with today?"),
+        ("🗓 Schedule a reminder", "Schedule a one-time reminder for 5 minutes from now with the message: 'Demo reminder from OpenClaw!'"),
+        ("🔍 Research a topic", "Search the web for 'OpenClawNet AI agent' and give me a short summary of what you find."),
+    ];
+
     protected override async Task OnInitializedAsync()
     {
         _gatewayUrl = ResolveGatewayUrl();
@@ -365,14 +416,21 @@
             }
         }
 
-        // 2. Resume the most-recently-updated session when one exists
+        // 2. ?new=1 — always start a fresh session (used by NavMenu "New Chat" link)
+        if (NewChatParam == "1")
+        {
+            await NewSession();
+            return;
+        }
+
+        // 3. Resume the most-recently-updated session when one exists
         if (_sessions.Count > 0)
         {
             await SwitchSession(_sessions[0]);
             return;
         }
 
-        // 3. No sessions at all — create a fresh one
+        // 4. No sessions at all — create a fresh one
         await NewSession();
     }
 
@@ -794,13 +852,13 @@
             doneStreaming:
             // Add final message and stop streaming in a single render to avoid flash
             _messages.Add(new ChatDisplayMessage("assistant", _streamingContent, DateTime.Now));
-            var hadContent = !string.IsNullOrWhiteSpace(_streamingContent);
             _isStreaming = false;
             _streamingContent = string.Empty;
-            if (hadContent)
-            {
-                _assistantCompleteCount++;
-            }
+            // Issue #85 — always increment so the E2E sentinel (data-testid='assistant-message-complete')
+            // fires even when the reply was empty (e.g. model only produced tool calls that the
+            // IAgentProvider path silently dropped, or the session timed out). This lets the
+            // demo's promote-to-job fallback run rather than hanging until test timeout.
+            _assistantCompleteCount++;
             await InvokeAsync(StateHasChanged);
 
             // Refresh session list so the updated title/timestamp appears
@@ -839,6 +897,26 @@
     {
         if (e.Key == "Enter" && !e.ShiftKey)
             await SendMessage();
+    }
+
+    private async Task HandleBrowseKeyDownAsync(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter") await SendBrowseSummarizeAsync();
+    }
+
+    private async Task SendBrowseSummarizeAsync()
+    {
+        if (string.IsNullOrWhiteSpace(_browseUrl)) return;
+        var url = _browseUrl.Trim();
+        _browseUrl = string.Empty;
+        _userInput = $"Please fetch the page at {url}, convert it to clean Markdown, then give me a concise summary of the main content.";
+        await SendMessage();
+    }
+
+    private async Task SendQuickPromptAsync(string prompt)
+    {
+        _userInput = prompt;
+        await SendMessage();
     }
 
     public async ValueTask DisposeAsync()
