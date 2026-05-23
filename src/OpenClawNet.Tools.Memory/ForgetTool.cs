@@ -84,6 +84,7 @@ public sealed class ForgetTool : ITool
         {
             await _store.DeleteAsync(agentId, id, cancellationToken).ConfigureAwait(false);
             sw.Stop();
+            _logger.LogInformation("ForgetTool deleted memory {MemoryId} for agent {AgentId}", id, agentId);
 
             var output = JsonSerializer.Serialize(new
             {

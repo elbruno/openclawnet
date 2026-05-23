@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OpenClawNet.Memory;
@@ -122,6 +124,9 @@ public sealed class RememberTool : ITool
         {
             var id = await _store.StoreAsync(agentId, entry, cancellationToken).ConfigureAwait(false);
             sw.Stop();
+            _logger.LogInformation(
+                "RememberTool stored memory for agent {AgentId} memoryId {MemoryId} contentHash {ContentHash}",
+                agentId, id, ComputeHash(content));
 
             var output = JsonSerializer.Serialize(new
             {
@@ -140,5 +145,11 @@ public sealed class RememberTool : ITool
             _logger.LogWarning(ex, "RememberTool failed for agent {AgentId}", agentId);
             return ToolResult.Fail(Name, $"Failed to store memory: {ex.Message}", sw.Elapsed);
         }
+    }
+
+    private static string ComputeHash(string input)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(bytes[..8]);
     }
 }
