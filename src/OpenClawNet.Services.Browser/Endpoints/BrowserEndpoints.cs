@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
 
@@ -24,6 +25,19 @@ public static class BrowserEndpoints
                     "fill"         => await FillAsync(request, logger, options),
                     _ => Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "Unknown action. Supported: navigate, extract-text, screenshot, click, fill" })
                 };
+            }
+            catch (Win32Exception ex) when (ex.NativeErrorCode == 5)
+            {
+                logger.LogError(ex, "Playwright binary is blocked by Windows security (Win32Exception code 5)");
+                return Results.Ok(new BrowserExecuteResponse 
+                { 
+                    Success = false, 
+                    Output = "Playwright binary is blocked by Windows security.\n\n" +
+                             "To fix this, run the following PowerShell command:\n" +
+                             "Get-ChildItem -Recurse '.playwright' -Filter '*.exe' | Unblock-File; " +
+                             "Get-ChildItem -Recurse '.playwright' -Filter '*.dll' | Unblock-File\n\n" +
+                             "This issue is tracked in GitHub issue #92. See docs/SETUP-PLAYWRIGHT-WINDOWS.md for more details."
+                });
             }
             catch (Exception ex)
             {
