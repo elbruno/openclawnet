@@ -47,7 +47,8 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
             ResolvedProvider = request.ResolvedProvider,
             RequireToolApproval = request.RequireToolApproval,
             EnabledTools = request.EnabledTools,
-            AgentProfileName = request.AgentProfileName
+            AgentProfileName = request.AgentProfileName,
+            RetrievalLevel = request.RetrievalLevel
         };
 
         var executedContext = await _runtime.ExecuteAsync(context, cancellationToken);
@@ -76,7 +77,8 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
             ResolvedProvider = request.ResolvedProvider,
             RequireToolApproval = request.RequireToolApproval,
             EnabledTools = request.EnabledTools,
-            AgentProfileName = request.AgentProfileName
+            AgentProfileName = request.AgentProfileName,
+            RetrievalLevel = request.RetrievalLevel
         };
 
         await foreach (var @event in _runtime.ExecuteStreamAsync(context, cancellationToken))
@@ -117,7 +119,8 @@ public sealed class AgentOrchestrator : IAgentOrchestrator
             ResolvedProvider = request.ResolvedProvider,
             RequireToolApproval = request.RequireToolApproval,
             EnabledTools = request.EnabledTools,
-            AgentProfileName = request.AgentProfileName
+            AgentProfileName = request.AgentProfileName,
+            RetrievalLevel = request.RetrievalLevel
         };
 
         AgentContext executedContext;

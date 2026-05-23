@@ -122,7 +122,8 @@ public static class ChatStreamEndpoints
                     AgentProfileInstructions = profile.Instructions,
                     ResolvedProvider = resolvedProvider,
                     RequireToolApproval = profile.RequireToolApproval,
-                    EnabledTools = ParseEnabledTools(profile.EnabledTools)
+                    EnabledTools = ParseEnabledTools(profile.EnabledTools),
+                    RetrievalLevel = profile.RetrievalLevel
                 };
 
                 await StreamViaOrchestratorAsync(

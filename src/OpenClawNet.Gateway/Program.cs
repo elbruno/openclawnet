@@ -205,6 +205,7 @@ builder.Services.AddSingleton<ITool>(sp => sp.GetRequiredService<BrowserTool>())
 
 // Markdown converter — uses ElBruno.MarkItDotNet to fetch a URL and return clean Markdown.
 builder.Services.AddMarkItDotNet();
+builder.Services.AddSingleton<OpenClawNet.Tools.MarkItDown.IMarkdownService, OpenClawNet.Tools.MarkItDown.MarkdownServiceAdapter>();
 builder.Services.AddHttpClient(nameof(MarkItDownTool), c =>
     c.DefaultRequestHeaders.UserAgent.ParseAdd("Mozilla/5.0 (compatible; OpenClawNet/1.0; +https://github.com/elbruno/openclawnet)"));
 builder.Services.AddSingleton<MarkItDownTool>();

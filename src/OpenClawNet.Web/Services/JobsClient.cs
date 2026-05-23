@@ -240,6 +240,7 @@ public sealed record AgentProfileDto(
     string[]? EnabledTools,
     double? Temperature,
     int? MaxTokens,
-    bool IsDefault);
+    bool IsDefault,
+    string RetrievalLevel = "Off");
 
 public sealed record TranslateCronResult(bool Success, string? Cron, string? Explanation, string? Error);

@@ -11,6 +11,7 @@ public sealed record AgentRequest
     public string? AgentProfileName { get; init; }
     public string? AgentProfileInstructions { get; init; }
     public ResolvedProviderConfig? ResolvedProvider { get; init; }
+    public RetrievalLevel RetrievalLevel { get; init; } = RetrievalLevel.Off;
 
     /// <summary>
     /// When true, the agent runtime must pause and request explicit user approval

@@ -93,6 +93,7 @@ public sealed class AgentRuntimeMcpDedupTests
             registry,
             store,
             summary.Object,
+            new OpenClawNet.Memory.StubAgentMemoryStore(),
             new OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator(
                 NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance),
             loggerFactory,

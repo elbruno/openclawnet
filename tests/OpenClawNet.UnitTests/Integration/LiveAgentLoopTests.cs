@@ -120,6 +120,7 @@ public sealed class LiveAgentLoopTests : IClassFixture<LiveTestFixture>
             registry,
             store,
             summaryService,
+            new OpenClawNet.Memory.StubAgentMemoryStore(),
             new OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator(
                 NullLogger<OpenClawNet.Agent.ToolApproval.ToolApprovalCoordinator>.Instance),
             loggerFactory,

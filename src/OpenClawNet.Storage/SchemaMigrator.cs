@@ -89,6 +89,7 @@ public static class SchemaMigrator
         await AddColumnIfMissingAsync(db, "AgentProfiles", "Temperature", "REAL");
         await AddColumnIfMissingAsync(db, "AgentProfiles", "MaxTokens", "INTEGER");
         await AddColumnIfMissingAsync(db, "AgentProfiles", "IsDefault", "INTEGER NOT NULL DEFAULT 0");
+        await AddColumnIfMissingAsync(db, "AgentProfiles", "RetrievalLevel", "TEXT NOT NULL DEFAULT 'Off'");
         await AddColumnIfMissingAsync(db, "AgentProfiles", "CreatedAt", "TEXT");
         await AddColumnIfMissingAsync(db, "AgentProfiles", "UpdatedAt", "TEXT");
 
@@ -129,6 +130,7 @@ public static class SchemaMigrator
                 Temperature REAL,
                 MaxTokens INTEGER,
                 IsDefault INTEGER NOT NULL DEFAULT 0,
+                RetrievalLevel TEXT NOT NULL DEFAULT 'Off',
                 CreatedAt TEXT NOT NULL,
                 UpdatedAt TEXT NOT NULL
             )

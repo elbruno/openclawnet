@@ -366,6 +366,7 @@ public sealed class AgentRuntimeStreamTests
             toolRegistry,
             store,
             summaryService,
+            new OpenClawNet.Memory.StubAgentMemoryStore(),
             approvalCoordinator,
             loggerFactory,
             NullLogger<DefaultAgentRuntime>.Instance);
@@ -495,6 +496,91 @@ public sealed class AgentRuntimeStreamTests
             => Task.FromResult(ToolResult.Ok(Name, "safe result", TimeSpan.Zero));
     }
 
+    /// <summary>
+    /// IMP-3: Validates that tool result content is correctly passed to the model on the second turn.
+    /// This test ensures that when a tool is called and executed, the tool result message
+    /// with its full content is included in the ChatRequest sent to the model on the second turn.
+    /// If this test fails, it indicates tool result content may be silently lost during adapter processing.
+    /// </summary>
+    [Fact]
+    public async Task ProcessAsync_ToolCall_SecondTurnChatRequestContainsToolContent()
+    {
+        var store = new ConversationStore(_dbFactory);
+        var sessionId = Guid.NewGuid();
+
+        // Create a capturing fake model client that records all ChatRequest parameters
+        var capturingClient = new CapturingModelClient();
+
+        // Tool registry with a safe tool (no approval required)
+        var registry = new Mock<IToolRegistry>();
+        var safeTool = new FakeNoApprovalTool("process");
+        registry.Setup(r => r.GetTool("process")).Returns(safeTool);
+        registry.Setup(r => r.GetToolManifest()).Returns([safeTool.Metadata]);
+        registry.Setup(r => r.GetAllTools()).Returns([safeTool]);
+
+        // Tool executor that returns a realistic tool result
+        var toolOutput = """
+            Processed data:
+            - Item 1: Success
+            - Item 2: Success
+            - Item 3: Success
+            Result: All items processed successfully.
+            """;
+
+        var executor = new Mock<IToolExecutor>();
+        executor
+            .Setup(e => e.ExecuteAsync("process", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ToolResult.Ok("process", toolOutput, TimeSpan.Zero));
+
+        var runtime = BuildRuntime(store, capturingClient,
+            toolExecutor: executor.Object, toolRegistry: registry.Object);
+
+        // Execute two-turn conversation: user → tool call → tool result
+        var events = new List<AgentStreamEvent>();
+        await foreach (var evt in runtime.ExecuteStreamAsync(new AgentContext
+        {
+            SessionId = sessionId,
+            UserMessage = "Process data"
+        }))
+        {
+            events.Add(evt);
+        }
+
+        // Verify we captured at least two calls (turn 1 for tool call, turn 2 after tool result)
+        capturingClient.CapturedRequests.Should().HaveCountGreaterThanOrEqualTo(2,
+            "Should have at least two ChatRequest calls: first for tool call, second after tool result");
+
+        // Get the second turn request (after tool execution)
+        var secondTurnRequest = capturingClient.CapturedRequests[1];
+
+        // Assert: Second turn ChatRequest contains messages with tool role
+        var toolMessages = secondTurnRequest.Messages
+            .Where(m => m.Role == ChatMessageRole.Tool)
+            .ToList();
+
+        toolMessages.Should().HaveCount(1,
+            "Second turn should have exactly one tool-role message containing the tool result");
+
+        // Assert: Tool message has non-empty content
+        var toolMessage = toolMessages[0];
+        toolMessage.Content.Should().NotBeNullOrWhiteSpace(
+            "Tool message content must not be empty");
+
+        // Assert: Content length matches expected tool output (not corrupted)
+        toolMessage.Content.Should().Be(toolOutput,
+            "Tool message content should match the exact tool result output");
+        toolMessage.Content.Length.Should().BeGreaterThan(50,
+            "Tool result content should be substantial (not truncated or corrupted)");
+
+        // Assert: Tool call ID is preserved
+        toolMessage.ToolCallId.Should().Be("tc1",
+            "Tool message should reference the original tool call ID");
+
+        // Verify the conversation completed successfully
+        events.Should().Contain(e => e.Type == AgentStreamEventType.Complete,
+            "The two-turn conversation should complete successfully");
+    }
+
     [Fact]
     public async Task ExecuteStreamAsync_McpBrowserTool_RequiresApproval_WhenNotInLegacyRegistry()
     {
@@ -558,6 +644,44 @@ public sealed class AgentRuntimeStreamTests
         // Verify tool was executed after approval
         events.Should().Contain(e => e.Type == AgentStreamEventType.ToolCallComplete && e.ToolName == "browser_navigate");
         executor.Verify(e => e.ExecuteAsync("browser_navigate", It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    private sealed class CapturingModelClient : IModelClient
+    {
+        private int _callCount;
+        public List<ChatRequest> CapturedRequests { get; } = [];
+
+        public string ProviderName => "capturing-fake";
+
+        public Task<ChatResponse> CompleteAsync(ChatRequest request, CancellationToken cancellationToken = default)
+            => Task.FromResult(new ChatResponse { Content = "done", Role = ChatMessageRole.Assistant, Model = "test" });
+
+        public async IAsyncEnumerable<ChatResponseChunk> StreamAsync(
+            ChatRequest request,
+            [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            // Capture the request on each call
+            CapturedRequests.Add(request);
+            await Task.Yield();
+
+            if (_callCount++ == 0)
+            {
+                // First call: return a tool call
+                yield return new ChatResponseChunk
+                {
+                    ToolCalls = [new ModelToolCall { Id = "tc1", Name = "process", Arguments = "{\"action\":\"process\"}" }],
+                    FinishReason = "tool_calls"
+                };
+            }
+            else
+            {
+                // Second call (after tool result): return final answer
+                yield return new ChatResponseChunk { Content = "Processing complete.", FinishReason = "stop" };
+            }
+        }
+
+        public Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
     }
 
     private sealed class TestDbContextFactory : IDbContextFactory<OpenClawDbContext>

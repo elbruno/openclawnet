@@ -24,6 +24,11 @@ public sealed class AgentProfile
     public bool IsDefault { get; set; }
 
     /// <summary>
+    /// Retrieval mode for this agent. Off disables prompt-time retrieval entirely.
+    /// </summary>
+    public RetrievalLevel RetrievalLevel { get; set; } = RetrievalLevel.Off;
+
+    /// <summary>
     /// Discriminator that controls where this profile can be selected.
     /// <see cref="ProfileKind.Standard"/> profiles appear in chat / job pickers.
     /// <see cref="ProfileKind.System"/> profiles are used for internal platform tasks.
