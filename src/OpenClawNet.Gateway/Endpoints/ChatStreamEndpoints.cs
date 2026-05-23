@@ -253,58 +253,26 @@ public static class ChatStreamEndpoints
             logger.LogInformation("Streaming via IAgentProvider path: provider={Provider}, model={Model}",
                 providerType, resolvedProvider?.Model ?? "(provider default)");
 
-            // Issue #85 — session-level timeout guard.
-            // When the Copilot model is asked to "use the schedule tool" it may issue an
-            // internal tool-call that the SDK queues for a resolver we never supply.
-            // The session then waits forever for a SessionIdleEvent that never fires,
-            // so channel.Reader.ReadAllAsync blocks and the HTTP stream never sends
-            // "complete". A 90-second linked token unblocks that hang so the client's
-            // turn-complete sentinel fires and the demo's promote-to-job fallback can run.
-            using var sessionTimeoutCts = new CancellationTokenSource(TimeSpan.FromSeconds(90));
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(
-                cancellationToken, sessionTimeoutCts.Token);
-
-            try
+            await foreach (var update in chatClient.GetStreamingResponseAsync(messages, cancellationToken: cancellationToken))
             {
-                await foreach (var update in chatClient.GetStreamingResponseAsync(
-                    messages, cancellationToken: linkedCts.Token))
+                if (!string.IsNullOrEmpty(update.Text))
                 {
-                    if (!string.IsNullOrEmpty(update.Text))
+                    var streamEvent = new ChatStreamEvent
                     {
-                        var streamEvent = new ChatStreamEvent
-                        {
-                            Type = "content",
-                            Content = update.Text,
-                            SessionId = request.SessionId
-                        };
-                        var line = JsonSerializer.Serialize(streamEvent, JsonOpts);
-                        await httpContext.Response.WriteAsync(line + "\n", cancellationToken);
-                        await httpContext.Response.Body.FlushAsync(cancellationToken);
-                    }
+                        Type = "content",
+                        Content = update.Text,
+                        SessionId = request.SessionId
+                    };
+                    var line = JsonSerializer.Serialize(streamEvent, JsonOpts);
+                    await httpContext.Response.WriteAsync(line + "\n", cancellationToken);
+                    await httpContext.Response.Body.FlushAsync(cancellationToken);
                 }
+            }
 
-                // Normal completion — send complete event
-                var completeEvent = new ChatStreamEvent { Type = "complete", SessionId = request.SessionId };
-                await httpContext.Response.WriteAsync(JsonSerializer.Serialize(completeEvent, JsonOpts) + "\n", cancellationToken);
-                await httpContext.Response.Body.FlushAsync(cancellationToken);
-            }
-            catch (OperationCanceledException) when (
-                sessionTimeoutCts.IsCancellationRequested && !cancellationToken.IsCancellationRequested)
-            {
-                // Session-level timeout: the Copilot SDK was waiting for a tool resolution
-                // that never arrived. Surface as an error event so the client's
-                // assistant-message-complete sentinel fires and the fallback path runs.
-                logger.LogWarning(
-                    "IAgentProvider '{Provider}' streaming timed out after 90s — " +
-                    "likely a pending tool call with no resolver. Sending error event.",
-                    providerType);
-                await WriteErrorEventAsync(
-                    httpContext,
-                    "The assistant did not respond within the time limit. " +
-                    "The schedule step will proceed via the fallback path.",
-                    request.SessionId,
-                    cancellationToken);
-            }
+            // Send complete event
+            var completeEvent = new ChatStreamEvent { Type = "complete", SessionId = request.SessionId };
+            await httpContext.Response.WriteAsync(JsonSerializer.Serialize(completeEvent, JsonOpts) + "\n", cancellationToken);
+            await httpContext.Response.Body.FlushAsync(cancellationToken);
         }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {

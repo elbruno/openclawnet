@@ -33,13 +33,8 @@ public sealed class AppHostFixture : IAsyncLifetime
     private DistributedApplication? _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
-<<<<<<< HEAD
     private readonly ConcurrentDictionary<string, Lazy<Task<OllamaToolCallProbeResult>>> _ollamaToolCallProbeCache =
         new(StringComparer.OrdinalIgnoreCase);
-=======
-    public bool IsAppHostAvailable { get; private set; } = true;
-    public string AppHostUnavailableReason { get; private set; } = string.Empty;
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
 
     public string WebBaseUrl { get; private set; } = string.Empty;
     public string GatewayBaseUrl { get; private set; } = string.Empty;
@@ -121,7 +116,6 @@ public sealed class AppHostFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
-<<<<<<< HEAD
         try
         {
             // Wave 5 PR-D: pin a tool-capable model BEFORE the AppHost reads its config.
@@ -147,29 +141,6 @@ public sealed class AppHostFixture : IAsyncLifetime
             // model when the developer has it configured. Cheap synchronous check; no I/O.
             ProbeAzureOpenAIAvailability();
 
-=======
-        // Wave 5 PR-D: pin a tool-capable model BEFORE the AppHost reads its config.
-        // OPENCLAW_OLLAMA_MODEL is honoured first inside AppHost.cs:14-17.
-        Environment.SetEnvironmentVariable("OPENCLAW_OLLAMA_MODEL", ToolCapableTestModel);
-
-        // Wave 5 fix (Petey): Wipe per-agent skill state from previous test runs to
-        // prevent skill contamination. The doc-processor system skill and any test-
-        // created skills (e.g., emoji-teacher-journey) persist across runs and can
-        // poison tool selection (e.g., model picks `shell` instead of `browser`).
-        // Safe to delete: this fixture is only used by E2E tests, not by dev users.
-        CleanAgentSkillState();
-
-        // Best-effort probe of local Ollama; results expose IsToolCapableModelAvailable
-        // so live tool-approval scenarios can Skip cleanly when the model isn't pulled.
-        await ProbeOllamaModelAvailabilityAsync();
-
-        // Probe AZURE_OPENAI_* env vars so tests can prefer the (much faster) cloud
-        // model when the developer has it configured. Cheap synchronous check; no I/O.
-        ProbeAzureOpenAIAvailability();
-
-        try
-        {
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
             // Build and start the Aspire AppHost
             var appHost = await DistributedApplicationTestingBuilder
                 .CreateAsync<Projects.OpenClawNet_AppHost>();
@@ -197,15 +168,12 @@ public sealed class AppHostFixture : IAsyncLifetime
             GatewayBaseUrl = _app.GetEndpoint("gateway", "https").ToString().TrimEnd('/');
             SchedulerBaseUrl = _app.GetEndpoint("scheduler", "http").ToString().TrimEnd('/');
 
-<<<<<<< HEAD
             // Resource state "Running" can be reached before HTTP endpoints are fully accepting requests.
             await WaitForEndpointReadyAsync($"{GatewayBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{SchedulerBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{WebBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{WebBaseUrl}/secrets-vault");
 
-=======
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
             // Initialize Playwright
             _playwright = await Playwright.CreateAsync();
 
@@ -230,7 +198,6 @@ public sealed class AppHostFixture : IAsyncLifetime
                 Headless = !headed,
                 SlowMo = slowMo
             });
-<<<<<<< HEAD
             IsReady = true;
         }
         catch (Xunit.SkipException)
@@ -288,17 +255,6 @@ public sealed class AppHostFixture : IAsyncLifetime
             $"Last status: {lastStatusCode?.ToString() ?? "<none>"}. " +
             $"Last error: {lastException?.Message ?? "<none>"}",
             lastException);
-=======
-            IsAppHostAvailable = true;
-            AppHostUnavailableReason = string.Empty;
-        }
-        catch (Exception ex)
-        {
-            IsAppHostAvailable = false;
-            AppHostUnavailableReason =
-                $"Aspire AppHost unavailable for Playwright tests: {ex.GetType().Name}: {ex.Message}";
-        }
->>>>>>> f71dd8ad (chore(squad): sync infrastructure, skills, and session state)
     }
 
     private void ProbeAzureOpenAIAvailability()
@@ -353,7 +309,7 @@ public sealed class AppHostFixture : IAsyncLifetime
         catch (Exception ex)
         {
             Console.WriteLine($"[AppHostFixture] Warning: Could not clean agent skill state: {ex.Message}");
-            // Non-fatal — tests can still run with stale skill state; just log and continue.
+            // Non-fatal ΓÇö tests can still run with stale skill state; just log and continue.
         }
     }
 
@@ -374,7 +330,7 @@ public sealed class AppHostFixture : IAsyncLifetime
             }
 
             var body = await resp.Content.ReadAsStringAsync();
-            // Cheap substring match — avoids pulling in an Ollama client just for this.
+            // Cheap substring match ΓÇö avoids pulling in an Ollama client just for this.
             IsToolCapableModelAvailable = body.Contains(ToolCapableTestModel, StringComparison.OrdinalIgnoreCase);
             if (!IsToolCapableModelAvailable)
             {

@@ -1,7 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using OpenClawNet.Storage;
-using OpenClawNet.Storage.Entities;
 
 namespace OpenClawNet.Gateway.Endpoints;
 
@@ -117,102 +115,6 @@ public static class SessionEndpoints
             }));
         })
         .WithName("GetSessionMessages");
-
-        // POST /api/sessions/{sessionId}/promote-to-job
-        // Promotes a chat session into a daily 9 AM scheduled job that runs for 5 days.
-        // Prompt is derived from the most recent session summary, or the last user message if none exists.
-        // Job is created in Draft state; the caller must POST /api/jobs/{id}/start to activate it.
-        group.MapPost("/{sessionId:guid}/promote-to-job", async (
-            Guid sessionId,
-            PromoteChatToJobRequest? request,
-            IDbContextFactory<OpenClawDbContext> dbFactory,
-            IAgentProfileStore profileStore) =>
-        {
-            await using var db = await dbFactory.CreateDbContextAsync();
-
-            var session = await db.Sessions
-                .Include(s => s.Messages)
-                .Include(s => s.Summaries)
-                .FirstOrDefaultAsync(s => s.Id == sessionId);
-
-            if (session is null) return Results.NotFound();
-
-            // Prompt priority: latest summary → last user message → session title fallback
-            var latestSummary = session.Summaries
-                .OrderByDescending(s => s.CreatedAt)
-                .FirstOrDefault();
-
-            string prompt;
-            if (latestSummary is not null && !string.IsNullOrWhiteSpace(latestSummary.Summary))
-            {
-                prompt = latestSummary.Summary;
-            }
-            else
-            {
-                var lastUserMessage = session.Messages
-                    .Where(m => string.Equals(m.Role, "user", StringComparison.OrdinalIgnoreCase))
-                    .MaxBy(m => m.OrderIndex);
-                prompt = !string.IsNullOrWhiteSpace(lastUserMessage?.Content)
-                    ? lastUserMessage!.Content
-                    : session.Title;
-            }
-
-            // Build a collision-free job name from the session title
-            var rawName = !string.IsNullOrWhiteSpace(request?.Name)
-                ? request!.Name.Trim()
-                : session.Title.TrimEnd() + " (daily)";
-            var jobName = await DemoEndpoints.GenerateUniqueJobNameAsync(db, rawName);
-
-            // Prefer explicit agent profile → session's profile → default
-            var agentProfileName = await JobEndpoints.ResolveAgentProfileNameAsync(
-                request?.AgentProfileName ?? session.AgentProfileName, profileStore);
-
-            var now = DateTime.UtcNow;
-            const string cronExpression = "0 9 * * *"; // daily at 09:00 UTC
-            var endAt = now.AddDays(5);
-
-            // Compute next 9 AM UTC occurrence from now
-            var today9 = new DateTime(now.Year, now.Month, now.Day, 9, 0, 0, DateTimeKind.Utc);
-            var nextRunAt = today9 > now ? today9 : today9.AddDays(1);
-
-            var job = new ScheduledJob
-            {
-                Name = jobName,
-                Prompt = prompt,
-                CronExpression = cronExpression,
-                IsRecurring = true,
-                TriggerType = TriggerType.Cron,
-                Status = JobStatus.Draft,
-                StartAt = now,
-                EndAt = endAt,
-                NextRunAt = nextRunAt,
-                NaturalLanguageSchedule = "Daily at 09:00 UTC for 5 days",
-                AllowConcurrentRuns = false,
-                AgentProfileName = agentProfileName,
-                SourceTemplateName = "chat-promotion",
-                TimeZone = request?.TimeZone
-            };
-
-            db.Jobs.Add(job);
-            await db.SaveChangesAsync();
-
-            return Results.Created($"/api/jobs/{job.Id}", new PromoteChatToJobResponse(
-                job.Id,
-                job.Name,
-                sessionId,
-                session.Title,
-                prompt,
-                cronExpression,
-                nextRunAt,
-                endAt,
-                agentProfileName,
-                $"Job '{job.Name}' created in Draft state. POST /api/jobs/{job.Id}/start to activate."
-            ));
-        })
-        .WithName("PromoteChatToJob")
-        .WithDescription("Promote a chat session into a daily 09:00 UTC scheduled job that runs for 5 days. " +
-                         "Prompt is derived from the most recent session summary or last user message. " +
-                         "Job starts in Draft state — activate via POST /api/jobs/{id}/start.");
     }
 }
 
@@ -254,30 +156,3 @@ public sealed record MessageDto
     public string? ToolDecidedBy { get; init; }
     public DateTime? ToolDecidedAt { get; init; }
 }
-
-/// <summary>Optional overrides for the promote-to-job endpoint.</summary>
-public sealed record PromoteChatToJobRequest
-{
-    /// <summary>Override the generated job name. Dedup suffix is still applied on collision.</summary>
-    public string? Name { get; init; }
-
-    /// <summary>Override the agent profile. Falls back to the session's profile, then the system default.</summary>
-    public string? AgentProfileName { get; init; }
-
-    /// <summary>IANA timezone for the 09:00 trigger (e.g. "America/New_York"). Null = UTC.</summary>
-    public string? TimeZone { get; init; }
-}
-
-/// <summary>Response from POST /api/sessions/{sessionId}/promote-to-job.</summary>
-public sealed record PromoteChatToJobResponse(
-    Guid JobId,
-    string JobName,
-    Guid SourceSessionId,
-    string SourceSessionTitle,
-    string Prompt,
-    string CronExpression,
-    DateTime? NextRunAt,
-    DateTime EndsAt,
-    string? AgentProfileName,
-    string Message
-);
