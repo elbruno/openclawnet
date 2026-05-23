@@ -64,6 +64,45 @@ else
             </div>
         </div>
 
+        @* ── Tool Execution Logging Card ───────────────────────── *@
+        <div class="card mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Tool Execution Logging</span>
+                @if (_toolLoggingSaveSuccess.HasValue)
+                {
+                    <span class="badge @(_toolLoggingSaveSuccess.Value ? "bg-success" : "bg-danger")">
+                        @(_toolLoggingSaveSuccess.Value ? "✔ Saved" : "✘ Error")
+                    </span>
+                }
+            </div>
+            <div class="card-body">
+                @if (_toolLoggingError is not null)
+                {
+                    <div class="alert alert-warning py-2 small">@_toolLoggingError</div>
+                }
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input"
+                           type="checkbox"
+                           role="switch"
+                           id="toolExecutionLoggingEnabled"
+                           @bind="_toolLoggingSettings.Enabled" />
+                    <label class="form-check-label fw-semibold" for="toolExecutionLoggingEnabled">
+                        Enable extensive tool execution logging
+                    </label>
+                    <div class="form-text">
+                        When enabled, all tools emit detailed invocation logs (arguments/output previews, duration, and failures).
+                    </div>
+                </div>
+                <button class="btn btn-primary" @onclick="SaveToolLoggingSettings" disabled="@_toolLoggingSaving">
+                    @if (_toolLoggingSaving)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                    }
+                    Save Tool Logging Settings
+                </button>
+            </div>
+        </div>
+
         @* ── Storage Location Card ───────────────────────────── *@
         <div class="card mb-3">
             <div class="card-header d-flex justify-content-between align-items-center">
@@ -129,6 +168,12 @@ else
     private bool? _schedulerSaveSuccess;
     private string? _schedulerError;
 
+    // ── Tool logging settings ───────────────────────────────────
+    private ToolLoggingSettingsDto _toolLoggingSettings = new();
+    private bool _toolLoggingSaving;
+    private bool? _toolLoggingSaveSuccess;
+    private string? _toolLoggingError;
+
     // ── Storage Location ──────────────────────────────────────
     private StorageLocationDto? _storageLocation;
     private string _newStoragePath = string.Empty;
@@ -141,6 +186,7 @@ else
     {
         await Task.WhenAll(
             LoadSchedulerSettings(),
+            LoadToolLoggingSettings(),
             LoadStorageLocation()
         );
         _loading = false;
@@ -158,6 +204,66 @@ else
         {
             Logger.LogWarning(ex, "Failed to load scheduler settings");
             _schedulerError = "Scheduler service unavailable — showing defaults.";
+        }
+    }
+
+    private async Task LoadToolLoggingSettings()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var result = await http.GetFromJsonAsync<ToolLoggingSettingsDto>("/api/settings/tool-logging");
+            if (result is not null) _toolLoggingSettings = result;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load tool logging settings");
+            _toolLoggingError = "Gateway settings unavailable — showing defaults.";
+        }
+    }
+
+    private async Task SaveToolLoggingSettings()
+    {
+        _toolLoggingSaving = true;
+        _toolLoggingSaveSuccess = null;
+        _toolLoggingError = null;
+        StateHasChanged();
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var request = new ToolLoggingUpdateRequestDto { Enabled = _toolLoggingSettings.Enabled };
+            var response = await http.PutAsJsonAsync("/api/settings/tool-logging", request);
+            _toolLoggingSaveSuccess = response.IsSuccessStatusCode;
+
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadFromJsonAsync<ToolLoggingSettingsDto>();
+                if (result is not null)
+                {
+                    _toolLoggingSettings = result;
+                }
+            }
+            else
+            {
+                _toolLoggingError = await response.Content.ReadAsStringAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Failed to save tool logging settings");
+            _toolLoggingSaveSuccess = false;
+            _toolLoggingError = ex.Message;
+        }
+        finally
+        {
+            _toolLoggingSaving = false;
+            StateHasChanged();
+            if (_toolLoggingSaveSuccess == true)
+            {
+                await Task.Delay(4000);
+                _toolLoggingSaveSuccess = null;
+                StateHasChanged();
+            }
         }
     }
 
@@ -306,6 +412,18 @@ else
         public string AgentStoragePath { get; set; } = string.Empty;
     }
 
+    private sealed class ToolLoggingSettingsDto
+    {
+        public bool Enabled { get; set; }
+        public int ArgumentPreviewLength { get; set; }
+        public int OutputPreviewLength { get; set; }
+    }
+
+    private sealed class ToolLoggingUpdateRequestDto
+    {
+        public bool Enabled { get; set; }
+    }
+
     private sealed class StorageUpdateDto
     {
         public bool Success { get; set; }
@@ -318,4 +436,3 @@ else
         public string RootPath { get; set; } = string.Empty;
     }
 }
-

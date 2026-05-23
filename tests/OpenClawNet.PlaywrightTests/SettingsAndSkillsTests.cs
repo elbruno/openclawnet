@@ -65,6 +65,10 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
             // Settings page shows Scheduler settings card
             var schedulerCard = Page.Locator(".card:has-text('Scheduler')").First;
             await Assertions.Expect(schedulerCard).ToBeVisibleAsync(new() { Timeout = 10_000 });
+
+            // Settings page shows Tool Execution Logging card
+            var toolLoggingCard = Page.Locator(".card:has-text('Tool Execution Logging')").First;
+            await Assertions.Expect(toolLoggingCard).ToBeVisibleAsync(new() { Timeout = 10_000 });
         });
     }
 
@@ -79,6 +83,20 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
             Assert.True(response.IsSuccessStatusCode, $"Settings API returned {response.StatusCode}");
             var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
             Assert.True(json.TryGetProperty("provider", out _), "Settings should include provider");
+        });
+    }
+
+    [Fact]
+    public async Task SettingsPage_GatewayToolLoggingApi_ReturnsCurrentSettings()
+    {
+        await WithScreenshotOnFailure(async () =>
+        {
+            using var client = Fixture.CreateGatewayHttpClient();
+            var response = await client.GetAsync("/api/settings/tool-logging");
+
+            Assert.True(response.IsSuccessStatusCode, $"Tool logging API returned {response.StatusCode}");
+            var json = await response.Content.ReadFromJsonAsync<System.Text.Json.JsonElement>();
+            Assert.True(json.TryGetProperty("enabled", out _), "Tool logging settings should include enabled");
         });
     }
 

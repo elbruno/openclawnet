@@ -1,4 +1,6 @@
+using System.Text.Json;
 using OpenClawNet.Gateway.Services;
+using OpenClawNet.Tools.Core;
 
 namespace OpenClawNet.Gateway.Endpoints;
 
@@ -75,10 +77,121 @@ public static class SettingsEndpoints
         })
         .WithName("UpdateSettings")
         .WithDescription("Updates the active model provider configuration without requiring a restart");
+
+        group.MapGet("/tool-logging", (IToolExecutionLoggingState state) =>
+        {
+            var current = state.Current;
+            return Results.Ok(new ToolLoggingSettingsResponse(
+                Enabled: current.Enabled,
+                ArgumentPreviewLength: current.ArgumentPreviewLength,
+                OutputPreviewLength: current.OutputPreviewLength));
+        })
+        .WithName("GetToolLoggingSettings")
+        .WithDescription("Returns current tool execution logging settings");
+
+        group.MapPut("/tool-logging", async (ToolLoggingSettingsRequest request, IToolExecutionLoggingState state, IHostEnvironment hostEnvironment, ILoggerFactory loggerFactory) =>
+        {
+            var logger = loggerFactory.CreateLogger("OpenClawNet.Gateway.SettingsEndpoints");
+            try
+            {
+                var current = state.Current;
+                var updated = new ToolExecutionLoggingOptions
+                {
+                    Enabled = request.Enabled,
+                    ArgumentPreviewLength = current.ArgumentPreviewLength,
+                    OutputPreviewLength = current.OutputPreviewLength
+                };
+
+                var settingsPath = Path.Combine(hostEnvironment.ContentRootPath, "appsettings.json");
+                await UpdateToolLoggingConfigurationFile(settingsPath, updated);
+                state.Update(updated);
+
+                return Results.Ok(new ToolLoggingSettingsResponse(
+                    Enabled: updated.Enabled,
+                    ArgumentPreviewLength: updated.ArgumentPreviewLength,
+                    OutputPreviewLength: updated.OutputPreviewLength));
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Failed to update tool logging settings");
+                return Results.Problem(
+                    title: "Failed to update tool logging settings",
+                    detail: ex.Message,
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+        })
+        .WithName("UpdateToolLoggingSettings")
+        .WithDescription("Enables or disables extensive tool execution logging globally");
     }
 
     private static string? NullIfEmpty(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private static async Task UpdateToolLoggingConfigurationFile(string settingsPath, ToolExecutionLoggingOptions options)
+    {
+        if (!File.Exists(settingsPath))
+            throw new FileNotFoundException("appsettings.json not found", settingsPath);
+
+        var json = await File.ReadAllTextAsync(settingsPath);
+        using var doc = JsonDocument.Parse(json);
+
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream, new JsonWriterOptions { Indented = true }))
+        {
+            writer.WriteStartObject();
+
+            foreach (var property in doc.RootElement.EnumerateObject())
+            {
+                if (property.NameEquals("OpenClawNet"))
+                {
+                    WriteOpenClawNetWithToolLogging(writer, property.Value, options);
+                }
+                else
+                {
+                    property.WriteTo(writer);
+                }
+            }
+
+            if (!doc.RootElement.TryGetProperty("OpenClawNet", out _))
+            {
+                writer.WriteStartObject("OpenClawNet");
+                WriteToolExecutionLogging(writer, options);
+                writer.WriteEndObject();
+            }
+
+            writer.WriteEndObject();
+        }
+
+        await File.WriteAllTextAsync(settingsPath, System.Text.Encoding.UTF8.GetString(stream.ToArray()));
+    }
+
+    private static void WriteOpenClawNetWithToolLogging(
+        Utf8JsonWriter writer,
+        JsonElement openClawNetElement,
+        ToolExecutionLoggingOptions options)
+    {
+        writer.WriteStartObject("OpenClawNet");
+
+        foreach (var child in openClawNetElement.EnumerateObject())
+        {
+            if (!child.NameEquals("ToolExecutionLogging"))
+            {
+                child.WriteTo(writer);
+            }
+        }
+
+        WriteToolExecutionLogging(writer, options);
+        writer.WriteEndObject();
+    }
+
+    private static void WriteToolExecutionLogging(Utf8JsonWriter writer, ToolExecutionLoggingOptions options)
+    {
+        writer.WriteStartObject("ToolExecutionLogging");
+        writer.WriteBoolean("Enabled", options.Enabled);
+        writer.WriteNumber("ArgumentPreviewLength", options.ArgumentPreviewLength);
+        writer.WriteNumber("OutputPreviewLength", options.OutputPreviewLength);
+        writer.WriteEndObject();
+    }
 }
 
 public sealed record SettingsResponse(
@@ -104,3 +217,11 @@ public sealed record SettingsRequest(
     string? FoundryAuthMode,
     bool? CopilotEnabled,
     string? CopilotModel);
+
+public sealed record ToolLoggingSettingsResponse(
+    bool Enabled,
+    int ArgumentPreviewLength,
+    int OutputPreviewLength);
+
+public sealed record ToolLoggingSettingsRequest(
+    bool Enabled);

@@ -189,6 +189,13 @@ builder.Services.AddMemory(builder.Configuration);
 
 // Tool framework + tools
 builder.Services.AddToolFramework();
+builder.Services.AddSingleton<IToolExecutionLoggingState>(_ =>
+{
+    var configured = builder.Configuration.GetSection("OpenClawNet:ToolExecutionLogging")
+        .Get<ToolExecutionLoggingOptions>() ?? new ToolExecutionLoggingOptions();
+
+    return new ToolExecutionLoggingState(configured);
+});
 // PR-B: also register the concrete tool types so the bundled MCP wrappers can
 // inject the existing ITool implementations through DI without duplicating logic.
 builder.Services.AddSingleton<FileSystemTool>();

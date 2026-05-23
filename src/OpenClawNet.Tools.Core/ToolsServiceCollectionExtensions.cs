@@ -7,6 +7,7 @@ public static class ToolsServiceCollectionExtensions
 {
     public static IServiceCollection AddToolFramework(this IServiceCollection services)
     {
+        services.AddSingleton<IToolExecutionLoggingState>(_ => new ToolExecutionLoggingState(new ToolExecutionLoggingOptions()));
         services.AddSingleton<IToolRegistry, ToolRegistry>();
         services.AddScoped<IToolExecutor, ToolExecutor>();
         services.AddSingleton<IToolApprovalPolicy, AlwaysApprovePolicy>();
