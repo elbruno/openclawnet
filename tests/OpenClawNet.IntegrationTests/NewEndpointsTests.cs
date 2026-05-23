@@ -113,15 +113,24 @@ public sealed class NewEndpointsTests(GatewayWebAppFactory factory)
         var client = factory.CreateClient();
         var driveRoot = Path.GetPathRoot(Path.GetTempPath()) ?? "C:\\";
         var targetPath = Path.Combine(driveRoot, "openclawnet-storage-e2e");
+        var settingsPath = GetGatewayAppSettingsPath();
+        var originalJson = await File.ReadAllTextAsync(settingsPath);
 
-        var resp = await client.PutAsJsonAsync("/api/storage/location", new { rootPath = targetPath });
-        resp.EnsureSuccessStatusCode();
+        try
+        {
+            var resp = await client.PutAsJsonAsync("/api/storage/location", new { rootPath = targetPath });
+            resp.EnsureSuccessStatusCode();
 
-        var result = await resp.Content.ReadFromJsonAsync<StorageUpdateResponse>(JsonOpts);
-        result.Should().NotBeNull();
-        result!.Success.Should().BeTrue();
-        result.NewPath.Should().NotBeNullOrWhiteSpace();
-        Path.GetFullPath(result.NewPath!).Should().Be(Path.GetFullPath(targetPath));
+            var result = await resp.Content.ReadFromJsonAsync<StorageUpdateResponse>(JsonOpts);
+            result.Should().NotBeNull();
+            result!.Success.Should().BeTrue();
+            result.NewPath.Should().NotBeNullOrWhiteSpace();
+            Path.GetFullPath(result.NewPath!).Should().Be(Path.GetFullPath(targetPath));
+        }
+        finally
+        {
+            await File.WriteAllTextAsync(settingsPath, originalJson);
+        }
     }
 
     [Fact]
@@ -247,5 +256,22 @@ public sealed class NewEndpointsTests(GatewayWebAppFactory factory)
         }
 
         return (jobId, runId);
+    }
+
+    private static string GetGatewayAppSettingsPath()
+    {
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            var candidate = Path.Combine(directory.FullName, "src", "OpenClawNet.Gateway", "appsettings.json");
+            if (File.Exists(candidate))
+            {
+                return candidate;
+            }
+
+            directory = directory.Parent;
+        }
+
+        throw new FileNotFoundException("Could not locate src/OpenClawNet.Gateway/appsettings.json");
     }
 }
