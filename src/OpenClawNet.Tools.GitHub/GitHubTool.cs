@@ -83,8 +83,27 @@ public sealed class GitHubTool : ITool
             string? token;
             using (var scope = _scopeFactory.CreateScope())
             {
-                var secrets = scope.ServiceProvider.GetRequiredService<ISecretsStore>();
-                token = await secrets.GetAsync(TokenSecretName, cancellationToken);
+                var shield = scope.ServiceProvider.GetService<IVaultErrorShield>();
+                try
+                {
+                    var vault = scope.ServiceProvider.GetService<IVault>();
+                    if (vault is not null)
+                    {
+                        token = await vault.ResolveAsync(
+                            TokenSecretName,
+                            new VaultCallerContext(VaultCallerType.Tool, nameof(GitHubTool), null),
+                            cancellationToken);
+                    }
+                    else
+                    {
+                        var secrets = scope.ServiceProvider.GetRequiredService<ISecretsStore>();
+                        token = await secrets.GetAsync(TokenSecretName, cancellationToken);
+                    }
+                }
+                catch (Exception ex) when (shield?.IsVaultFailure(ex) == true || ex is VaultException)
+                {
+                    return ToolResult.Fail(Name, shield?.GenericToolError ?? VaultErrorShield.GenericUnavailableMessage, sw.Elapsed);
+                }
             }
             token ??= Environment.GetEnvironmentVariable(TokenSecretName);
             if (!string.IsNullOrWhiteSpace(token) && client is GitHubClient gitHubClient)

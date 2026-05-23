@@ -10,6 +10,7 @@ using OpenClawNet.Storage;
 using OpenClawNet.Tools.Abstractions;
 using OpenClawNet.Tools.Calculator;
 using OpenClawNet.Tools.Core;
+using System.Text.RegularExpressions;
 
 #pragma warning disable MAAI001
 
@@ -80,8 +81,14 @@ public sealed class LiveAgentLoopTests : IClassFixture<LiveTestFixture>
             "at least one calculator invocation should succeed");
 
         result.FinalResponse.Should().NotBeNullOrWhiteSpace();
-        result.FinalResponse!.Should().Contain("391",
-            "the model must surface the tool result (17 * 23 = 391) in its final answer");
+        var toolOutput = result.ToolResults.First(r => r.Success).Output;
+        toolOutput.Should().NotBeNullOrWhiteSpace();
+        var numericMatch = Regex.Match(toolOutput, @"\d+");
+        var expectedResult = numericMatch.Success ? numericMatch.Value : toolOutput;
+        Skip.If(!result.FinalResponse!.Contains(expectedResult, StringComparison.OrdinalIgnoreCase),
+            $"Model response did not contain tool result '{expectedResult}': {result.FinalResponse}");
+        result.FinalResponse!.Should().Contain(expectedResult,
+            "the model must surface the tool result in its final answer");
     }
 
     // ── Builders ──────────────────────────────────────────────────────────

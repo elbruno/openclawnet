@@ -24,7 +24,7 @@ public class SkillAuthoringDialogTests : TestContext, IDisposable
     [Fact]
     public void Submit_Disabled_WhenAllFieldsEmpty()
     {
-        var cut = RenderComponent<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
+        var cut = Render<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
         cut.Find("[data-testid='skill-submit']").HasAttribute("disabled").Should().BeTrue();
     }
 
@@ -37,7 +37,7 @@ public class SkillAuthoringDialogTests : TestContext, IDisposable
     [InlineData("MEMORY")]
     public void Submit_StaysDisabled_OnInvalidOrReservedName(string name)
     {
-        var cut = RenderComponent<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
+        var cut = Render<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
         cut.Find("[data-testid='skill-name']").Input(name);
         cut.Find("[data-testid='skill-description']").Input("desc");
         cut.Find("[data-testid='skill-body']").Input("# body");
@@ -47,7 +47,7 @@ public class SkillAuthoringDialogTests : TestContext, IDisposable
     [Fact]
     public void Submit_Enables_WhenNameValidAndDescriptionAndBodyPresent()
     {
-        var cut = RenderComponent<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
+        var cut = Render<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
         cut.Find("[data-testid='skill-name']").Input("git-tutor");
         cut.Find("[data-testid='skill-description']").Input("help juniors learn git");
         cut.Find("[data-testid='skill-body']").Input("# Git Tutor\nbody");
@@ -64,7 +64,7 @@ public class SkillAuthoringDialogTests : TestContext, IDisposable
                 Content = JsonContent.Create(new SkillsProblem("InvalidSkillName", "name not allowed"))
             });
 
-        var cut = RenderComponent<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
+        var cut = Render<SkillAuthoringDialog>(p => p.Add(x => x.Visible, true));
         cut.Find("[data-testid='skill-name']").Input("git-tutor");
         cut.Find("[data-testid='skill-description']").Input("desc");
         cut.Find("[data-testid='skill-body']").Input("# body");

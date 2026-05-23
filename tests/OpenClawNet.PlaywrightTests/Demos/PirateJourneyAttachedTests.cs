@@ -110,7 +110,7 @@ public class PirateJourneyAttachedTests : AttachedAspireTestBase
         @"\b(arr+|matey|ahoy|plunder|booty|landlubber|scallywag|seafarin'?|seafaring|treasure|cap'?n|aye)\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    [Fact]
+    [SkippableFact]
     public async Task PirateSkill_AppliedToAgent_AgentRepliesInPirate()
     {
         // Note: No Skip.IfNot check here — this is demo-only. If Aspire/LLM isn't

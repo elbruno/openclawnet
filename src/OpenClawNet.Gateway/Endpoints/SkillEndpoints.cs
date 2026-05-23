@@ -58,6 +58,7 @@ public static class SkillEndpoints
         group.MapPut("/{name}/enabled-for/{agentName}", PutEnabledFor).WithName("PutSkillEnabledFor");
         group.MapPatch("/enabled", PatchEnabled).WithName("PatchSkillEnabled");
         group.MapDelete("/{name}", DeleteSkill).WithName("DeleteSkill");
+        group.MapPost("/bulk-delete", BulkDeleteSkills).WithName("BulkDeleteSkills");
     }
 
     // ====================================================================
@@ -361,6 +362,97 @@ public static class SkillEndpoints
 
         registry.Rebuild();
         return Results.NoContent();
+    }
+
+    // ====================================================================
+    // POST /api/skills/bulk-delete — delete multiple skills at once
+    // ====================================================================
+    private sealed record BulkDeleteRequest(string[] Names);
+    private sealed record BulkDeleteResult(
+        int SuccessCount,
+        int FailureCount,
+        Dictionary<string, string> Failures);
+
+    private static async Task<IResult> BulkDeleteSkills(
+        [FromBody] BulkDeleteRequest request,
+        OpenClawNetSkillsRegistry registry,
+        ISafePathResolver safePathResolver,
+        ILogger<OpenClawNetSkillsRegistry> logger,
+        CancellationToken ct)
+    {
+        if (request is null || request.Names is null || request.Names.Length == 0)
+            return Problem(StatusCodes.Status400BadRequest, "missing_names", "Request must include an array of skill names.");
+
+        var snap = await registry.GetSnapshotAsync(ct).ConfigureAwait(false);
+        var installedRoot = OpenClawNetPaths.ResolveSkillsInstalledRoot(logger);
+        
+        var successCount = 0;
+        var failures = new Dictionary<string, string>();
+
+        foreach (var name in request.Names)
+        {
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                failures[name ?? "(empty)"] = "Skill name is empty or whitespace.";
+                continue;
+            }
+
+            if (!IsValidSkillName(name))
+            {
+                failures[name] = "Skill name fails the agentskills.io name regex.";
+                continue;
+            }
+
+            var record = snap.Skills.FirstOrDefault(s => string.Equals(s.Name, name, StringComparison.Ordinal));
+            if (record is null)
+            {
+                failures[name] = "Skill not found in current snapshot.";
+                continue;
+            }
+
+            if (record.Layer != SkillLayer.Installed)
+            {
+                failures[name] = $"Skill is in layer '{record.Layer}' which is read-only (only 'installed' layer skills can be deleted).";
+                continue;
+            }
+
+            var skillFolder = safePathResolver.ResolveSafePath(installedRoot, name);
+            if (Directory.Exists(skillFolder))
+            {
+                try
+                {
+                    Directory.Delete(skillFolder, recursive: true);
+                    successCount++;
+                }
+                catch (IOException ex)
+                {
+                    failures[name] = $"Delete failed: {ex.Message}";
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    failures[name] = $"Access denied: {ex.Message}";
+                }
+            }
+            else
+            {
+                failures[name] = "Skill folder does not exist on disk.";
+            }
+        }
+
+        // Rebuild once after all deletions
+        if (successCount > 0)
+        {
+            registry.Rebuild();
+        }
+
+        var result = new BulkDeleteResult(successCount, failures.Count, failures);
+
+        // Return 200 with partial success details if some succeeded
+        // Return 400 if all failed
+        if (successCount == 0 && failures.Count > 0)
+            return Results.BadRequest(result);
+
+        return Results.Ok(result);
     }
 
     // ====================================================================

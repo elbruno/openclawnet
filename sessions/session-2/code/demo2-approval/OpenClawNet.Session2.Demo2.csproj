@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\src\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

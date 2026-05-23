@@ -51,9 +51,7 @@ public sealed class SkillsEndpointTests : IClassFixture<SkillsEndpointTests.Fixt
     {
         // Clean state before each test starts
         await CleanSkillsDirectoryAsync();
-        
-        // Wait for file watcher debounce (500ms) + registry rebuild time
-        await Task.Delay(2000);
+        await RebuildSkillsRegistryAsync();
     }
 
     public Task DisposeAsync()
@@ -107,9 +105,14 @@ public sealed class SkillsEndpointTests : IClassFixture<SkillsEndpointTests.Fixt
             }
         }
 
-        // Give the file watcher time to notice the deletion and rebuild the registry
-        // so that tests start with a truly empty state (no system skills)
-        // Removed delay - moved to InitializeAsync for better control
+        // Registry rebuild is triggered explicitly by InitializeAsync.
+    }
+
+    private async Task RebuildSkillsRegistryAsync()
+    {
+        var client = _fx.CreateClient();
+        var response = await client.PostAsync("/api/skills/reload", content: null);
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
     }
 
     public sealed class Fixture : GatewayWebAppFactory
@@ -161,10 +164,9 @@ public sealed class SkillsEndpointTests : IClassFixture<SkillsEndpointTests.Fixt
         };
         Directory.CreateDirectory(dir);
         File.WriteAllText(Path.Combine(dir, "SKILL.md"), ValidSkillBody(name, body));
-        
-        // Wait for file watcher debounce (500ms) + registry rebuild time
-        // Tests show watcher takes 2-3 seconds to detect and register new skills
-        await Task.Delay(3000);
+
+        // Force a deterministic snapshot refresh instead of relying on watcher timing.
+        await RebuildSkillsRegistryAsync();
     }
 
     // ====================================================================
@@ -353,16 +355,88 @@ public sealed class SkillsEndpointTests : IClassFixture<SkillsEndpointTests.Fixt
     }
 
     [Fact]
-    public async Task DeleteAgent_Returns404()
+    public async Task DeleteAgent_Returns403()
     {
         await SeedSkill("agents", "alice-only", agent: "alice");
         var client = _fx.CreateClient();
 
         var resp = await client.DeleteAsync("/api/skills/alice-only");
-        // PR #91: endpoint checks existence before layer permissions, returns 404 if not found
-        // Agent-layer skills are scoped per-agent, so global DELETE doesn't see them
-        resp.StatusCode.Should().Be(HttpStatusCode.NotFound,
-            "agent-layer skills are not visible to global DELETE endpoint");
+        resp.StatusCode.Should().Be(HttpStatusCode.Forbidden,
+            "agent layer is read-only for global delete operations");
+    }
+
+    // ====================================================================
+    // F1. POST /api/skills/bulk-delete
+    // ====================================================================
+
+    [Fact]
+    public async Task BulkDelete_AllInstalled_ReturnsSuccess()
+    {
+        await SeedSkill("installed", "skill-one");
+        await SeedSkill("installed", "skill-two");
+        await SeedSkill("installed", "skill-three");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-one", "skill-two", "skill-three" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(3);
+        result.GetProperty("failureCount").GetInt32().Should().Be(0);
+    }
+
+    [Fact]
+    public async Task BulkDelete_PartialSuccess_ReturnsPartialResult()
+    {
+        await SeedSkill("installed", "skill-ok");
+        await SeedSkill("system", "skill-sys");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-ok", "skill-sys", "skill-notfound" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.OK);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(1);
+        result.GetProperty("failureCount").GetInt32().Should().Be(2);
+        var failures = result.GetProperty("failures");
+        failures.GetProperty("skill-sys").GetString().Should().Contain("read-only");
+        failures.GetProperty("skill-notfound").GetString().Should().Contain("not found");
+    }
+
+    [Fact]
+    public async Task BulkDelete_AllFailed_ReturnsBadRequest()
+    {
+        await SeedSkill("system", "skill-sys");
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = new[] { "skill-sys", "skill-notfound" }
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var result = await resp.Content.ReadFromJsonAsync<JsonElement>();
+        result.GetProperty("successCount").GetInt32().Should().Be(0);
+        result.GetProperty("failureCount").GetInt32().Should().Be(2);
+    }
+
+    [Fact]
+    public async Task BulkDelete_EmptyArray_ReturnsBadRequest()
+    {
+        var client = _fx.CreateClient();
+
+        var resp = await client.PostAsJsonAsync("/api/skills/bulk-delete", new
+        {
+            Names = Array.Empty<string>()
+        });
+        
+        resp.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     // ====================================================================

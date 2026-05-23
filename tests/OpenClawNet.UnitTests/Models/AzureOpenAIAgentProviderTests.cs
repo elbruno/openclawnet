@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Models.AzureOpenAI;
+using OpenClawNet.Storage;
 
 namespace OpenClawNet.UnitTests.Models;
 
@@ -70,8 +71,21 @@ public class AzureOpenAIAgentProviderTests
 
     private static AzureOpenAIAgentProvider CreateProvider(AzureOpenAIOptions? options = null)
     {
+        var fakeVault = new FakeVault();
+        var configResolver = new VaultConfigurationResolver(TimeProvider.System, TimeSpan.FromMinutes(5));
+        var vaultResolver = new RuntimeVaultResolver(fakeVault, configResolver, NullLogger<RuntimeVaultResolver>.Instance);
+        
         return new AzureOpenAIAgentProvider(
             Options.Create(options ?? new AzureOpenAIOptions()),
+            vaultResolver,
             NullLogger<AzureOpenAIAgentProvider>.Instance);
+    }
+    
+    private sealed class FakeVault : IVault
+    {
+        public Task<string?> ResolveAsync(string name, VaultCallerContext ctx, CancellationToken ct = default)
+        {
+            return Task.FromResult<string?>(null);
+        }
     }
 }

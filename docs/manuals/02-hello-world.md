@@ -51,7 +51,6 @@ Take a moment to scan the **left sidebar navigation**. You should see menu items
 | **Chat** | The main chat interface (where you are now) |
 | **Sessions** | Browse past conversation threads |
 | **Tools** | View and configure available agent tools |
-| **Tool Log** | Audit trail of all tool executions |
 | **Jobs** | Create and monitor scheduled or one-shot automation |
 | **Health** | System health checks and diagnostics |
 | **Skills** | Browse and manage agent skills (Markdown-based) |

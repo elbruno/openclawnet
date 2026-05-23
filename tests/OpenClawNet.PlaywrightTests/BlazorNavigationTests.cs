@@ -45,8 +45,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
             var nav = Page.Locator("nav.nav");
             await Assertions.Expect(nav).ToBeVisibleAsync();
 
-            // All 10 menu items should be present (including Model Providers and Agent Profiles)
-            string[] expectedMenuLabels = ["Chat", "Sessions", "Tools", "Tool Log", "Jobs", "Health", "Skills", "Model Providers", "Agent Profiles", "General"];
+            string[] expectedMenuLabels = ["Chat", "Sessions", "Tools", "Jobs", "Health", "Skills", "Secrets Vault", "Model Providers", "Agent Profiles", "General"];
 
             foreach (var label in expectedMenuLabels)
             {
@@ -60,10 +59,10 @@ public class BlazorNavigationTests : PlaywrightTestBase
     [InlineData("/", "OpenClawNet")]
     [InlineData("/sessions", "Sessions")]
     [InlineData("/tools", "Tools")]
-    [InlineData("/tool-log", "Tool Execution Log")]
     [InlineData("/jobs", "Jobs")]
     [InlineData("/health", "Health")]
     [InlineData("/skills", "Skills")]
+    [InlineData("/secrets-vault", "Secrets Vault")]
     [InlineData("/model-providers", "Model Providers")]
     [InlineData("/agent-profiles", "Agent Profiles")]
     [InlineData("/settings", "Settings")]
@@ -97,10 +96,10 @@ public class BlazorNavigationTests : PlaywrightTestBase
     [InlineData("Chat", "/")]
     [InlineData("Sessions", "/sessions")]
     [InlineData("Tools", "/tools")]
-    [InlineData("Tool Log", "/tool-log")]
     [InlineData("Jobs", "/jobs")]
     [InlineData("Health", "/health")]
     [InlineData("Skills", "/skills")]
+    [InlineData("Secrets Vault", "/secrets-vault")]
     [InlineData("Model Providers", "/model-providers")]
     [InlineData("Agent Profiles", "/agent-profiles")]
     [InlineData("General", "/settings")]

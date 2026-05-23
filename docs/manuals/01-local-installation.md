@@ -11,8 +11,8 @@ This guide walks you through installing and running **OpenClaw .NET** on your lo
 Open a terminal in the directory where you want the project to live and clone the repo:
 
 ```bash
-git clone https://github.com/elbruno/openclawnet.git
-cd openclawnet
+git clone https://github.com/elbruno/openclawnet-plan.git
+cd openclawnet-plan
 ```
 
 Verify you are on the default branch:
@@ -36,6 +36,10 @@ ollama pull gemma4:e2b
 # Alternative defaults
 ollama pull llama3.2
 ollama pull phi4
+
+# Lightweight tool-calling alternatives (verified in live tests)
+ollama pull qwen2.5:3b
+ollama pull phi3
 ```
 
 Confirm the model is available:
@@ -253,5 +257,5 @@ The schema is recreated on next launch.
 ## See Also
 
 - [Local Setup Guide](../setup/local-setup.md)
-- [Ollama Setup Guide](../setup/ollama-setup.md)
+- [Ollama Setup Guide](../setup/ollama.md)
 - [Architecture Overview](../architecture/overview.md)

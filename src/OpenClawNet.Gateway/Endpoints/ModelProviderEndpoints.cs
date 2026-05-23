@@ -23,24 +23,24 @@ public static class ModelProviderEndpoints
             return def is null ? Results.NotFound() : Results.Ok(ToResponse(def));
         });
 
+        group.MapPost("/", async (ModelProviderRequest request, IModelProviderDefinitionStore store, CancellationToken ct) =>
+        {
+            if (string.IsNullOrWhiteSpace(request.Name))
+                return Results.BadRequest(new { error = "Provider name is required." });
+
+            var existing = await store.GetAsync(request.Name, ct);
+            var def = BuildDefinition(request.Name, request, existing);
+
+            await store.SaveAsync(def, ct);
+            return existing is null
+                ? Results.Created($"/api/model-providers/{def.Name}", ToResponse(def))
+                : Results.Ok(ToResponse(def));
+        });
+
         group.MapPut("/{name}", async (string name, ModelProviderRequest request, IModelProviderDefinitionStore store, CancellationToken ct) =>
         {
             var existing = await store.GetAsync(name, ct);
-
-            var def = new ModelProviderDefinition
-            {
-                Name = name,
-                ProviderType = request.ProviderType,
-                DisplayName = request.DisplayName,
-                Endpoint = request.Endpoint,
-                Model = request.Model,
-                ApiKey = string.IsNullOrEmpty(request.ApiKey) ? existing?.ApiKey : request.ApiKey,
-                DeploymentName = request.DeploymentName,
-                AuthMode = request.AuthMode,
-                IsSupported = request.IsSupported ?? existing?.IsSupported ?? false,
-                CreatedAt = existing?.CreatedAt ?? DateTime.UtcNow,
-                UpdatedAt = DateTime.UtcNow
-            };
+            var def = BuildDefinition(name, request, existing);
 
             await store.SaveAsync(def, ct);
             return Results.Ok(ToResponse(def));
@@ -179,7 +179,8 @@ public static class ModelProviderEndpoints
             }
             catch (Exception ex)
             {
-                var errorMsg = $"Test failed: {ex.Message}";
+                var sanitized = VaultReferenceSanitizer.SanitizeFailureMessage(ex.Message) ?? ex.Message;
+                var errorMsg = $"Test failed: {sanitized}";
                 def.IsSupported = false;
                 def.LastTestSucceeded = false;
                 def.LastTestError = errorMsg.Length > 1000 ? errorMsg[..1000] : errorMsg;
@@ -200,8 +201,29 @@ public static class ModelProviderEndpoints
         d.Name, d.ProviderType, d.DisplayName, d.Endpoint, d.Model,
         HasApiKey: !string.IsNullOrEmpty(d.ApiKey),
         d.DeploymentName, d.AuthMode, d.IsSupported, d.CreatedAt, d.UpdatedAt,
-        d.LastTestedAt, d.LastTestSucceeded, d.LastTestError
+        d.LastTestedAt, d.LastTestSucceeded, d.LastTestError,
+        ApiKey: GetApiKeyDisplayValue(d.ApiKey)
     );
+
+    private static ModelProviderDefinition BuildDefinition(string name, ModelProviderRequest request, ModelProviderDefinition? existing) => new()
+    {
+        Name = name,
+        ProviderType = request.ProviderType,
+        DisplayName = request.DisplayName,
+        Endpoint = request.Endpoint,
+        Model = request.Model,
+        ApiKey = string.IsNullOrEmpty(request.ApiKey) ? existing?.ApiKey : request.ApiKey,
+        DeploymentName = request.DeploymentName,
+        AuthMode = request.AuthMode,
+        IsSupported = request.IsSupported ?? existing?.IsSupported ?? false,
+        CreatedAt = existing?.CreatedAt ?? DateTime.UtcNow,
+        UpdatedAt = DateTime.UtcNow
+    };
+
+    private static string? GetApiKeyDisplayValue(string? value) =>
+        VaultConfigurationResolver.TryParseVaultReference(value, out _)
+            ? VaultReferenceSanitizer.RedactedReferenceDisplay
+            : null;
 }
 
 public sealed record ModelProviderRequest(
@@ -212,7 +234,8 @@ public sealed record ModelProviderRequest(
     string? ApiKey,
     string? DeploymentName,
     string? AuthMode,
-    bool? IsSupported);
+    bool? IsSupported,
+    string? Name = null);
 
 public sealed record ModelProviderResponse(
     string Name,
@@ -228,7 +251,8 @@ public sealed record ModelProviderResponse(
     DateTime UpdatedAt,
     DateTime? LastTestedAt,
     bool? LastTestSucceeded,
-    string? LastTestError);
+    string? LastTestError,
+    string? ApiKey = null);
 
 public sealed record BulkDeleteModelProvidersRequest
 {

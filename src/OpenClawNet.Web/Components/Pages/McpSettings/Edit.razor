@@ -3,6 +3,7 @@
 @rendermode InteractiveServer
 @using System.Net.Http.Json
 @using OpenClawNet.Web.Components.Pages.McpSettings
+@using OpenClawNet.Web.Components.Shared
 @inject IHttpClientFactory HttpClientFactory
 @inject NavigationManager Nav
 @inject ILogger<Edit> Logger
@@ -84,10 +85,17 @@ else if (_form.Transport == "stdio")
                           placeholder="-y&#10;@@modelcontextprotocol/server-memory" disabled="@_isBuiltIn"></textarea>
             </div>
             <div class="mb-3">
-                <label class="form-label fw-semibold">Environment variables (KEY=value, one per line)</label>
+                <label class="form-label fw-semibold">Environment variables</label>
+                <div class="form-text mb-2">
+                    Use KEY=value format (one per line). Sensitive values may also use a vault reference (for example, <code>KEY=vault://...</code>). 
+                    Direct values are stored encrypted via DPAPI on this machine.
+                </div>
                 <textarea class="form-control" rows="3" @bind="_envText"
-                          placeholder="GITHUB_TOKEN=ghp_..." disabled="@_isBuiltIn"></textarea>
-                <div class="form-text">Stored encrypted via DPAPI on this machine.</div>
+                          placeholder="GITHUB_TOKEN=vault://...&#10;OTHER_VAR=direct-value" disabled="@_isBuiltIn"></textarea>
+                <div class="form-text mt-2 text-info">
+                    <i class="bi bi-shield-lock"></i> Vault references are supported for sensitive environment variables.
+                    Manage secrets on the <a href="/secrets-vault">Secrets Vault</a> page.
+                </div>
             </div>
         }
         else if (_form.Transport.Equals("http", StringComparison.OrdinalIgnoreCase))
@@ -98,10 +106,17 @@ else if (_form.Transport == "stdio")
                        placeholder="https://example.com/mcp" disabled="@_isBuiltIn" />
             </div>
             <div class="mb-3">
-                <label class="form-label fw-semibold">Headers (KEY=value, one per line)</label>
+                <label class="form-label fw-semibold">Headers</label>
+                <div class="form-text mb-2">
+                    Use KEY=value format (one per line). Sensitive values may also use a vault reference (for example, <code>KEY=vault://...</code>). 
+                    Direct values are stored encrypted via DPAPI on this machine.
+                </div>
                 <textarea class="form-control" rows="3" @bind="_headersText"
-                          placeholder="Authorization=Bearer ..." disabled="@_isBuiltIn"></textarea>
-                <div class="form-text">Stored encrypted via DPAPI on this machine.</div>
+                          placeholder="Authorization=vault://...&#10;X-Custom-Header=value" disabled="@_isBuiltIn"></textarea>
+                <div class="form-text mt-2 text-info">
+                    <i class="bi bi-shield-lock"></i> Vault references are supported for sensitive header values.
+                    Manage secrets on the <a href="/secrets-vault">Secrets Vault</a> page.
+                </div>
             </div>
         }
 

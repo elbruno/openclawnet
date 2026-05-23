@@ -15,10 +15,10 @@
   <ItemGroup>
     <!-- MCP C# SDK — pinned to the 1.2.0 GA. Don't bump without re-running PR-A's tests;
          the SDK is post-GA but the API surface still evolves quickly. -->
-    <PackageReference Include="ModelContextProtocol" Version="1.2.0" />
-    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.5" />
-    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.5" />
+    <PackageReference Include="ModelContextProtocol" Version="1.3.0" />
+    <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.7" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.7" />
   </ItemGroup>
 
   <ItemGroup>

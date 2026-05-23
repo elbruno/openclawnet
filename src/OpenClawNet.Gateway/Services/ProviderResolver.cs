@@ -8,20 +8,24 @@ namespace OpenClawNet.Gateway.Services;
 /// Resolves an agent profile's provider reference to a concrete provider configuration.
 /// Supports both ModelProviderDefinition names (e.g. "ollama-default") and
 /// provider type names (e.g. "ollama") for backward compatibility.
+/// Resolves vault:// references at runtime for secure credential management.
 /// </summary>
 public sealed class ProviderResolver
 {
     private readonly IModelProviderDefinitionStore _definitionStore;
     private readonly RuntimeModelSettings _runtimeSettings;
+    private readonly RuntimeVaultResolver _vaultResolver;
     private readonly ILogger<ProviderResolver> _logger;
 
     public ProviderResolver(
         IModelProviderDefinitionStore definitionStore,
         RuntimeModelSettings runtimeSettings,
+        RuntimeVaultResolver vaultResolver,
         ILogger<ProviderResolver> logger)
     {
         _definitionStore = definitionStore;
         _runtimeSettings = runtimeSettings;
+        _vaultResolver = vaultResolver;
         _logger = logger;
     }
 
@@ -31,6 +35,7 @@ public sealed class ProviderResolver
     /// 1. If providerRef matches a ModelProviderDefinition name → use definition
     /// 2. If providerRef matches a provider type AND a definition of that type exists → use first enabled definition of that type
     /// 3. Fall back to RuntimeModelSettings global config
+    /// Vault references (vault://) are resolved at runtime.
     /// </summary>
     public async Task<ResolvedProviderConfig> ResolveAsync(string? providerRef, CancellationToken ct = default)
     {
@@ -42,7 +47,7 @@ public sealed class ProviderResolver
             {
                 _logger.LogInformation("Resolved provider '{Ref}' → definition '{Name}' (type={Type})",
                     providerRef, definition.Name, definition.ProviderType);
-                return FromDefinition(definition);
+                return await FromDefinitionAsync(definition, ct);
             }
 
             // 2. Try as a provider type name — find first enabled definition of that type
@@ -52,7 +57,7 @@ public sealed class ProviderResolver
             {
                 _logger.LogInformation("Resolved provider type '{Ref}' → definition '{Name}'",
                     providerRef, enabled.Name);
-                return FromDefinition(enabled);
+                return await FromDefinitionAsync(enabled, ct);
             }
 
             // Wave 5 PR-D (Vasquez): a non-empty providerRef that fails to resolve is
@@ -81,14 +86,25 @@ public sealed class ProviderResolver
         };
     }
 
-    private static ResolvedProviderConfig FromDefinition(ModelProviderDefinition def) => new()
+    private async Task<ResolvedProviderConfig> FromDefinitionAsync(ModelProviderDefinition def, CancellationToken ct)
     {
-        ProviderType = def.ProviderType,
-        Endpoint = def.Endpoint,
-        Model = def.Model,
-        ApiKey = def.ApiKey,
-        DeploymentName = def.DeploymentName,
-        AuthMode = def.AuthMode,
-        DefinitionName = def.Name
-    };
+        // Resolve vault references in provider fields
+        var vaultFields = await _vaultResolver.ResolveProviderFieldsAsync(
+            def.Endpoint,
+            def.ApiKey,
+            def.DeploymentName,
+            def.Name,
+            ct);
+
+        return new ResolvedProviderConfig
+        {
+            ProviderType = def.ProviderType,
+            Endpoint = vaultFields.GetValueOrDefault("Endpoint") ?? def.Endpoint,
+            Model = def.Model,
+            ApiKey = vaultFields.GetValueOrDefault("ApiKey") ?? def.ApiKey,
+            DeploymentName = vaultFields.GetValueOrDefault("DeploymentName") ?? def.DeploymentName,
+            AuthMode = def.AuthMode,
+            DefinitionName = def.Name
+        };
+    }
 }

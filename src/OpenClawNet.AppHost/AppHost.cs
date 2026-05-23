@@ -3,8 +3,18 @@ var builder = DistributedApplication.CreateBuilder(args);
 var dbPath = builder.Configuration["OpenClawNet:ConnectionStrings:DbPath"]
     ?? Path.Combine(builder.AppHostDirectory, ".data");
 
-var sqlite = builder.AddSqlite("openclawnet-db", databasePath: dbPath, databaseFileName: "openclawnet.db")
-    .WithSqliteWeb();
+var sqlite = builder.AddSqlite("openclawnet-db", databasePath: dbPath, databaseFileName: "openclawnet.db");
+
+// Sqlite Web runs as a containerized companion. Keep it enabled by default for local
+// developer convenience, but allow test harnesses to disable it in Docker-less environments.
+var enableSqliteWeb = !string.Equals(
+    Environment.GetEnvironmentVariable("OPENCLAW_ENABLE_SQLITE_WEB"),
+    "false",
+    StringComparison.OrdinalIgnoreCase);
+if (enableSqliteWeb)
+{
+    sqlite.WithSqliteWeb();
+}
 
 // Ollama is expected to be running locally (localhost:11434).
 // The gateway falls back to local Ollama via RuntimeModelSettings.

@@ -11,6 +11,17 @@
 *@
 
 <tr @key="Skill.Name" class="@(_busy ? "opacity-50" : null)">
+    <td style="width: 1%; white-space: nowrap;">
+        @if (string.Equals(Skill.Layer, "installed", StringComparison.OrdinalIgnoreCase))
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="checkbox"
+                       data-testid="skill-select-@Skill.Name"
+                       checked="@IsSelected"
+                       @onchange="OnCheckboxChanged" />
+            </div>
+        }
+    </td>
     <td>
         <span class="bi bi-book me-2" aria-hidden="true" title="Skill"></span>
         <code>@Skill.Name</code>
@@ -96,8 +107,12 @@
     [Parameter] public IReadOnlyList<string> AgentNames { get; set; } = Array.Empty<string>();
     /// <summary>Currently picked agent (page-level). Empty/null → row shows aggregate, hides switch.</summary>
     [Parameter] public string? SelectedAgent { get; set; }
+    /// <summary>Whether this skill is selected (for bulk operations).</summary>
+    [Parameter] public bool IsSelected { get; set; }
     [Parameter] public EventCallback<SkillDto> OnView { get; set; }
     [Parameter] public EventCallback<SkillDto> OnDelete { get; set; }
+    /// <summary>Fires when checkbox state changes: (SkillName, IsSelected).</summary>
+    [Parameter] public EventCallback<(string SkillName, bool IsSelected)> OnSelectionChanged { get; set; }
     /// <summary>Optimistic-UI hook — page re-loads the row on success.</summary>
     [Parameter] public EventCallback<(string Skill, string Agent, bool Enabled)> OnEnabledChanged { get; set; }
 
@@ -110,6 +125,12 @@
         && Skill.EnabledByAgent.TryGetValue(SelectedAgent, out var v) && v;
 
     private int EnabledCount => Skill.EnabledByAgent.Count(kv => kv.Value);
+
+    private async Task OnCheckboxChanged(ChangeEventArgs e)
+    {
+        var isChecked = e.Value is bool b && b;
+        await OnSelectionChanged.InvokeAsync((Skill.Name, isChecked));
+    }
 
     private string LayerLabel => Skill.Layer switch
     {

@@ -23,6 +23,8 @@ public class OpenClawDbContext : DbContext
     public DbSet<SchemaVersionEntity> SchemaVersions => Set<SchemaVersionEntity>();
     public DbSet<ToolTestRecord> ToolTestRecords => Set<ToolTestRecord>();
     public DbSet<SecretEntity> Secrets => Set<SecretEntity>();
+    public DbSet<SecretVersionEntity> SecretVersions => Set<SecretVersionEntity>();
+    public DbSet<SecretAccessAuditEntity> SecretAccessAudit => Set<SecretAccessAuditEntity>();
     public DbSet<JobRunArtifact> JobRunArtifacts => Set<JobRunArtifact>();
     public DbSet<JobDefinitionStateChange> JobStateChanges => Set<JobDefinitionStateChange>();
     public DbSet<ToolApprovalLog> ToolApprovalLogs => Set<ToolApprovalLog>();
@@ -31,6 +33,7 @@ public class OpenClawDbContext : DbContext
     public DbSet<JobChannelConfiguration> JobChannelConfigurations => Set<JobChannelConfiguration>();
     public DbSet<AdapterDeliveryLog> AdapterDeliveryLogs => Set<AdapterDeliveryLog>();
     public DbSet<SkillVector> SkillVectors => Set<SkillVector>();
+    public DbSet<OAuthTokenEntity> OAuthTokens => Set<OAuthTokenEntity>();
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -143,6 +146,39 @@ public class OpenClawDbContext : DbContext
         {
             e.ToTable("Secrets");
             e.HasKey(x => x.Name);
+            e.Property(x => x.CreatedAt).HasDefaultValueSql("CURRENT_TIMESTAMP");
+            e.HasMany(x => x.Versions)
+                .WithOne(x => x.Secret)
+                .HasForeignKey(x => x.SecretName)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<SecretVersionEntity>(e =>
+        {
+            e.ToTable("SecretVersions");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.SecretName).IsRequired();
+            e.Property(x => x.EncryptedValue).IsRequired();
+            e.HasIndex(x => new { x.SecretName, x.Version }).IsUnique();
+            e.HasIndex(x => new { x.SecretName, x.IsCurrent });
+            e.HasIndex(x => x.SecretName)
+                .IsUnique()
+                .HasFilter("IsCurrent = 1");
+        });
+
+        modelBuilder.Entity<SecretAccessAuditEntity>(e =>
+        {
+            e.ToTable("SecretAccessAudit");
+            e.HasKey(x => x.Id);
+            e.Property(x => x.Sequence).ValueGeneratedOnAdd();
+            e.Property(x => x.CallerType).IsRequired().HasMaxLength(32);
+            e.Property(x => x.CallerId).IsRequired();
+            e.Property(x => x.SecretName).IsRequired();
+            e.Property(x => x.PreviousRowHash).HasMaxLength(64);
+            e.Property(x => x.RowHash).HasMaxLength(64);
+            e.HasIndex(x => x.Sequence).IsUnique();
+            e.HasIndex(x => new { x.SecretName, x.AccessedAt });
+            e.HasIndex(x => x.RowHash);
         });
 
         modelBuilder.Entity<JobRunArtifact>(e =>
@@ -279,6 +315,27 @@ public class OpenClawDbContext : DbContext
                 .IsRequired()
                 .HasDefaultValueSql("datetime('now', 'utc')");
             e.HasIndex(v => v.SkillName).IsUnique();
+        });
+
+        modelBuilder.Entity<OAuthTokenEntity>(e =>
+        {
+            e.ToTable("OAuthTokens");
+            e.HasKey(t => t.Id);
+            e.Property(t => t.Provider)
+                .IsRequired()
+                .HasMaxLength(64);
+            e.Property(t => t.UserId)
+                .IsRequired()
+                .HasMaxLength(256);
+            e.Property(t => t.AccessTokenCiphertext)
+                .IsRequired();
+            e.Property(t => t.RefreshTokenCiphertext)
+                .IsRequired();
+            e.Property(t => t.ExpiresAtUtc)
+                .IsRequired();
+            e.Property(t => t.Scopes)
+                .IsRequired();
+            e.HasIndex(t => new { t.Provider, t.UserId }).IsUnique();
         });
         
         modelBuilder.Entity<AdapterDeliveryLog>(e =>

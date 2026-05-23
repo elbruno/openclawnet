@@ -44,7 +44,9 @@ When a trigger fires, the Scheduler hands the prompt to the Gateway, which spins
    - **Schedule** — cron expression (`0 9 * * 1-5`) or date/time picker.
    - **Prompt** — what the agent should do.
    - **Tools** — leave all selected, or restrict to a subset.
-4. Click **Save**. The job appears in the list immediately.
+4. Click **Save**. The job is created in **Draft** state and appears in the list immediately.
+
+> **Note:** Draft jobs do not run on their schedule. To start the recurring schedule, click **Start**. To run once on demand, click **Run Now** (stays in Draft).
 
 ### 2. From the Chat (via the `schedule` tool)
 
@@ -155,13 +157,58 @@ After execution the job moves to **completed** and is no longer triggered. Its h
 
 ## Executing a Job
 
-You can also run a job on demand:
+You can run a job immediately or activate its recurring schedule:
 
-- **Web UI:** click the job, then click **Run Now**.
-- **Chat:** *"Run my 'Morning Standup Summary' job now."*
-- **API:** `POST /api/jobs/{id}/run`
+| Action | Effect |
+|--------|--------|
+| **Run Now** | Executes immediately, regardless of pause/draft state. Does **not** activate the recurring schedule (job stays in Draft if it was Draft). |
+| **Start** | Activates the recurring cron schedule (Draft → Active). Next run fires according to the cron expression. |
 
-Manual runs share the same execution path, history, and timeout as scheduled runs.
+### Web UI
+
+- **Web UI Run Now:** Click the job, then click **▶ Run Now**. Useful for testing before activating the schedule.
+- **Web UI Start:** Click the job, then click **▶ Start** to transition to Active and begin the recurring schedule.
+
+### Chat
+
+- *"Run my 'Morning Standup Summary' job now."* → Executes immediately (one-shot).
+- *"Activate the 'Morning Standup Summary' job."* → Transitions to Active, starts recurring schedule.
+
+### API
+
+```http
+POST /api/jobs/{id}/run        # Run immediately (one-shot, doesn't activate schedule)
+POST /api/jobs/{id}/start      # Activate recurring schedule
+```
+
+---
+
+## Job Run Lifecycle
+
+When a job executes, it creates a **JobRun** record to track that execution. Understanding the lifecycle helps with troubleshooting and monitoring.
+
+### States
+
+| Status | Meaning |
+|--------|---------|
+| `running` | Job is currently executing. |
+| `succeeded` | Execution completed successfully. Output is captured. |
+| `failed` | Execution encountered an error (tool failure, agent error, etc.). Error message is captured. |
+| `timed_out` | Execution exceeded the timeout (default 5 minutes). The job is forcibly terminated and marked as timed out. |
+
+### Timeout Behavior
+
+Each job execution has a **timeout of 5 minutes by default**. If the job does not complete by then:
+1. The execution is cancelled via a background CancellationToken
+2. The JobRun status is updated to `timed_out`
+3. An error message is recorded ("Execution timeout: no response after 5 minutes")
+
+This prevents jobs from hanging forever if the agent or a tool call stalls. Previously, stuck jobs would remain in `running` state indefinitely. Now they cleanly transition to `timed_out` and the next scheduled run can proceed.
+
+> **Tip:** If you see frequent timeouts, check:
+> - Is your model (Ollama, Azure OpenAI) responding slowly?
+> - Are tool calls (web fetch, file I/O) blocking indefinitely?
+> - Increase the global timeout in **Settings → Scheduler → Default Job Timeout** if needed.
 
 ---
 
@@ -243,6 +290,12 @@ In the navigation sidebar, open **Jobs → Job Templates** to start from a templ
 
 Built-in **job templates** are read-only, pre-canned configurations distilled from the demos in [`docs/demos/tools/`](../demos/tools/README.md). They give you a one-click starting point with prompt + schedule + required tools + prerequisites.
 
+### Multi-Instance Templates
+
+Each template can be instantiated **unlimited times**. When you click **Use this template**, the Scheduler automatically generates a unique job name by appending a counter suffix: "Website Watcher", then "Website Watcher (2)", "(3)", etc. This allows you to monitor multiple sites, folders, or workflows using the same template without name collisions.
+
+Each instance is a **fully independent job** — you can edit its prompt, schedule, and tools without affecting other instances.
+
 ### Web UI
 
 Navigation sidebar → **Jobs → Job Templates**. You will see a card per template with:
@@ -252,6 +305,15 @@ Navigation sidebar → **Jobs → Job Templates**. You will see a card per templ
 - A prompt preview.
 - A link back to the demo walkthrough.
 - A **Use this template** button that creates the job using the template's defaults.
+
+After clicking **Use this template**, the job is created in **Draft** state and you are automatically navigated to its detail page, where you can:
+- Click **▶ Run Now** to execute immediately (one-shot, job stays Draft)
+- Click **▶ Start** to activate the recurring schedule (Draft → Active)
+- Edit the prompt, tools, or schedule before running
+
+### Template Lineage
+
+When a job is created from a template, the job's **SourceTemplateName** field is populated with the template's name. This read-only field tracks the job's origin for audit purposes. On the job edit page, you can see which template created the job, but the lineage cannot be changed.
 
 ### REST API
 
@@ -297,17 +359,28 @@ You can `POST` `defaultJob` directly to `/api/jobs` — it is already the shape 
 
 ---
 
-## Editing, Pausing, and Deleting
+## Editing, Renaming, Pausing, and Deleting
 
 | Action | Web UI | Effect |
 |--------|--------|--------|
+| **Rename** | Click the job → pencil icon next to **Name** → edit field | Opens an inline text field. Press **Enter** to save, **Esc** to cancel. Duplicate names are rejected. Auto-suffixed names (e.g. "Website Watcher (2)") can be renamed to anything. SourceTemplateName stays read-only. |
 | **Edit** | Click the job → **Edit** | Saves a new version; future runs use the new prompt/trigger. |
 | **Pause** | Click the job → **Pause** | Trigger is preserved; no new runs fire. |
-| **Resume** | Click the job → **Resume** | The trigger fires again on the next scheduled time. |
-| **Run Now** | Click the job → **Run Now** | Executes immediately, regardless of pause state. |
+| **Resume** | Click the job → **Resume** | The trigger fires again on the next scheduled time (or manually via Run Now). |
+| **Run Now** | Click the job → **▶ Run Now** | Executes immediately, one-shot. For recurring cron jobs, does **not** fire the cron clock early — next automatic run still follows the schedule. Useful for testing before activating. |
+| **Start** | Click the job → **▶ Start** | (Draft only) Transitions job to Active. Next automatic run fires per cron schedule. |
 | **Delete** | Click the job → **Delete** | Removes the job and its history. Cannot be undone. |
 
-> **Tip:** Prefer **Pause** over **Delete** while debugging — you keep the run history.
+> **Tip:** Prefer **Pause** over **Delete** while debugging — you keep the run history. Use the pencil icon to quickly rename jobs without opening the edit form.
+
+### Inline Rename Workflow
+
+1. From the job detail page, locate the job name near the top.
+2. Click the **pencil icon** next to the name to enter edit mode.
+3. A text field appears with the current name highlighted.
+4. Type the new name and press **Enter** to save, or **Esc** to cancel.
+5. A snackbar confirms the rename success or error.
+6. If the new name is already taken, an inline error message appears and the save is rejected.
 
 ---
 

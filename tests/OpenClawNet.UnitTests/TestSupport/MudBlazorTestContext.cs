@@ -15,11 +15,27 @@ namespace OpenClawNet.UnitTests.TestSupport;
 /// See .squad/decisions.md (entry: "Adopt official MudBlazor + bUnit fixture pattern")
 /// for the rationale and alternatives considered.
 /// </summary>
-public abstract class MudBlazorTestContext : TestContext
+public abstract class MudBlazorTestContext : TestContext, IAsyncDisposable, IDisposable
 {
     protected MudBlazorTestContext()
     {
         Services.AddMudServices();
         JSInterop.Mode = JSRuntimeMode.Loose;
+    }
+
+    public new async ValueTask DisposeAsync()
+    {
+        await base.DisposeAsync();
+        GC.SuppressFinalize(this);
+    }
+
+    public new void Dispose()
+    {
+        DisposeAsync().AsTask().GetAwaiter().GetResult();
+    }
+
+    void IDisposable.Dispose()
+    {
+        Dispose();
     }
 }

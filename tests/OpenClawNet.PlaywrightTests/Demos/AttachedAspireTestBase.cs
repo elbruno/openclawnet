@@ -1,3 +1,5 @@
+using System.Diagnostics;
+using System.Text.Json;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -42,7 +44,8 @@ namespace OpenClawNet.PlaywrightTests.Demos;
 /// ┌──────────────────────────────────────────────────────────────────────────────┐
 /// │                            USAGE PATTERN                                      │
 /// ├──────────────────────────────────────────────────────────────────────────────┤
-/// │ 1. Terminal 1: aspire start src\OpenClawNet.AppHost                          │
+/// │ 1. Terminal 1: aspire describe --format Json                                  │
+/// │ 2. If resources missing: aspire start src\OpenClawNet.AppHost                 │
 /// │ 2. Wait for green health checks + dashboard (http://localhost:15178)         │
 /// │ 3. Terminal 2: Set env vars and run test:                                    │
 /// │                                                                                │
@@ -63,7 +66,7 @@ namespace OpenClawNet.PlaywrightTests.Demos;
 /// ├──────────────────────────────────────────────────────────────────────────────┤
 /// │ OPENCLAW_WEB_URL (optional)                                                  │
 /// │   Default: https://localhost:7294                                             │
-/// │   The Blazor frontend URL (aspire show-links to find actual URL)             │
+/// │   The Blazor frontend URL (aspire describe --format Json to find actual URL) │
 /// │                                                                                │
 /// │ OPENCLAW_GATEWAY_URL (optional)                                              │
 /// │   Default: https://localhost:7067                                             │
@@ -97,18 +100,19 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     private IPlaywright? _playwright;
     private IBrowser? _browser;
     private IPage? _page;
+    private bool _startedAspireForRun;
+    private bool _isReady;
+    private string? _startupSkipReason;
 
     /// <summary>
     /// The Blazor Web frontend URL (e.g., https://localhost:7294).
-    /// Read from OPENCLAW_WEB_URL or defaults to the standard launch profile URL.
-    /// Use `aspire show-links` to discover the actual runtime URL if ports differ.
+/// Read from OPENCLAW_WEB_URL or from `aspire describe --format Json`.
     /// </summary>
     protected string WebBaseUrl { get; private set; } = string.Empty;
 
     /// <summary>
     /// The Gateway API URL (e.g., https://localhost:7067).
-    /// Read from OPENCLAW_GATEWAY_URL or defaults to the standard launch profile URL.
-    /// Use `aspire show-links` to discover the actual runtime URL if ports differ.
+/// Read from OPENCLAW_GATEWAY_URL or from `aspire describe --format Json`.
     /// </summary>
     protected string GatewayBaseUrl { get; private set; } = string.Empty;
 
@@ -116,42 +120,58 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// The active Playwright page. Tests can use this directly for navigation and assertions.
     /// Disposed automatically when the test class completes.
     /// </summary>
-    protected IPage Page => _page ?? throw new InvalidOperationException("Page not initialized");
+    protected IPage Page
+    {
+        get
+        {
+            EnsureReadyOrSkip();
+            return _page ?? throw new InvalidOperationException("Page not initialized");
+        }
+    }
 
     public async Task InitializeAsync()
     {
-        // Read URLs from environment or fall back to launch profile defaults.
-        // Aspire dynamic port assignment means the user MUST export these if ports differ.
-        // Use `aspire show-links` to discover the actual runtime URLs.
-        WebBaseUrl = Environment.GetEnvironmentVariable("OPENCLAW_WEB_URL")
-            ?? "https://localhost:7294";
-
-        GatewayBaseUrl = Environment.GetEnvironmentVariable("OPENCLAW_GATEWAY_URL")
-            ?? "https://localhost:7067";
-
-        // Initialize Playwright — ALWAYS headed for demo tests.
-        _playwright = await Playwright.CreateAsync();
-
-        // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
-        // Match the AppHostFixture pattern (lines ~141–160) for consistency.
-        var defaultSlowMo = 1500;
-        var slowMo = defaultSlowMo;
-        var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
-        if (!string.IsNullOrWhiteSpace(slowMoRaw)
-            && int.TryParse(slowMoRaw, out var parsedSlowMo)
-            && parsedSlowMo >= 0)
+        try
         {
-            slowMo = parsedSlowMo;
+            await ResolveOrStartAspireAsync();
+
+            // Initialize Playwright — ALWAYS headed for demo tests.
+            _playwright = await Playwright.CreateAsync();
+
+            // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
+            // Match the AppHostFixture pattern (lines ~141–160) for consistency.
+            var defaultSlowMo = 1500;
+            var slowMo = defaultSlowMo;
+            var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
+            if (!string.IsNullOrWhiteSpace(slowMoRaw)
+                && int.TryParse(slowMoRaw, out var parsedSlowMo)
+                && parsedSlowMo >= 0)
+            {
+                slowMo = parsedSlowMo;
+            }
+
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = false, // ALWAYS headed for demo visibility
+                SlowMo = slowMo
+            });
+
+            // Create a new page for this test class.
+            _page = await _browser.NewPageAsync();
+            _isReady = true;
         }
-
-        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        catch (Xunit.SkipException ex)
         {
-            Headless = false, // ALWAYS headed for demo visibility
-            SlowMo = slowMo
-        });
-
-        // Create a new page for this test class.
-        _page = await _browser.NewPageAsync();
+            _isReady = false;
+            _startupSkipReason = ex.Message;
+        }
+        catch (Exception ex)
+        {
+            _isReady = false;
+            _startupSkipReason =
+                "Attached Aspire demo prerequisites are unavailable. " +
+                $"Startup error: {ex.GetType().Name}: {ex.Message}";
+        }
     }
 
     public async Task DisposeAsync()
@@ -165,6 +185,11 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             await _browser.CloseAsync();
         }
         _playwright?.Dispose();
+
+        if (_startedAspireForRun)
+        {
+            await RunAspireCommandAsync("stop");
+        }
     }
 
     /// <summary>
@@ -173,6 +198,8 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// </summary>
     protected HttpClient CreateGatewayHttpClient()
     {
+        EnsureReadyOrSkip();
+
         var handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -233,9 +260,15 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     /// </summary>
     protected async Task WithScreenshotOnFailure(Func<Task> action)
     {
+        EnsureReadyOrSkip();
+
         try
         {
             await action();
+        }
+        catch (Xunit.SkipException)
+        {
+            throw;
         }
         catch (Exception ex)
         {
@@ -246,5 +279,178 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             await LogStepAsync($"❌ Test failed. Screenshot saved: {screenshotPath}");
             throw new Exception($"Test failed. Screenshot: {screenshotPath}", ex);
         }
+    }
+
+    private void EnsureReadyOrSkip()
+    {
+        Skip.IfNot(_isReady, _startupSkipReason ?? "Attached Aspire demo prerequisites are unavailable.");
+    }
+
+    private async Task ResolveOrStartAspireAsync()
+    {
+        var envWeb = Environment.GetEnvironmentVariable("OPENCLAW_WEB_URL");
+        var envGateway = Environment.GetEnvironmentVariable("OPENCLAW_GATEWAY_URL");
+        if (!string.IsNullOrWhiteSpace(envWeb) && !string.IsNullOrWhiteSpace(envGateway))
+        {
+            WebBaseUrl = envWeb.TrimEnd('/');
+            GatewayBaseUrl = envGateway.TrimEnd('/');
+            return;
+        }
+
+        if (await TryResolveUrlsFromDescribeAsync())
+        {
+            return;
+        }
+
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = "start",
+            UseShellExecute = false,
+            RedirectStandardOutput = false,
+            RedirectStandardError = false,
+            WorkingDirectory = GetRepositoryRoot()
+        };
+
+        using var process = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to run 'aspire start'.");
+        _startedAspireForRun = true;
+
+        var timeoutAt = DateTime.UtcNow.AddMinutes(2);
+        while (DateTime.UtcNow < timeoutAt)
+        {
+            if (await TryResolveUrlsFromDescribeAsync())
+            {
+                return;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+
+        throw new Xunit.SkipException(
+            "Aspire resources were not available within 2 minutes. " +
+            "Skipping demo-attached Playwright test because live Aspire prerequisites are unavailable.");
+    }
+
+    private async Task<bool> TryResolveUrlsFromDescribeAsync()
+    {
+        var result = await RunAspireCommandAsync("describe --format Json");
+        if (result.ExitCode != 0)
+        {
+            return false;
+        }
+
+        var trimmed = result.Stdout.Trim();
+        var jsonStart = trimmed.IndexOf('{');
+        var jsonEnd = trimmed.LastIndexOf('}');
+        if (jsonStart < 0 || jsonEnd <= jsonStart)
+        {
+            return false;
+        }
+
+        var json = trimmed.Substring(jsonStart, jsonEnd - jsonStart + 1);
+        using var doc = JsonDocument.Parse(json);
+        if (!doc.RootElement.TryGetProperty("resources", out var resources) || resources.ValueKind != JsonValueKind.Array)
+        {
+            return false;
+        }
+
+        string? webUrl = null;
+        string? gatewayUrl = null;
+        foreach (var resource in resources.EnumerateArray())
+        {
+            var name = resource.TryGetProperty("displayName", out var nameProp)
+                ? nameProp.GetString() ?? string.Empty
+                : string.Empty;
+            if (!resource.TryGetProperty("urls", out var urlsProp) || urlsProp.ValueKind != JsonValueKind.Array)
+            {
+                continue;
+            }
+
+            var urls = urlsProp.EnumerateArray()
+                .Select(u => u.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : null)
+                .Where(u => !string.IsNullOrWhiteSpace(u))
+                .Select(u => u!)
+                .ToList();
+            var selectedUrl = urls.FirstOrDefault(u => u.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+                ?? urls.FirstOrDefault(u => u.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
+
+            if (string.IsNullOrWhiteSpace(selectedUrl))
+            {
+                continue;
+            }
+
+            if (name.Equals("web", StringComparison.OrdinalIgnoreCase))
+            {
+                webUrl = selectedUrl;
+            }
+            else if (name.Equals("gateway", StringComparison.OrdinalIgnoreCase))
+            {
+                gatewayUrl = selectedUrl;
+            }
+        }
+
+        if (string.IsNullOrWhiteSpace(webUrl) || string.IsNullOrWhiteSpace(gatewayUrl))
+        {
+            return false;
+        }
+
+        WebBaseUrl = webUrl.TrimEnd('/');
+        GatewayBaseUrl = gatewayUrl.TrimEnd('/');
+        return true;
+    }
+
+    private static async Task<(int ExitCode, string Stdout, string Stderr)> RunAspireCommandAsync(string arguments)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = arguments,
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            WorkingDirectory = GetRepositoryRoot()
+        };
+
+        using var process = Process.Start(startInfo);
+        if (process is null)
+        {
+            return (-1, string.Empty, "Failed to launch aspire process.");
+        }
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+        var waitForExitTask = process.WaitForExitAsync();
+        var timeoutTask = Task.Delay(TimeSpan.FromSeconds(30));
+
+        if (await Task.WhenAny(waitForExitTask, timeoutTask) != waitForExitTask)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Process may already be terminating.
+            }
+
+            var timedOutStdout = await stdoutTask;
+            var timedOutStderr = await stderrTask;
+            return (
+                -1,
+                timedOutStdout,
+                $"{timedOutStderr}{Environment.NewLine}Aspire command timed out after 30 seconds: aspire {arguments}");
+        }
+
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
+        await waitForExitTask;
+        return (process.ExitCode, stdout, stderr);
+    }
+
+    private static string GetRepositoryRoot()
+    {
+        return Path.GetFullPath(Path.Combine(
+            Directory.GetCurrentDirectory(), "..", "..", "..", "..", ".."));
     }
 }

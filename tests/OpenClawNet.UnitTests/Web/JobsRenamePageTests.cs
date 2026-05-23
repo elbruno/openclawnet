@@ -21,7 +21,7 @@ namespace OpenClawNet.UnitTests.Web;
 /// Verifies rename button toggles edit mode, save/cancel behavior, keyboard shortcuts,
 /// and validation (empty names, duplicates).
 /// </summary>
-public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
+public class JobsRenamePageTests : MudBlazorTestContext, IAsyncDisposable
 {
     private readonly Mock<IHttpClientFactory> _mockHttpClientFactory;
     private readonly Mock<HttpMessageHandler> _mockHttpHandler;
@@ -76,7 +76,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
         };
 
         // Render MudPopoverProvider AFTER all services are registered to satisfy MudBlazor's requirement
-        RenderComponent<MudPopoverProvider>();
+        Render<MudPopoverProvider>();
     }
 
     [Fact]
@@ -84,7 +84,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
     {
         // Arrange
         SetupJobsResponse(_testJobs);
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
         var job = _testJobs[0];
 
         // Act - Click the rename button (Edit icon)
@@ -139,7 +139,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
             : j).ToList();
         SetupJobsResponse(updatedJobs);
 
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -168,7 +168,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
         SetupJobsResponse(_testJobs);
         var duplicateName = _testJobs[1].Name; // Use existing job name
 
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -206,7 +206,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
         // Arrange
         SetupJobsResponse(_testJobs);
         var job = _testJobs[0];
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -259,7 +259,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
             : j).ToList();
         SetupJobsResponse(updatedJobs);
 
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -285,7 +285,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
     {
         // Arrange
         SetupJobsResponse(_testJobs);
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -311,7 +311,7 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
     {
         // Arrange
         SetupJobsResponse(_testJobs);
-        var cut = RenderComponent<Jobs>();
+        var cut = Render<Jobs>();
 
         // Act - Enter edit mode
         var renameButtons = cut.FindAll("button[title='Rename job']");
@@ -372,10 +372,10 @@ public class JobsRenamePageTests : MudBlazorTestContext, IDisposable
             .ReturnsAsync(response);
     }
 
-    public new void Dispose()
+    public new async ValueTask DisposeAsync()
     {
         _mockHttpClient?.Dispose();
-        base.Dispose();
+        await base.DisposeAsync();
         GC.SuppressFinalize(this);
     }
 

@@ -22,8 +22,8 @@
 
   <ItemGroup>
     <PackageReference Include="CommunityToolkit.Aspire.Microsoft.Data.Sqlite" Version="13.1.1" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5" />
-    <PackageReference Include="YamlDotNet" Version="16.2.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.7" />
+    <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -48,6 +48,8 @@
     <ProjectReference Include="..\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.TextToSpeech\OpenClawNet.Tools.TextToSpeech.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.GitHub\OpenClawNet.Tools.GitHub.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Tools.Dashboard\OpenClawNet.Tools.Dashboard.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.ImageEdit\OpenClawNet.Tools.ImageEdit.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.HtmlQuery\OpenClawNet.Tools.HtmlQuery.csproj" />
     <ProjectReference Include="..\OpenClawNet.Skills\OpenClawNet.Skills.csproj" />

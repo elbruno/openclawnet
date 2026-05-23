@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\..\src\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
+    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
   </ItemGroup>
 
   <ItemGroup>
