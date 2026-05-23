@@ -49,6 +49,7 @@ public static class SkillEndpoints
 
         group.MapGet("/snapshot", GetSnapshot).WithName("GetSkillsSnapshot");
         group.MapGet("/", ListSkills).WithName("ListSkills");
+        group.MapGet("/agents/{agentName}", GetAgentSkills).WithName("GetAgentSkills");
         group.MapGet("/changes-since/{snapshotId}", GetChangesSince).WithName("GetSkillsChangesSince");
         group.MapGet("/{name}", GetSkill).WithName("GetSkill");
         group.MapPost("/", CreateSkill).WithName("CreateSkill");
@@ -85,6 +86,42 @@ public static class SkillEndpoints
             .Select(s => ToDto(s, enabledByAgent))
             .ToList();
         return Results.Ok(dtos);
+    }
+
+    // ====================================================================
+    // GET /api/skills/agents/{agentName}
+    // ====================================================================
+    private static async Task<IResult> GetAgentSkills(
+        string agentName,
+        ISkillsRegistry registry,
+        [FromQuery] bool enabledOnly = false,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(agentName))
+            return Problem(StatusCodes.Status400BadRequest, "invalid_agent_name", "agentName must not be empty.");
+
+        var snapshot = await registry.GetSnapshotAsync(ct).ConfigureAwait(false);
+        var rows = new List<AgentSkillStateDtoOut>(snapshot.Skills.Count);
+
+        foreach (var skill in snapshot.Skills.OrderBy(s => s.Name, StringComparer.Ordinal))
+        {
+            var enabled = await registry.IsEnabledForAgentAsync(skill.Name, agentName, ct).ConfigureAwait(false);
+            if (enabledOnly && !enabled)
+                continue;
+
+            rows.Add(new AgentSkillStateDtoOut(
+                Name: skill.Name,
+                Layer: skill.Layer.ToString().ToLowerInvariant(),
+                Enabled: enabled));
+        }
+
+        return Results.Ok(new AgentSkillsInspectDtoOut(
+            AgentName: agentName,
+            SnapshotId: snapshot.SnapshotId,
+            BuiltUtc: snapshot.BuiltUtc,
+            TotalSkills: rows.Count,
+            EnabledSkills: rows.Count(r => r.Enabled),
+            Skills: rows));
     }
 
     // ====================================================================
@@ -610,6 +647,19 @@ internal sealed record SkillsChangesDtoOut(
     string[] Added,
     string[] Modified,
     string[] Removed);
+
+internal sealed record AgentSkillStateDtoOut(
+    string Name,
+    string Layer,
+    bool Enabled);
+
+internal sealed record AgentSkillsInspectDtoOut(
+    string AgentName,
+    string SnapshotId,
+    DateTimeOffset BuiltUtc,
+    int TotalSkills,
+    int EnabledSkills,
+    IReadOnlyList<AgentSkillStateDtoOut> Skills);
 
 internal sealed record CreateSkillRequestIn(
     string Name,

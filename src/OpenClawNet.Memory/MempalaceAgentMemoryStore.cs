@@ -1,4 +1,6 @@
 using System.Collections.Concurrent;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using MemPalace.Core.Backends;
 using MemPalace.Core.Model;
@@ -98,6 +100,9 @@ public sealed class MempalaceAgentMemoryStore : IAgentMemoryStore, IAsyncDisposa
         catch (MemPalace.Core.Errors.PalaceNotFoundException)
         {
             // Agent has never stored a memory — return empty rather than throwing.
+            _logger.LogDebug(
+                "No memory palace found for agent {AgentId}; returning zero search hits (topK={TopK}, queryHash={QueryHash})",
+                agentId, topK, ComputeHash(query));
             return Array.Empty<MemoryHit>();
         }
 
@@ -129,6 +134,10 @@ public sealed class MempalaceAgentMemoryStore : IAgentMemoryStore, IAsyncDisposa
             var content = i < docs.Count ? docs[i] : string.Empty;
             hits.Add(new MemoryHit(ids[i], content, score, metadata));
         }
+
+        _logger.LogDebug(
+            "Searched memories for agent {AgentId}: topK={TopK}, hits={HitCount}, queryHash={QueryHash}",
+            agentId, topK, hits.Count, ComputeHash(query));
         return hits;
     }
 
@@ -190,7 +199,21 @@ public sealed class MempalaceAgentMemoryStore : IAgentMemoryStore, IAsyncDisposa
                 dict[kvp.Key] = kvp.Value;
             }
         }
-        var ts = entry.Timestamp ?? DateTime.UtcNow;
+
+        if (!string.IsNullOrWhiteSpace(entry.Kind))
+        {
+            dict["kind"] = entry.Kind;
+        }
+        if (entry.Importance is { } importance)
+        {
+            dict["importance"] = Math.Clamp(importance, 0.0, 1.0);
+        }
+        if (!string.IsNullOrWhiteSpace(entry.SourceSessionId))
+        {
+            dict["sourceSessionId"] = entry.SourceSessionId;
+        }
+
+        var ts = entry.Timestamp ?? DateTimeOffset.UtcNow;
         dict["timestamp"] = ts.ToString("O");
         return dict;
     }
@@ -214,6 +237,12 @@ public sealed class MempalaceAgentMemoryStore : IAgentMemoryStore, IAsyncDisposa
     }
 
     private void ThrowIfDisposed() => ObjectDisposedException.ThrowIf(_disposed, this);
+
+    private static string ComputeHash(string input)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(bytes[..8]);
+    }
 
     public async ValueTask DisposeAsync()
     {

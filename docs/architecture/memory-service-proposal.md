@@ -428,7 +428,7 @@ Memory injection is bounded by token budget (default: 1500 tokens, configurable 
 
 ### Closed by E2E demo
 
-The Remember → Recall round-trip described in this section is exercised end-to-end by `tests/OpenClawNet.IntegrationTests/Memory/MemoryRoundTripE2ETests.cs` (plan issue #103). The two facts demonstrate are: (a) a fact stored in turn 1 via `RememberTool` is retrieved in turn 2 via `RecallTool` and surfaces in the assistant response, and (b) two distinct `AgentProfileName` requests against the same `MempalaceAgentMemoryStore` cannot read each other's memories — Bob's recall of Alice's secret returns `count=0` at the tool layer.
+The Remember → Recall round-trip described in this section is exercised end-to-end by `tests/OpenClawNet.E2ETests/MemoryRoundTripE2ETests.cs` (plan issue #103). The two facts demonstrated are: (a) a fact stored in turn 1 via `RememberTool` is retrieved in turn 2 via `RecallTool` and surfaces in the assistant response, and (b) two distinct `AgentProfileName` requests against the same `MempalaceAgentMemoryStore` cannot read each other's memories — Bob's recall of Alice's secret returns `count=0` at the tool layer.
 
 ---
 
