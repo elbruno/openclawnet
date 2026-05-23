@@ -458,4 +458,157 @@ public sealed class ChatStreamEndpointTests
         await app.StartAsync();
         return app;
     }
+
+    // ── IAgentProvider path (github-copilot) tests ───────────────────────────
+    // These tests exercise the StreamViaAgentProviderAsync branch that is taken
+    // when the profile's Provider is "github-copilot". See Issue #85 for the
+    // fix that wraps this path in a 90-second session timeout.
+    // The 90-second timeout itself is exercised by the E2E demo:
+    //   tests/OpenClawNet.PlaywrightTests/Demos/BrowseAndScheduleE2EDemoTests.cs
+
+    [Fact]
+    public async Task AgentProviderPath_NormalCompletion_SendsContentAndCompleteEvents()
+    {
+        var chatClient = new Mock<Microsoft.Extensions.AI.IChatClient>();
+        chatClient
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IList<Microsoft.Extensions.AI.ChatMessage>>(),
+                It.IsAny<Microsoft.Extensions.AI.ChatOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(YieldChatUpdates("Hello", " World"));
+        var agentProvider = new Mock<IAgentProvider>();
+        agentProvider.Setup(p => p.ProviderName).Returns("github-copilot");
+        agentProvider.Setup(p => p.CreateChatClient(It.IsAny<AgentProfile>())).Returns(chatClient.Object);
+
+        await using var app = await CreateTestAppWithAgentProviderAsync(agentProvider.Object);
+        using var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/chat/stream", new
+        {
+            sessionId = Guid.NewGuid(),
+            message = "Summarise this page",
+            agentProfileName = "ghcp-agent"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var events = await ReadNdjsonEventsAsync(response);
+        events.Should().HaveCount(3); // content, content, complete
+        events[0].Type.Should().Be("content");
+        events[0].Content.Should().Be("Hello");
+        events[1].Type.Should().Be("content");
+        events[1].Content.Should().Be(" World");
+        events[2].Type.Should().Be("complete");
+    }
+
+    [Fact]
+    public async Task AgentProviderPath_ExceptionDuringStream_SendsErrorEvent()
+    {
+        var chatClient = new Mock<Microsoft.Extensions.AI.IChatClient>();
+        chatClient
+            .Setup(c => c.GetStreamingResponseAsync(
+                It.IsAny<IList<Microsoft.Extensions.AI.ChatMessage>>(),
+                It.IsAny<Microsoft.Extensions.AI.ChatOptions?>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(ThrowingChatUpdates(new InvalidOperationException("Copilot SDK exploded")));
+
+        var agentProvider = new Mock<IAgentProvider>();
+        agentProvider.Setup(p => p.ProviderName).Returns("github-copilot");
+        agentProvider.Setup(p => p.CreateChatClient(It.IsAny<AgentProfile>())).Returns(chatClient.Object);
+
+        await using var app = await CreateTestAppWithAgentProviderAsync(agentProvider.Object);
+        using var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/chat/stream", new
+        {
+            sessionId = Guid.NewGuid(),
+            message = "Schedule a meeting",
+            agentProfileName = "ghcp-agent"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var events = await ReadNdjsonEventsAsync(response);
+        events.Should().ContainSingle(e => e.Type == "error");
+        events.First(e => e.Type == "error").Content.Should().Contain("Copilot SDK exploded");
+    }
+
+    [Fact]
+    public async Task AgentProviderPath_NoRegisteredProvider_SendsErrorEvent()
+    {
+        // No IAgentProvider registered for "github-copilot" → error event, no complete.
+        await using var app = await CreateTestAppWithAgentProviderAsync(agentProvider: null);
+        using var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/chat/stream", new
+        {
+            sessionId = Guid.NewGuid(),
+            message = "Schedule a meeting",
+            agentProfileName = "ghcp-agent"
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var events = await ReadNdjsonEventsAsync(response);
+        events.Should().ContainSingle(e => e.Type == "error");
+        events.First(e => e.Type == "error").Content.Should().Contain("github-copilot");
+    }
+
+    private static async Task<WebApplication> CreateTestAppWithAgentProviderAsync(
+        IAgentProvider? agentProvider)
+    {
+        var orchestrator = new Mock<IAgentOrchestrator>();
+
+        var ghcpProfile = new AgentProfile
+        {
+            Name = "ghcp-agent",
+            DisplayName = "GitHub Copilot Agent",
+            Provider = "github-copilot",
+            Instructions = "You are a helpful assistant."
+        };
+
+        var profileStore = new Mock<IAgentProfileStore>();
+        profileStore
+            .Setup(s => s.GetAsync("ghcp-agent", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ghcpProfile);
+        profileStore
+            .Setup(s => s.GetDefaultAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ghcpProfile);
+
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [] });
+        builder.WebHost.UseTestServer();
+        builder.Services.AddSingleton(orchestrator.Object);
+        builder.Services.AddSingleton(profileStore.Object);
+        if (agentProvider is not null)
+        {
+            builder.Services.AddSingleton(agentProvider);
+        }
+
+        var app = builder.Build();
+        app.MapChatStreamEndpoints();
+        await app.StartAsync();
+        return app;
+    }
+
+    private static async IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> YieldChatUpdates(
+        params string[] texts)
+    {
+        foreach (var text in texts)
+        {
+            await Task.Yield();
+            yield return new Microsoft.Extensions.AI.ChatResponseUpdate
+            {
+                Role = Microsoft.Extensions.AI.ChatRole.Assistant,
+                Contents = [new Microsoft.Extensions.AI.TextContent(text)]
+            };
+        }
+    }
+
+    private static async IAsyncEnumerable<Microsoft.Extensions.AI.ChatResponseUpdate> ThrowingChatUpdates(
+        Exception ex,
+        [EnumeratorCancellation] CancellationToken ct = default)
+    {
+        await Task.Yield();
+        throw ex;
+#pragma warning disable CS0162
+        yield break;
+#pragma warning restore CS0162
+    }
 }
