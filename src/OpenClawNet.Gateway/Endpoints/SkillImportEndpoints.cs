@@ -99,7 +99,7 @@ public static class SkillImportEndpoints
         ILogger<GatewayProgramMarker> logger,
         CancellationToken ct)
     {
-        logger.LogInformation("🟢 PostImportFile: Entered endpoint");
+        logger.LogInformation("Skill file import request received.");
         if (!httpContext.Request.HasFormContentType)
             return Problem(StatusCodes.Status400BadRequest, "InvalidRequest", "Expected multipart/form-data.");
 
@@ -115,12 +115,12 @@ public static class SkillImportEndpoints
         }
 
         var file = form.Files.GetFile("file") ?? form.Files.FirstOrDefault();
-        logger.LogInformation("🟢 PostImportFile: File received: {FileName}, Size: {FileSize}", file?.FileName ?? "null", file?.Length ?? 0);
         if (file is null || file.Length <= 0)
             return Problem(StatusCodes.Status400BadRequest, "InvalidRequest", "No file in multipart payload.");
 
         var fileName = file.FileName ?? "unknown";
         var ext = Path.GetExtension(fileName).ToLowerInvariant();
+        logger.LogInformation("Skill file import payload validated (extension={Extension}, bytes={Bytes})", ext, file.Length);
 
         if (ext == ".md")
         {
@@ -129,10 +129,8 @@ public static class SkillImportEndpoints
             using var reader = new StreamReader(stream);
             var content = await reader.ReadToEndAsync().ConfigureAwait(false);
 
-            logger.LogInformation("🟢 PostImportFile: Calling ImportMarkdownFileAsync for {FileName}", fileName);
             var result = await importer.ImportMarkdownFileAsync(content, fileName, ct).ConfigureAwait(false);
-            logger.LogInformation("🟢 PostImportFile: ImportMarkdownFileAsync result: Success={Success}, SkillName={SkillName}", 
-                result.Success, result.Value?.SkillName ?? "null");
+            logger.LogInformation("Skill markdown import completed (success={Success})", result.Success);
             if (result.Success)
             {
                 return Results.Created(
@@ -149,6 +147,7 @@ public static class SkillImportEndpoints
             // Folder archive import
             using var stream = file.OpenReadStream();
             var result = await importer.ImportZipArchiveAsync(stream, fileName, ct).ConfigureAwait(false);
+            logger.LogInformation("Skill zip import completed (success={Success})", result.Success);
             if (result.Success)
             {
                 return Results.Created(
