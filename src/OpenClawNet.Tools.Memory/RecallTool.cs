@@ -1,4 +1,6 @@
 using System.Diagnostics;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using OpenClawNet.Memory;
@@ -98,6 +100,9 @@ public sealed class RecallTool : ITool
         {
             var hits = await _store.SearchAsync(agentId, query, topK, cancellationToken).ConfigureAwait(false);
             sw.Stop();
+            _logger.LogInformation(
+                "RecallTool searched memory for agent {AgentId} topK {TopK} hits {HitCount} queryHash {QueryHash}",
+                agentId, topK, hits.Count, ComputeHash(query));
 
             var payload = new
             {
@@ -124,5 +129,11 @@ public sealed class RecallTool : ITool
             _logger.LogWarning(ex, "RecallTool failed for agent {AgentId}", agentId);
             return ToolResult.Fail(Name, $"Failed to search memory: {ex.Message}", sw.Elapsed);
         }
+    }
+
+    private static string ComputeHash(string input)
+    {
+        var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(bytes[..8]);
     }
 }
