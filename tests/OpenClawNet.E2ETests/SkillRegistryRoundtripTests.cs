@@ -68,6 +68,16 @@ public sealed class SkillRegistryRoundtripTests : IClassFixture<GatewayE2EFactor
             "the per-agent enabled.json should now contain a row for the default agent.");
         enabledForAgent.GetBoolean().Should().BeTrue();
 
+        // GET /api/skills/agents/{agentName} — inspect resolved state for one agent.
+        var agentInspectResp = await _client.GetAsync($"/api/skills/agents/{Uri.EscapeDataString(_agentName)}");
+        agentInspectResp.StatusCode.Should().Be(HttpStatusCode.OK);
+        using var agentInspect = JsonDocument.Parse(await agentInspectResp.Content.ReadAsStringAsync());
+        agentInspect.RootElement.GetProperty("agentName").GetString().Should().Be(_agentName);
+        agentInspect.RootElement.GetProperty("skills").EnumerateArray()
+            .Any(s => string.Equals(s.GetProperty("name").GetString(), skillName, StringComparison.Ordinal)
+                   && s.GetProperty("enabled").GetBoolean())
+            .Should().BeTrue("the per-agent inspect endpoint should report the enabled state.");
+
         // Snapshot endpoint should also be live.
         var snapResp = await _client.GetAsync("/api/skills/snapshot");
         snapResp.StatusCode.Should().Be(HttpStatusCode.OK);
