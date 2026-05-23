@@ -301,7 +301,7 @@ else
     {
         try
         {
-            var http = HttpClientFactory.CreateClient("scheduler");
+            var http = HttpClientFactory.CreateClient("gateway");
             var result = await http.GetFromJsonAsync<StorageLocationDto>("/api/storage/location");
             if (result is not null)
             {
@@ -312,7 +312,7 @@ else
         catch (Exception ex)
         {
             Logger.LogWarning(ex, "Failed to load storage location");
-            _storageError = "Storage service unavailable — showing defaults.";
+            _storageError = "Gateway storage settings unavailable — showing defaults.";
         }
     }
 
@@ -324,7 +324,7 @@ else
         StateHasChanged();
         try
         {
-            var http = HttpClientFactory.CreateClient("scheduler");
+            var http = HttpClientFactory.CreateClient("gateway");
             var request = new StorageUpdateRequestDto { RootPath = _newStoragePath };
             var response = await http.PutAsJsonAsync("/api/storage/location", request);
             
