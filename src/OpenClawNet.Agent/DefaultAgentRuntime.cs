@@ -3,6 +3,7 @@ using System.Text.Json;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
+using OpenClawNet.Memory;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
@@ -35,6 +36,7 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
     private readonly IToolRegistry _toolRegistry;
     private readonly IConversationStore _conversationStore;
     private readonly ISummaryService _summaryService;
+    private readonly IAgentMemoryStore _agentMemoryStore;
     private readonly IAgentProvider? _agentProvider;
     private readonly IToolApprovalCoordinator _approvalCoordinator;
     private readonly IMcpToolProvider? _mcpToolProvider;
@@ -159,6 +161,46 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         return aiTool?.Description;
     }
 
+    private async Task<IReadOnlyList<MemoryHit>> LoadRetrievedMemoriesAsync(AgentContext context, CancellationToken cancellationToken)
+    {
+        if (context.RetrievalLevel is RetrievalLevel.Off)
+            return [];
+
+        if (string.IsNullOrWhiteSpace(context.AgentProfileName))
+            return [];
+
+        var topK = context.RetrievalLevel switch
+        {
+            RetrievalLevel.MemoryOnly => 5,
+            RetrievalLevel.VectorDb => 8,
+            RetrievalLevel.Hybrid => 8,
+            _ => 5
+        };
+
+        try
+        {
+            var hits = await _agentMemoryStore.SearchAsync(context.AgentProfileName, context.UserMessage, topK, cancellationToken);
+            _logger.LogInformation(
+                "Retrieved {Count} memories for agent {Agent} at level {Level} queryHash {QueryHash}",
+                hits.Count,
+                context.AgentProfileName,
+                context.RetrievalLevel,
+                ComputeHash(context.UserMessage));
+            return hits;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogWarning(ex, "Memory retrieval failed for agent {Agent}", context.AgentProfileName);
+            return [];
+        }
+    }
+
+    private static string ComputeHash(string input)
+    {
+        var bytes = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(bytes[..8]);
+    }
+
     public DefaultAgentRuntime(
         IModelClient modelClient,
         IPromptComposer promptComposer,
@@ -166,6 +208,7 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         IToolRegistry toolRegistry,
         IConversationStore conversationStore,
         ISummaryService summaryService,
+        IAgentMemoryStore agentMemoryStore,
         IToolApprovalCoordinator approvalCoordinator,
         ILoggerFactory loggerFactory,
         ILogger<DefaultAgentRuntime> logger,
@@ -251,6 +294,7 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         _toolRegistry = toolRegistry;
         _conversationStore = conversationStore;
         _summaryService = summaryService;
+        _agentMemoryStore = agentMemoryStore;
         _approvalCoordinator = approvalCoordinator;
         _logger = logger;
 
@@ -295,12 +339,14 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                     Parameters = t.ParameterSchema
                 }).ToList();
 
+            var retrievedMemories = await LoadRetrievedMemoriesAsync(context, cancellationToken);
             var promptContext = new PromptContext
             {
                 SessionId = context.SessionId,
                 UserMessage = context.UserMessage,
                 History = history.SkipLast(1).ToList(),
-                SessionSummary = summary
+                SessionSummary = summary,
+                RetrievedMemories = retrievedMemories
             };
 
             var messages = await _promptComposer.ComposeAsync(promptContext, cancellationToken);
@@ -350,12 +396,24 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                         allToolResults.Add(result);
                         executedToolCalls.Add(new ToolCall { Id = toolCall.Id, Name = toolCall.Name, Arguments = toolCall.Arguments });
 
+                        _logger.LogInformation("🔧 Tool result for {ToolName}: Success={Success}, OutputLength={OutputLength}, ErrorMessage={ErrorMessage}", 
+                            toolCall.Name, result.Success, result.Output?.Length ?? 0, result.Error ?? "none");
+
+                        var toolContent = result.Success ? result.Output : $"Error: {result.Error}";
+                        _logger.LogInformation("🔧 Tool content BEFORE sanitizer: Length={ContentLength}, IsEmpty={IsEmpty}", 
+                            toolContent?.Length ?? 0, string.IsNullOrEmpty(toolContent));
+
+                        var sanitizedContent = _sanitizer is not null
+                            ? _sanitizer.Sanitize(toolContent, toolCall.Name)
+                            : toolContent;
+
+                        _logger.LogInformation("🔧 Tool content AFTER sanitizer: Length={ContentLength}, IsEmpty={IsEmpty}, SanitizerUsed={SanitizerUsed}", 
+                            sanitizedContent?.Length ?? 0, string.IsNullOrEmpty(sanitizedContent), _sanitizer is not null);
+
                         currentMessages.Add(new OpenClawChatMessage
                         {
                             Role = ChatMessageRole.Tool,
-                            Content = _sanitizer is not null
-                                ? _sanitizer.Sanitize(result.Success ? result.Output : $"Error: {result.Error}", toolCall.Name)
-                                : (result.Success ? result.Output : $"Error: {result.Error}"),
+                            Content = sanitizedContent,
                             ToolCallId = toolCall.Id
                         });
                     }

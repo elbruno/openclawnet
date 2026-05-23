@@ -104,6 +104,11 @@ public class OpenClawDbContext : DbContext
         {
             e.ToTable("AgentProfiles");
             e.HasKey(x => x.Name);
+            e.Property(x => x.RetrievalLevel)
+                .HasConversion(
+                    v => v.ToString(),
+                    v => Enum.Parse<OpenClawNet.Models.Abstractions.RetrievalLevel>(v, ignoreCase: true))
+                .HasDefaultValue(OpenClawNet.Models.Abstractions.RetrievalLevel.Off);
             e.Property(x => x.Kind)
                 .HasConversion(
                     v => v.ToString(),

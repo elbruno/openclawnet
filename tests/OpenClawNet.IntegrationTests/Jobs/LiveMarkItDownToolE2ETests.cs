@@ -74,5 +74,10 @@ public sealed class LiveMarkItDownToolE2ETests : LiveToolE2ETestBase
             "when invoked through the job pipeline (regression: Bruno hit a " +
             "case where markdown_convert worked standalone but failed in jobs). " +
             $"Actual output: {output}");
+
+        output.Length.Should().BeGreaterThan(200,
+            "markdown_convert on small HTML should produce at least 200 chars " +
+            "(200 is a conservative floor; real output is typically 1000-17000+ chars). " +
+            "This catches complete tool failure or minimal output.");
     }
 }

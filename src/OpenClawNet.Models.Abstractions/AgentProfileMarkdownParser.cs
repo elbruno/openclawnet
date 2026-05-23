@@ -127,6 +127,11 @@ public static class AgentProfileMarkdownParser
                     if (Enum.TryParse<ProfileKind>(value, ignoreCase: true, out var kind))
                         profile.Kind = kind;
                     break;
+                case "retrievalLevel":
+                case "retrieval":
+                    if (Enum.TryParse<RetrievalLevel>(value, ignoreCase: true, out var retrievalLevel))
+                        profile.RetrievalLevel = retrievalLevel;
+                    break;
             }
         }
     }

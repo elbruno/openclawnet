@@ -42,6 +42,7 @@ public class AgentProfileMarkdownParserTests
             tools: [tool1, tool2, tool3]
             temperature: 0.7
             maxTokens: 4096
+            retrievalLevel: vectorDb
             ---
             You are a specialized agent.
             """;
@@ -55,6 +56,7 @@ public class AgentProfileMarkdownParserTests
         profile.EnabledTools.Should().Be("tool1,tool2,tool3");
         profile.Temperature.Should().Be(0.7);
         profile.MaxTokens.Should().Be(4096);
+        profile.RetrievalLevel.Should().Be(RetrievalLevel.VectorDb);
         profile.Instructions.Should().Be("You are a specialized agent.");
     }
 
@@ -188,6 +190,7 @@ public class AgentProfileMarkdownParserTests
         var profile = AgentProfileMarkdownParser.Parse(markdown);
 
         profile.Kind.Should().Be(ProfileKind.Standard);
+        profile.RetrievalLevel.Should().Be(RetrievalLevel.Off);
     }
 
     [Fact]

@@ -216,6 +216,117 @@ internal sealed class FakeToolCallingModelClient : IModelClient
         => Task.FromResult(true);
 }
 
+/// <summary>
+/// Fake model client that extends FakeToolCallingModelClient with assertions to validate
+/// that the tool-calling pipeline correctly handles tool responses. This is used in integration
+/// tests to detect message corruption or missing tool content.
+///
+/// Behavior:
+/// - First call (CompleteAsync/StreamAsync): Returns tool call request (like FakeToolCallingModelClient)
+/// - Second+ calls: Validates that ChatRequest.Messages contains at least one Tool-role message
+///   with non-empty content, then returns final answer
+/// - Throws InvalidOperationException if assertions fail with descriptive error messages
+/// </summary>
+internal sealed class FakeAssertingToolCallingModelClient : IModelClient
+{
+    private int _callCount = 0;
+
+    public string ProviderName => "fake-asserting-toolcall";
+
+    public Task<ChatResponse> CompleteAsync(ChatRequest request, CancellationToken cancellationToken = default)
+    {
+        _callCount++;
+        ValidateSecondAndBeyondCall(request);
+
+        return Task.FromResult(new ChatResponse
+        {
+            Content = _callCount == 1 
+                ? "" 
+                : "Final answer after tool execution validation passed.",
+            Role = ChatMessageRole.Assistant,
+            Model = request.Model ?? "test",
+            ToolCalls = _callCount == 1
+                ? [new ModelToolCall { Id = "call_test_1", Name = "list_files", Arguments = """{"path":"/src"}""" }]
+                : null,
+            Usage = new UsageInfo { PromptTokens = 10, CompletionTokens = 5, TotalTokens = 15 }
+        });
+    }
+
+    public async IAsyncEnumerable<ChatResponseChunk> StreamAsync(
+        ChatRequest request,
+        [System.Runtime.CompilerServices.EnumeratorCancellation] CancellationToken cancellationToken = default)
+    {
+        _callCount++;
+        ValidateSecondAndBeyondCall(request);
+
+        await Task.Yield();
+
+        if (_callCount == 1)
+        {
+            // First chunk: tool call (simulating LLM deciding to call a tool)
+            yield return new ChatResponseChunk
+            {
+                ToolCalls = [new ModelToolCall { Id = "call_test_1", Name = "list_files", Arguments = """{"path":"/src"}""" }]
+            };
+
+            // Second chunk: content after tool execution would happen
+            yield return new ChatResponseChunk { Content = "Here are the files.", FinishReason = "stop" };
+        }
+        else
+        {
+            // Second+ calls: Return final answer after validations passed
+            yield return new ChatResponseChunk 
+            { 
+                Content = "Final answer after tool execution validation passed.",
+                FinishReason = "stop" 
+            };
+        }
+    }
+
+    public Task<bool> IsAvailableAsync(CancellationToken cancellationToken = default)
+        => Task.FromResult(true);
+
+    /// <summary>
+    /// Validates that on the second and subsequent calls, the ChatRequest contains
+    /// at least one Tool-role message with non-empty content.
+    /// Throws InvalidOperationException with descriptive error if validation fails.
+    /// </summary>
+    private void ValidateSecondAndBeyondCall(ChatRequest request)
+    {
+        if (_callCount == 1)
+        {
+            // First call is always valid - no assertions
+            return;
+        }
+
+        // On second+ calls, validate tool message presence and content
+        var toolMessages = request.Messages
+            .Where(m => m.Role == ChatMessageRole.Tool)
+            .ToList();
+
+        if (toolMessages.Count == 0)
+        {
+            throw new InvalidOperationException(
+                $"Assertion failed on call #{_callCount}: Expected at least one Tool-role message in ChatRequest.Messages. " +
+                $"This indicates the tool result was not properly added to the message history. " +
+                $"Messages in request: {string.Join(", ", request.Messages.Select(m => m.Role))}");
+        }
+
+        var emptyContentToolMessages = toolMessages
+            .Where(m => string.IsNullOrWhiteSpace(m.Content))
+            .ToList();
+
+        if (emptyContentToolMessages.Count > 0)
+        {
+            throw new InvalidOperationException(
+                $"Assertion failed on call #{_callCount}: Found {emptyContentToolMessages.Count} Tool-role message(s) " +
+                $"with empty or whitespace-only content. Tool results must have non-empty content. " +
+                $"Expected non-empty content for all Tool messages. " +
+                $"Tool message count: {toolMessages.Count}, Empty content count: {emptyContentToolMessages.Count}");
+        }
+    }
+}
+
 internal sealed class DirectDbContextFactory(DbContextOptions<OpenClawDbContext> options)
     : IDbContextFactory<OpenClawDbContext>
 {

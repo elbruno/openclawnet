@@ -2,6 +2,7 @@ using FluentAssertions;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Agent;
+using OpenClawNet.Memory;
 using OpenClawNet.Models.Abstractions;
 
 namespace OpenClawNet.UnitTests.Agent;
@@ -53,8 +54,35 @@ public class PromptComposerTests
         };
         
         var messages = await composer.ComposeAsync(context);
-        
+
         messages[0].Content.Should().Contain("discussed .NET architecture");
+    }
+
+    [Fact]
+    public async Task ComposeAsync_IncludesRetrievedMemories()
+    {
+        var composer = new DefaultPromptComposer(
+            NoOpWorkspaceLoader,
+            NoOpSkillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Remember the retrieval policy",
+            RetrievedMemories =
+            [
+                new MemoryHit("mem-1", "The retrieval level defaults to Off.", 0.987),
+                new MemoryHit("mem-2", "Vector DB is the semantic search source.", 0.832)
+            ]
+        };
+
+        var messages = await composer.ComposeAsync(context);
+
+        messages[0].Content.Should().Contain("# Retrieved Memory");
+        messages[0].Content.Should().Contain("retrieval level defaults to Off");
+        messages[0].Content.Should().Contain("Vector DB is the semantic search source");
     }
     
     [Fact]

@@ -122,19 +122,24 @@ public class ChatUrlSummaryE2ETests : PlaywrightTestBase
             Assert.DoesNotContain("empty output", responseText, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("failed to fetch", responseText, StringComparison.OrdinalIgnoreCase);
 
-            // The response should reference the site or Bruno (since elbruno.com is Bruno Capuano's blog)
-            var hasRelevantContent = 
+            // IMP-6: Marker-based validation instead of fuzzy heuristics
+            // markdown_convert tool injects: "# Source: https://elbruno.com"
+            // This marker proves the tool was called and its output reached the LLM
+            // (not just LLM hallucinating about blogs)
+            var hasToolMarker = responseText.Contains("# Source: https://elbruno.com", StringComparison.OrdinalIgnoreCase);
+            
+            // Fallback: Check for page-specific content that only the tool could extract
+            var hasPageSpecificContent = 
                 responseText.Contains("bruno", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("capuano", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("azure", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("ai", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("blog", StringComparison.OrdinalIgnoreCase) ||
-                responseText.Contains("developer", StringComparison.OrdinalIgnoreCase) ||
-                responseText.Length > 100; // If response is substantial, it likely has meaningful content
+                responseText.Contains("developer", StringComparison.OrdinalIgnoreCase);
 
-            Assert.True(hasRelevantContent, 
-                $"Response should contain meaningful content from elbruno.com. Response: {responseText.Substring(0, Math.Min(500, responseText.Length))}");
+            Assert.True(hasToolMarker || hasPageSpecificContent, 
+                $"Response should contain tool marker (# Source: https://elbruno.com) or page-specific content from elbruno.com. Response: {responseText.Substring(0, Math.Min(500, responseText.Length))}");
         }, "ElBrunoComSummary_WithManualApproval_ReturnsUsableContent");
     }
 
@@ -216,18 +221,23 @@ public class ChatUrlSummaryE2ETests : PlaywrightTestBase
             Assert.DoesNotContain("empty output", responseText, StringComparison.OrdinalIgnoreCase);
             Assert.DoesNotContain("failed to fetch", responseText, StringComparison.OrdinalIgnoreCase);
 
-            var hasRelevantContent = 
+            // IMP-6: Marker-based validation instead of fuzzy heuristics
+            // markdown_convert tool injects: "# Source: https://elbruno.com"
+            // This marker proves the tool was called and its output reached the LLM
+            var hasToolMarker = responseText.Contains("# Source: https://elbruno.com", StringComparison.OrdinalIgnoreCase);
+            
+            // Fallback: Check for page-specific content that only the tool could extract
+            var hasPageSpecificContent = 
                 responseText.Contains("bruno", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("capuano", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("microsoft", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("azure", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("ai", StringComparison.OrdinalIgnoreCase) ||
                 responseText.Contains("blog", StringComparison.OrdinalIgnoreCase) ||
-                responseText.Contains("developer", StringComparison.OrdinalIgnoreCase) ||
-                responseText.Length > 100;
+                responseText.Contains("developer", StringComparison.OrdinalIgnoreCase);
 
-            Assert.True(hasRelevantContent, 
-                $"Response should contain meaningful content. Response: {responseText.Substring(0, Math.Min(500, responseText.Length))}");
+            Assert.True(hasToolMarker || hasPageSpecificContent, 
+                $"Response should contain tool marker (# Source: https://elbruno.com) or page-specific content from elbruno.com. Response: {responseText.Substring(0, Math.Min(500, responseText.Length))}");
         }, "ElBrunoComSummary_WithAutoApprove_ReturnsUsableContent");
     }
 }

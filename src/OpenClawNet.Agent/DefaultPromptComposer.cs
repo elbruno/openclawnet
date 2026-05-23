@@ -88,6 +88,22 @@ public sealed class DefaultPromptComposer : IPromptComposer
             systemContent += $"\n\n# Previous Conversation Summary\n{context.SessionSummary}";
         }
 
+        if (context.RetrievedMemories is { Count: > 0 })
+        {
+            var memorySection = new System.Text.StringBuilder();
+            memorySection.AppendLine("# Retrieved Memory");
+            memorySection.AppendLine();
+            memorySection.AppendLine("Relevant long-term memories for this turn:");
+            memorySection.AppendLine();
+
+            foreach (var memory in context.RetrievedMemories)
+            {
+                memorySection.AppendLine($"- [score: {memory.Score:0.000}] {memory.Content}");
+            }
+
+            systemContent += $"\n\n{memorySection}";
+        }
+
         messages.Add(new ChatMessage { Role = ChatMessageRole.System, Content = systemContent });
 
         // 6. Add conversation history

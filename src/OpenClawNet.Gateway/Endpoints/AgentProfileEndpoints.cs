@@ -261,6 +261,7 @@ public static class AgentProfileEndpoints
                     DeploymentName = definition.DeploymentName,
                     AuthMode = definition.AuthMode,
                     Instructions = profile.Instructions,
+                    RetrievalLevel = profile.RetrievalLevel
                 };
 
                 var chatClient = agentProvider.CreateChatClient(testProfile);
@@ -344,7 +345,7 @@ public static class AgentProfileEndpoints
         string.IsNullOrWhiteSpace(p.EnabledTools)
             ? null
             : p.EnabledTools.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries),
-        p.Temperature, p.MaxTokens, p.IsDefault, p.RequireToolApproval, p.IsEnabled,
+        p.Temperature, p.MaxTokens, p.IsDefault, p.RequireToolApproval, p.IsEnabled, p.RetrievalLevel,
         p.LastTestedAt, p.LastTestSucceeded, p.LastTestError, p.Kind.ToString(),
         p.Endpoint, GetApiKeyDisplayValue(p.ApiKey), p.DeploymentName, p.AuthMode);
 
@@ -377,6 +378,7 @@ public static class AgentProfileEndpoints
             Kind = kind,
             RequireToolApproval = request.RequireToolApproval,
             IsEnabled = request.IsEnabled ?? existing?.IsEnabled ?? true,
+            RetrievalLevel = request.RetrievalLevel ?? existing?.RetrievalLevel ?? RetrievalLevel.Off,
             LastTestedAt = existing?.LastTestedAt,
             LastTestSucceeded = existing?.LastTestSucceeded,
             LastTestError = existing?.LastTestError,
@@ -403,6 +405,7 @@ public sealed record AgentProfileResponse(
     bool IsDefault,
     bool RequireToolApproval,
     bool IsEnabled,
+    RetrievalLevel RetrievalLevel,
     DateTime? LastTestedAt,
     bool? LastTestSucceeded,
     string? LastTestError,
@@ -439,5 +442,6 @@ public sealed record AgentProfileRequest(
     bool IsDefault,
     bool RequireToolApproval = true,
     bool? IsEnabled = true,
+    RetrievalLevel? RetrievalLevel = null,
     string? Kind = "Standard",
     string? Name = null);

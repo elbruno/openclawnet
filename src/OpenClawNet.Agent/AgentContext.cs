@@ -67,6 +67,11 @@ public sealed class AgentContext
     public string? AgentProfileName { get; init; }
 
     /// <summary>
+    /// Retrieval level resolved from the active profile snapshot.
+    /// </summary>
+    public RetrievalLevel RetrievalLevel { get; init; } = RetrievalLevel.Off;
+
+    /// <summary>
     /// Conversation history up to this point.
     /// </summary>
     public IReadOnlyList<ChatMessage> History { get; init; } = [];

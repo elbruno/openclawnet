@@ -287,6 +287,17 @@ else
                                     <span> · MaxTokens: @profile.MaxTokens.Value</span>
                                 }
                                 <span> · Tool approval: @(profile.RequireToolApproval ? "Required" : "Auto")</span>
+                                @{
+                                    var retrieval = string.IsNullOrWhiteSpace(profile.RetrievalLevel) ? "Off" : profile.RetrievalLevel;
+                                    var retrievalColor = retrieval.ToLowerInvariant() switch
+                                    {
+                                        "hybrid" => Color.Primary,
+                                        "vectordb" => Color.Info,
+                                        "memoryonly" => Color.Success,
+                                        _ => Color.Secondary,
+                                    };
+                                }
+                                <MudChip T="string" Size="Size.Small" Color="@retrievalColor" Variant="Variant.Outlined" Class="me-1" title="Retrieval level">@retrieval</MudChip>
                                 @if (!string.IsNullOrWhiteSpace(profile.Instructions))
                                 {
                                     var preview = profile.Instructions.Length > 120
@@ -448,6 +459,16 @@ else
                             <input type="number" class="form-control" min="1" max="128000"
                                    @bind="_form.MaxTokens" />
                         </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold" for="retrievalLevel">Retrieval Level</label>
+                        <select class="form-select" id="retrievalLevel" @bind="_form.RetrievalLevel">
+                            <option value="Off">Off</option>
+                            <option value="MemoryOnly">Memory only</option>
+                            <option value="VectorDb">Vector DB</option>
+                            <option value="Hybrid">Hybrid</option>
+                        </select>
+                        <div class="form-text">Controls whether the agent can use long-term memory retrieval during chat.</div>
                     </div>
                     <div class="mb-3 form-check">
                         <input type="checkbox" class="form-check-input" id="isDefault" @bind="_form.IsDefault"
@@ -661,6 +682,7 @@ else
             IsDefault       = profile.IsDefault,
             IsEnabled       = profile.IsEnabled,
             RequireToolApproval = profile.RequireToolApproval,
+            RetrievalLevel  = string.IsNullOrWhiteSpace(profile.RetrievalLevel) ? "Off" : profile.RetrievalLevel,
             Kind            = profile.Kind
         };
         _isEditing = true;
@@ -796,6 +818,7 @@ else
                 IsDefault:    _form.IsDefault,
                 RequireToolApproval: _form.RequireToolApproval,
                 IsEnabled:    _form.IsEnabled,
+                RetrievalLevel: _form.RetrievalLevel,
                 Kind:         _form.Kind
             );
 
@@ -1016,6 +1039,7 @@ else
         public bool IsEnabled         { get; set; } = true;
         // Wave 4 PR-1: safe-by-default — new profiles require approval for sensitive tools.
         public bool RequireToolApproval { get; set; } = true;
+        public string RetrievalLevel  { get; set; } = "Off";
         public string Kind            { get; set; } = "Standard";
     }
 
@@ -1031,6 +1055,7 @@ else
         bool IsDefault,
         bool RequireToolApproval,
         bool IsEnabled,
+        string RetrievalLevel,
         DateTime? LastTestedAt,
         bool? LastTestSucceeded,
         string? LastTestError,
@@ -1044,6 +1069,7 @@ else
         double? Temperature,
         int? MaxTokens,
         bool IsDefault,
+        string RetrievalLevel = "Off",
         bool RequireToolApproval = true,
         bool? IsEnabled = true,
         string? Kind = "Standard");

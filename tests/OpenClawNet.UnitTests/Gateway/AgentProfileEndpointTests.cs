@@ -109,7 +109,8 @@ public sealed class AgentProfileEndpointTests
             enabledTools = (string?)null,
             temperature = 0.8,
             maxTokens = 2048,
-            isDefault = false
+            isDefault = false,
+            retrievalLevel = "Hybrid"
         });
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -118,6 +119,7 @@ public sealed class AgentProfileEndpointTests
         profile.Should().NotBeNull();
         profile!.Name.Should().Be("new-agent");
         profile.Provider.Should().Be("ollama");
+        profile.RetrievalLevel.Should().Be(RetrievalLevel.Hybrid);
     }
 
     [Fact]

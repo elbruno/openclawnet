@@ -25,7 +25,8 @@ public class AgentProfileStoreTests : IDisposable
         {
             Name = "test-agent",
             DisplayName = "Test Agent",
-            Provider = "ollama"
+            Provider = "ollama",
+            RetrievalLevel = RetrievalLevel.Hybrid
         };
 
         await store.SaveAsync(profile);
@@ -35,6 +36,7 @@ public class AgentProfileStoreTests : IDisposable
         result!.Name.Should().Be("test-agent");
         result.DisplayName.Should().Be("Test Agent");
         result.Provider.Should().Be("ollama");
+        result.RetrievalLevel.Should().Be(RetrievalLevel.Hybrid);
     }
 
     [Fact]
@@ -186,6 +188,18 @@ public class AgentProfileStoreTests : IDisposable
 
         tt!.Kind.Should().Be(ProfileKind.ToolTester);
         sys!.Kind.Should().Be(ProfileKind.System);
+    }
+
+    [Fact]
+    public async Task SaveAsync_RoundTrips_RetrievalLevel()
+    {
+        var store = new AgentProfileStore(_factory);
+        await store.SaveAsync(new AgentProfile { Name = "retriever", RetrievalLevel = RetrievalLevel.VectorDb });
+
+        var result = await store.GetAsync("retriever");
+
+        result.Should().NotBeNull();
+        result!.RetrievalLevel.Should().Be(RetrievalLevel.VectorDb);
     }
 
     [Fact]

@@ -88,6 +88,7 @@ public sealed class AgentProfileStore : IAgentProfileStore
             existing.Temperature = profile.Temperature;
             existing.MaxTokens = profile.MaxTokens;
             existing.IsDefault = profile.IsDefault;
+            existing.RetrievalLevel = profile.RetrievalLevel;
             existing.Kind = profile.Kind;
             existing.RequireToolApproval = profile.RequireToolApproval;
             existing.IsEnabled = profile.IsEnabled;
@@ -110,6 +111,7 @@ public sealed class AgentProfileStore : IAgentProfileStore
                 Temperature = profile.Temperature,
                 MaxTokens = profile.MaxTokens,
                 IsDefault = profile.IsDefault,
+                RetrievalLevel = profile.RetrievalLevel,
                 Kind = profile.Kind,
                 RequireToolApproval = profile.RequireToolApproval,
                 IsEnabled = profile.IsEnabled,
@@ -167,6 +169,7 @@ public sealed class AgentProfileStore : IAgentProfileStore
         Temperature = entity.Temperature,
         MaxTokens = entity.MaxTokens,
         IsDefault = entity.IsDefault,
+        RetrievalLevel = entity.RetrievalLevel,
         Kind = entity.Kind,
         RequireToolApproval = entity.RequireToolApproval,
         IsEnabled = entity.IsEnabled,

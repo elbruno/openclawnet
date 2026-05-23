@@ -9,6 +9,7 @@ public sealed record AgentProfileDto(
     double? Temperature,
     int? MaxTokens,
     bool IsDefault,
+    string RetrievalLevel,
     bool RequireToolApproval,
     bool IsEnabled,
     DateTime? LastTestedAt,

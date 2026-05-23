@@ -71,7 +71,8 @@ public static class ChatEndpoints
                     Provider = resolvedProvider?.ProviderType ?? request.Provider ?? profile.Provider,
                     AgentProfileName = profile.Name,
                     AgentProfileInstructions = profile.Instructions,
-                    ResolvedProvider = resolvedProvider
+                    ResolvedProvider = resolvedProvider,
+                    RetrievalLevel = profile.RetrievalLevel
                 };
                 
                 var response = await orchestrator.ProcessAsync(agentRequest);

@@ -19,6 +19,9 @@ public class AgentProfileEntity
     public int? MaxTokens { get; set; }
     public bool IsDefault { get; set; }
 
+    /// <summary>Retrieval mode for prompt-time memory lookup.</summary>
+    public OpenClawNet.Models.Abstractions.RetrievalLevel RetrievalLevel { get; set; } = OpenClawNet.Models.Abstractions.RetrievalLevel.Off;
+
     /// <summary>
     /// Discriminator (Standard | System | ToolTester) persisted as a string column.
     /// See <see cref="OpenClawNet.Models.Abstractions.ProfileKind"/>.

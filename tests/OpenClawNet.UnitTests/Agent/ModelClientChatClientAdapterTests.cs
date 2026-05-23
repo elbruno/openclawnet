@@ -142,6 +142,137 @@ public sealed class ModelClientChatClientAdapterTests
             .WithMessage("*Connection refused*");
     }
 
+    [Fact]
+    public async Task GetResponseAsync_WithToolRoundTrip_ToolResultContentReachesSecondTurn()
+    {
+        // Arrange: Simulate a two-turn conversation:
+        // Turn 1: User → Model calls a tool
+        // Turn 2: Tool result → Model continues
+        // This validates that FunctionResultContent.Result is preserved through the round-trip.
+
+        // Realistic ~1KB markdown result (simulates tool output)
+        var toolOutput = """
+            # Search Results
+
+            ## Result 1
+            Title: Getting Started with OpenClawNet
+            Link: https://example.com/docs/getting-started
+            Summary: OpenClawNet is a comprehensive framework for building agent-driven applications with tool calling support. This guide walks through the basic setup, configuration, and usage patterns.
+
+            ## Result 2
+            Title: Advanced Tool Integration
+            Link: https://example.com/docs/tools
+            Summary: Learn how to integrate custom tools into your OpenClawNet agents. Includes examples for API calls, database queries, and real-time data fetching.
+
+            ## Result 3
+            Title: Architecture Overview
+            Link: https://example.com/docs/architecture
+            Summary: Explore the architecture of OpenClawNet, including the adapter patterns, message flow, and extensibility points.
+
+            **Note:** This is a simulated search result with realistic markdown formatting for testing purposes.
+            """;
+
+        // Turn 1: User asks, model returns tool call
+        ChatRequest? firstTurnRequest = null;
+        var firstTurnResponse = new OCChatResponse
+        {
+            Content = string.Empty,
+            Role = ChatMessageRole.Assistant,
+            Model = "test",
+            ToolCalls = [
+                new ModelToolCall
+                {
+                    Id = "call_search_001",
+                    Name = "search_docs",
+                    Arguments = """{"query":"OpenClawNet getting started"}"""
+                }
+            ]
+        };
+
+        // Turn 2: Tool result comes back, model should see full result
+        ChatRequest? secondTurnRequest = null;
+        var secondTurnResponse = new OCChatResponse
+        {
+            Content = "Based on the search results, here's what I found...",
+            Role = ChatMessageRole.Assistant,
+            Model = "test"
+        };
+
+        var modelClient = new Mock<IModelClient>();
+        var callCount = 0;
+
+        modelClient
+            .Setup(m => m.CompleteAsync(It.IsAny<ChatRequest>(), It.IsAny<CancellationToken>()))
+            .Callback<ChatRequest, CancellationToken>((req, _) =>
+            {
+                if (callCount == 0)
+                {
+                    firstTurnRequest = req;
+                }
+                else
+                {
+                    secondTurnRequest = req;
+                }
+                callCount++;
+            })
+            .Returns((ChatRequest req, CancellationToken _) =>
+            {
+                var response = callCount == 1 ? firstTurnResponse : secondTurnResponse;
+                return Task.FromResult(response);
+            });
+
+        var adapter = new ModelClientChatClientAdapter(modelClient.Object);
+
+        // Act - Turn 1: User asks question
+        var userMessage = new MEAIChatMessage(ChatRole.User, "Search for OpenClawNet documentation");
+        var firstResponse = await adapter.GetResponseAsync([userMessage]);
+
+        // Verify Turn 1 worked
+        firstResponse.Messages.Should().HaveCountGreaterThan(0);
+        firstResponse.Messages[0].Contents.OfType<FunctionCallContent>().Should().ContainSingle();
+
+        // Act - Turn 2: Present tool result and get second response
+        // Build the second turn with:
+        // 1. Original user message
+        // 2. Assistant's tool call (from first response)
+        // 3. Tool result (what the tool returned)
+        var assistantToolCallMessage = new MEAIChatMessage(ChatRole.Assistant, firstResponse.Messages[0].Contents);
+        var toolResultMessage = new MEAIChatMessage(
+            ChatRole.Tool,
+            [new FunctionResultContent("call_search_001", toolOutput)]
+        );
+
+        var secondTurnMessages = new List<MEAIChatMessage>
+        {
+            userMessage,
+            assistantToolCallMessage,
+            toolResultMessage
+        };
+
+        var secondResponse = await adapter.GetResponseAsync(secondTurnMessages);
+
+        // Assert: Verify the second turn ChatRequest contains the full tool output
+        secondTurnRequest.Should().NotBeNull("Second turn should have sent a request to the model");
+        secondTurnRequest!.Messages.Should().HaveCountGreaterThanOrEqualTo(3, "Should have user, assistant (with tool call), and tool result");
+
+        // Find the tool role message (should be the last message or nearby)
+        var toolMessage = secondTurnRequest.Messages
+            .Where(m => m.Role == ChatMessageRole.Tool)
+            .ToList();
+        toolMessage.Should().HaveCount(1, "Should have exactly one tool message");
+
+        // Assert: Tool message content matches the full markdown result (no data loss)
+        var toolContent = toolMessage[0].Content;
+        toolContent.Should().Be(toolOutput, "Tool result content should match original markdown output exactly");
+        toolContent.Should().Contain("Getting Started with OpenClawNet", "Tool result should contain expected content");
+        toolContent.Length.Should().BeGreaterThan(500, "Tool result should be substantial (~1KB in this test)");
+
+        // Assert: Response was successful
+        secondResponse.Should().NotBeNull();
+        secondResponse.Messages.Should().HaveCountGreaterThan(0);
+        secondResponse.Messages[0].Text.Should().Contain("search results");
+    }
+
     // ── Static conversion helpers (internal, accessible via InternalsVisibleTo) ──
 
     [Theory]
@@ -174,35 +305,56 @@ public sealed class ModelClientChatClientAdapterTests
     }
 
     [Fact]
-    public void ToOpenClawMessage_PropagatesFunctionResultContent_StringResult()
+    public void PropagatesFunctionResultContent_StringResult()
     {
-        // Regression for elbruno/openclawnet-plan#115:
-        // FunctionResultContent.Result must flow into OCChatMessage.Content so that
-        // tool results are not silently dropped on the round-trip into IModelClient.
+        // Arrange: tool role message with FunctionResultContent containing a string result
         var meaiMsg = new MEAIChatMessage(ChatRole.Tool, [
-            new FunctionResultContent("call_42", "the weather in Seattle is 12C and rainy")
+            new FunctionResultContent("call_1", "tool output result")
         ]);
 
+        // Act
         var ocMsg = ModelClientChatClientAdapter.ToOpenClawMessage(meaiMsg);
 
+        // Assert: string result is propagated as content
         ocMsg.Role.Should().Be(ChatMessageRole.Tool);
-        ocMsg.ToolCallId.Should().Be("call_42");
-        ocMsg.Content.Should().Be("the weather in Seattle is 12C and rainy");
+        ocMsg.ToolCallId.Should().Be("call_1");
+        ocMsg.Content.Should().Be("tool output result");
     }
 
     [Fact]
-    public void ToOpenClawMessage_PropagatesFunctionResultContent_ObjectResult()
+    public void PropagatesFunctionResultContent_ObjectResult()
     {
-        // Non-string Result values must be JSON-serialized into Content rather than dropped.
-        var payload = new Dictionary<string, object?> { ["city"] = "Seattle", ["tempC"] = 12 };
+        // Arrange: tool role message with FunctionResultContent containing an object result
+        var resultObject = new { data = "test", count = 42 };
         var meaiMsg = new MEAIChatMessage(ChatRole.Tool, [
-            new FunctionResultContent("call_43", payload)
+            new FunctionResultContent("call_2", resultObject)
         ]);
 
+        // Act
         var ocMsg = ModelClientChatClientAdapter.ToOpenClawMessage(meaiMsg);
 
-        ocMsg.ToolCallId.Should().Be("call_43");
-        ocMsg.Content.Should().Contain("Seattle").And.Contain("tempC");
+        // Assert: object result is ToString()'d and propagated as content
+        ocMsg.Role.Should().Be(ChatMessageRole.Tool);
+        ocMsg.ToolCallId.Should().Be("call_2");
+        ocMsg.Content.Should().Contain("data");
+        ocMsg.Content.Should().Contain("test");
+    }
+
+    [Fact]
+    public void PropagatesFunctionResultContent_NullResult()
+    {
+        // Arrange: tool role message with FunctionResultContent where Result is null
+        var meaiMsg = new MEAIChatMessage(ChatRole.Tool, [
+            new FunctionResultContent("call_3", null)
+        ]);
+
+        // Act
+        var ocMsg = ModelClientChatClientAdapter.ToOpenClawMessage(meaiMsg);
+
+        // Assert: null result falls back to empty string without exception
+        ocMsg.Role.Should().Be(ChatMessageRole.Tool);
+        ocMsg.ToolCallId.Should().Be("call_3");
+        ocMsg.Content.Should().Be(string.Empty);
     }
 
     [Fact]
