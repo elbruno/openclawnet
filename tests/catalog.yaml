@@ -1,0 +1,4 @@
+# Phase 0 scaffold for the canonical test catalog.
+version: 1
+suites: []
+tests: []
