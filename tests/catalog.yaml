@@ -927,6 +927,7 @@ tests:
     file: 'tests/OpenClawNet.IntegrationTests/Jobs/LiveEmbeddingsToolE2ETests.cs'
     className: 'LiveEmbeddingsToolE2ETests'
     proves: 'Embeddings tool generates vectors in a live job'
+    defaultNotes: 'Requires embedding model'
     category:
       - 'Integration'
       - 'Jobs'
@@ -958,6 +959,7 @@ tests:
     file: 'tests/OpenClawNet.IntegrationTests/Jobs/LiveHtmlQueryToolE2ETests.cs'
     className: 'LiveHtmlQueryToolE2ETests'
     proves: '`html_query` runs CSS selector on live HTML'
+    defaultNotes: 'Live egress'
     category:
       - 'Integration'
       - 'Jobs'
@@ -977,6 +979,7 @@ tests:
     file: 'tests/OpenClawNet.IntegrationTests/Jobs/LiveMarkItDownToolE2ETests.cs'
     className: 'LiveMarkItDownToolE2ETests'
     proves: '`markdown_convert` fetches and converts a real URL'
+    defaultNotes: 'Live egress'
     category:
       - 'Integration'
       - 'Jobs'
@@ -999,6 +1002,7 @@ tests:
     file: 'tests/OpenClawNet.IntegrationTests/Jobs/LiveWebToolE2ETests.cs'
     className: 'LiveWebToolE2ETests'
     proves: '`web_fetch` fetches a real URL in a job context'
+    defaultNotes: 'Live egress; may skip behind firewall'
     category:
       - 'Integration'
       - 'Jobs'
@@ -2493,4 +2497,3 @@ tests:
       - 'Azure'
       - 'SecretsVault'
     issueRef: null
-

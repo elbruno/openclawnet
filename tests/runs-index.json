@@ -1542,5 +1542,37 @@
     "notes": "`PropagatesFunctionResultContent_NullResult` covers null branch",
     "suite": "unit",
     "durationMs": 0
+  },
+  "ToolApprovalE2eTests": {
+    "lastRunId": "2026-05-24-backfill",
+    "lastDate": "2026-05-24",
+    "outcome": "skip",
+    "notes": "Both scenarios now skip cleanly when Playwright startup hits the known node.exe access-denied blocker from the test-bin cwd (tracked in #257).",
+    "suite": "integration",
+    "durationMs": 0
+  },
+  "LiveCalculatorToolE2ETests": {
+    "lastRunId": "2026-05-24-backfill",
+    "lastDate": "2026-05-24",
+    "outcome": "skip",
+    "notes": "Execution is capped before the blame-hang threshold; current environment timed out at the live job step and now skips instead of aborting the test host.",
+    "suite": "integration",
+    "durationMs": 0
+  },
+  "LiveShellToolE2ETests": {
+    "lastRunId": "2026-05-24-backfill",
+    "lastDate": "2026-05-24",
+    "outcome": "pass",
+    "notes": "Targeted rerun passed (1/1) against the Aspire-hosted shell-service.",
+    "suite": "integration",
+    "durationMs": 0
+  },
+  "LiveBrowserToolE2ETests": {
+    "lastRunId": "2026-05-24-backfill",
+    "lastDate": "2026-05-24",
+    "outcome": "skip",
+    "notes": "Browser-service execution now skips cleanly on the known Playwright `node.exe` access-denied machine blocker tracked in #257.",
+    "suite": "integration",
+    "durationMs": 0
   }
 }
