@@ -59,7 +59,7 @@ foreach ($path in $trackedSources) {
 }
 
 if (-not $hasCanonicalSourceChange) {
-    throw "docs/testing/e2e-test-index.md changed without a canonical source update. Update tests/catalog.yaml or tests/runs.jsonl (and regenerate via scripts/render-test-index.ps1; scripts/test-and-publish.ps1 will become the one-shot entrypoint in the final rollout)."
+    throw "docs/testing/e2e-test-index.md changed without a canonical source update. Update tests/catalog.yaml or tests/runs.jsonl, then regenerate with scripts/test-and-publish.ps1."
 }
 
 Write-Host "Test index guard passed." -ForegroundColor Green

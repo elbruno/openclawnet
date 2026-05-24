@@ -273,9 +273,9 @@ function Update-KeepingIndexSection {
     $replacementLines = @(
         '## Keeping this index up to date',
         '',
-        'After every test run, record the latest results in `tests\runs.jsonl`, regenerate this index with `scripts\render-test-index.ps1`, and update the dashboard outputs in the same change.  ',
+        'After every test run, run `scripts\test-and-publish.ps1` so run recording, this generated index, and dashboard outputs stay aligned in one change.  ',
         'When adding or renaming an E2E/integration test, update `tests\catalog.yaml` so the generated suite tables stay in sync with the repository.  ',
-        'The `scripts\publish-test-dashboard.ps1` script rebuilds `docs\test-dashboard\` in the plan repo after any full sweep; the sync workflow mirrors that folder to the public site.'
+        'The sync workflow mirrors `docs\test-dashboard\` from the plan repo to the public site after updates.'
     )
 
     $replacement = ($replacementLines -join [Environment]::NewLine).TrimEnd()
