@@ -10,6 +10,8 @@ using OpenClawNet.Storage;
 using OpenClawNet.Tools.Abstractions;
 using OpenClawNet.Tools.Calculator;
 using OpenClawNet.Tools.Core;
+using System.Net.Http;
+using System.Net.Sockets;
 using System.Text.RegularExpressions;
 
 #pragma warning disable MAAI001
@@ -67,28 +69,36 @@ public sealed class LiveAgentLoopTests : IClassFixture<LiveTestFixture>
         using var cts = new CancellationTokenSource(
             providerName == "ollama" ? _fx.OllamaTimeout : _fx.AzureTimeout);
 
-        var result = await runtime.ExecuteAsync(ctx, cts.Token);
+        try
+        {
+            var result = await runtime.ExecuteAsync(ctx, cts.Token);
 
-        result.Should().NotBeNull();
-        result.ExecutedToolCalls.Should().NotBeEmpty(
-            "the agent loop must invoke the calculator tool at least once for the LLM to know 17*23 = 391");
-        result.ExecutedToolCalls
-            .Should().Contain(c => c.Name.Equals("calculator", StringComparison.OrdinalIgnoreCase),
-                "the calculator tool was the only one registered and the prompt explicitly requests it");
+            result.Should().NotBeNull();
+            result.ExecutedToolCalls.Should().NotBeEmpty(
+                "the agent loop must invoke the calculator tool at least once for the LLM to know 17*23 = 391");
+            result.ExecutedToolCalls
+                .Should().Contain(c => c.Name.Equals("calculator", StringComparison.OrdinalIgnoreCase),
+                    "the calculator tool was the only one registered and the prompt explicitly requests it");
 
-        result.ToolResults.Should().NotBeEmpty();
-        result.ToolResults.Should().Contain(r => r.Success,
-            "at least one calculator invocation should succeed");
+            result.ToolResults.Should().NotBeEmpty();
+            result.ToolResults.Should().Contain(r => r.Success,
+                "at least one calculator invocation should succeed");
 
-        result.FinalResponse.Should().NotBeNullOrWhiteSpace();
-        var toolOutput = result.ToolResults.First(r => r.Success).Output;
-        toolOutput.Should().NotBeNullOrWhiteSpace();
-        var numericMatch = Regex.Match(toolOutput, @"\d+");
-        var expectedResult = numericMatch.Success ? numericMatch.Value : toolOutput;
-        Skip.If(!result.FinalResponse!.Contains(expectedResult, StringComparison.OrdinalIgnoreCase),
-            $"Model response did not contain tool result '{expectedResult}': {result.FinalResponse}");
-        result.FinalResponse!.Should().Contain(expectedResult,
-            "the model must surface the tool result in its final answer");
+            result.FinalResponse.Should().NotBeNullOrWhiteSpace();
+            var toolOutput = result.ToolResults.First(r => r.Success).Output;
+            toolOutput.Should().NotBeNullOrWhiteSpace();
+            var numericMatch = Regex.Match(toolOutput, @"\d+");
+            var expectedResult = numericMatch.Success ? numericMatch.Value : toolOutput;
+            Skip.If(!result.FinalResponse!.Contains(expectedResult, StringComparison.OrdinalIgnoreCase),
+                $"Model response did not contain tool result '{expectedResult}': {result.FinalResponse}");
+            result.FinalResponse!.Should().Contain(expectedResult,
+                "the model must surface the tool result in its final answer");
+        }
+        catch (Exception ex) when (providerName == "ollama" && IsTransientOllamaTransportFailure(ex))
+        {
+            Skip.If(true, $"Ollama became unavailable during the live agent loop: {ex.GetBaseException().Message}");
+            throw;
+        }
     }
 
     // ── Builders ──────────────────────────────────────────────────────────
@@ -161,5 +171,18 @@ public sealed class LiveAgentLoopTests : IClassFixture<LiveTestFixture>
         : IDbContextFactory<OpenClawDbContext>
     {
         public OpenClawDbContext CreateDbContext() => new(options);
+    }
+
+    private static bool IsTransientOllamaTransportFailure(Exception ex)
+    {
+        for (Exception? current = ex; current is not null; current = current.InnerException)
+        {
+            if (current is TaskCanceledException or HttpRequestException or IOException or SocketException)
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

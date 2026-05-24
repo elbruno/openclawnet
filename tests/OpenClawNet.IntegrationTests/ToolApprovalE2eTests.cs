@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -56,26 +57,35 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         await StartAspireIfNeededAsync();
         await ResolveServiceUrlsAsync();
 
-        // 2. Initialize Playwright and browser
-        _playwright = await Playwright.CreateAsync();
-        
-        var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
-            ?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
-
-        _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+        try
         {
-            Headless = !headed,
-            SlowMo = headed ? 500 : 0
-        });
+            // 2. Initialize Playwright and browser
+            _playwright = await Playwright.CreateAsync();
 
-        _context = await _browser.NewContextAsync(new BrowserNewContextOptions
+            var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
+                ?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
+
+            _browser = await _playwright.Chromium.LaunchAsync(new BrowserTypeLaunchOptions
+            {
+                Headless = !headed,
+                SlowMo = headed ? 500 : 0
+            });
+
+            _context = await _browser.NewContextAsync(new BrowserNewContextOptions
+            {
+                IgnoreHTTPSErrors = true,
+                ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
+            });
+
+            _page = await _context.NewPageAsync();
+            _page.SetDefaultTimeout(30_000);
+        }
+        catch (Win32Exception ex) when (IsPlaywrightNodeAccessDenied(ex))
         {
-            IgnoreHTTPSErrors = true,
-            ViewportSize = new ViewportSize { Width = 1920, Height = 1080 }
-        });
-
-        _page = await _context.NewPageAsync();
-        _page.SetDefaultTimeout(30_000);
+            throw new SkipException(
+                "Playwright browser runtime could not start in this environment " +
+                $"(known node.exe access-denied blocker): {ex.Message}");
+        }
 
         // 3. Initialize HTTP client for Gateway API
         var handler = new HttpClientHandler
@@ -91,6 +101,10 @@ public class ToolApprovalE2eTests : IAsyncLifetime
 
         await EnsureChatPageReachableAsync();
     }
+
+    private static bool IsPlaywrightNodeAccessDenied(Win32Exception ex)
+        => ex.Message.Contains(@"\.playwright\node\win32_x64\node.exe", StringComparison.OrdinalIgnoreCase)
+           && ex.Message.Contains("Access is denied", StringComparison.OrdinalIgnoreCase);
 
     public async Task DisposeAsync()
     {

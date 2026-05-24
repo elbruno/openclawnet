@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.DataProtection;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -13,6 +14,7 @@ using OpenClawNet.Models.Foundry;
 using OpenClawNet.Models.FoundryLocal;
 using OpenClawNet.Models.GitHubCopilot;
 using OpenClawNet.Models.Ollama;
+using OpenClawNet.Storage;
 
 namespace OpenClawNet.UnitTests.Gateway;
 
@@ -53,6 +55,11 @@ public sealed class ServiceRegistrationTests : IAsyncLifetime
         var mockHttpFactory = new Mock<IHttpClientFactory>();
         mockHttpFactory.Setup(f => f.CreateClient(It.IsAny<string>())).Returns(new HttpClient());
         services.AddSingleton(mockHttpFactory.Object);
+
+        services.AddDataProtection()
+            .PersistKeysToFileSystem(new DirectoryInfo(_tempDir));
+
+        services.AddOpenClawStorage("Data Source=:memory:");
 
         // Model provider infrastructure
         services.AddSingleton<RuntimeModelSettings>();
