@@ -4,6 +4,7 @@ using System.Net.Http.Json;
 using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.Playwright;
+using OpenClawNet.ServiceDefaults;
 using Xunit.Abstractions;
 using Xunit;
 
@@ -60,6 +61,7 @@ public class ToolApprovalE2eTests : IAsyncLifetime
         try
         {
             // 2. Initialize Playwright and browser
+            PlaywrightRuntimeHelper.PrepareForCurrentProcess();
             _playwright = await Playwright.CreateAsync();
 
             var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
@@ -103,7 +105,7 @@ public class ToolApprovalE2eTests : IAsyncLifetime
     }
 
     private static bool IsPlaywrightNodeAccessDenied(Win32Exception ex)
-        => ex.Message.Contains(@"\.playwright\node\win32_x64\node.exe", StringComparison.OrdinalIgnoreCase)
+        => ex.Message.Contains("node.exe", StringComparison.OrdinalIgnoreCase)
            && ex.Message.Contains("Access is denied", StringComparison.OrdinalIgnoreCase);
 
     public async Task DisposeAsync()

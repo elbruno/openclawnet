@@ -6,6 +6,7 @@ on:
     paths:
       - "index.html"
       - "docs/landing/**"
+      - "docs/test-dashboard/**"
       - ".github/workflows/deploy-github-pages.yml"
   workflow_dispatch:
 

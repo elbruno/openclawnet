@@ -16,7 +16,7 @@ public class AspireDashboardTests : PlaywrightTestBase
 
     // ── Demo 01: Aspire Dashboard Reachability ────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Dashboard_WebAppHomePage_IsReachable()
     {
         await WithScreenshotOnFailure(async () =>
@@ -33,7 +33,7 @@ public class AspireDashboardTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Dashboard_GatewayHealth_IsAccessibleFromWeb()
     {
         await WithScreenshotOnFailure(async () =>
@@ -49,7 +49,7 @@ public class AspireDashboardTests : PlaywrightTestBase
 
     // ── Demo 07: Web UI reflects chat interactions ────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task WebUI_AfterChatInteraction_SessionsListUpdates()
     {

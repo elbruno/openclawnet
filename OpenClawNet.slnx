@@ -41,6 +41,7 @@
     <Project Path="src/OpenClawNet.Adapters.Teams/OpenClawNet.Adapters.Teams.csproj" />
     <Project Path="src/OpenClawNet.Web/OpenClawNet.Web.csproj" />
     <Project Path="src/OpenClawNet.Models.GitHubCopilot/OpenClawNet.Models.GitHubCopilot.csproj" />
+    <Project Path="src/OpenClawNet.PlaywrightNodeShim/OpenClawNet.PlaywrightNodeShim.csproj" />
     <Project Path="src/OpenClawNet.Mcp.Abstractions/OpenClawNet.Mcp.Abstractions.csproj" />
     <Project Path="src/OpenClawNet.Mcp.Core/OpenClawNet.Mcp.Core.csproj" />
     <Project Path="src/OpenClawNet.Mcp.Web/OpenClawNet.Mcp.Web.csproj" />

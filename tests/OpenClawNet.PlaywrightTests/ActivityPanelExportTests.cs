@@ -25,7 +25,7 @@ public class ActivityPanelExportTests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task ActivityPanel_HasExportButton_AndSmallerFont()
     {
         await WithScreenshotOnFailure(async () =>
@@ -76,7 +76,7 @@ public class ActivityPanelExportTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task ActivityPanel_ExportButton_TriggersDownload_WithFullDetails()
     {
         await WithScreenshotOnFailure(async () =>

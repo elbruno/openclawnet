@@ -32,7 +32,7 @@ public class ProviderSwitchTests : IAsyncLifetime
         return Task.CompletedTask;
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Settings_GetCurrentSettings_ReturnsProviderInfo()
     {
         var response = await _client.GetAsync("/api/settings");
@@ -48,7 +48,7 @@ public class ProviderSwitchTests : IAsyncLifetime
         Assert.True(json.TryGetProperty("hasApiKey", out _), "Settings should contain hasApiKey");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Settings_PutSettings_UpdatesProvider()
     {
         // Capture current settings for restore

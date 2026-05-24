@@ -11,7 +11,7 @@ public class SessionsDeleteConfirmationTests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Sessions_SingleDelete_ShowsConfirmationBeforeDeleting()
     {
         await WithScreenshotOnFailure(async () =>
@@ -45,7 +45,7 @@ public class SessionsDeleteConfirmationTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Sessions_BulkDelete_ShowsConfirmationBeforeDeleting()
     {
         await WithScreenshotOnFailure(async () =>

@@ -16,7 +16,7 @@ public class ChatFlowTests : PlaywrightTestBase
 
     // ── Demo 02: New Chat + Streaming Response ────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Chat_NewChatAndSendMessage_ShowsStreamingResponse()
     {
@@ -75,7 +75,7 @@ public class ChatFlowTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Chat_AfterSendingMessage_SessionAppearsInSessionsPanel()
     {

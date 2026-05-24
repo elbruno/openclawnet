@@ -46,7 +46,7 @@ public class SkillsPirateModeE2ETests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task PirateModeSkill_FullLifecycle_AllFourUxBugsPass()
     {
         // ── Pre-clean: make sure no leftover from a previous run ─────────────

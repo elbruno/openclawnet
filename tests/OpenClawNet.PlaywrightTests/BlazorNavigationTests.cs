@@ -13,9 +13,10 @@ public class BlazorNavigationTests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task WebApp_HomePage_LoadsSuccessfully()
     {
+        Skip.IfNot(Fixture.IsReady, Fixture.StartupSkipReason ?? "Playwright AppHost fixture not available.");
         await WithScreenshotOnFailure(async () =>
         {
             await Page.GotoAsync(Fixture.WebBaseUrl, new PageGotoOptions
@@ -31,7 +32,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task WebApp_AllNavMenuItems_AreVisible()
     {
         await WithScreenshotOnFailure(async () =>
@@ -55,7 +56,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
         });
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData("/", "OpenClawNet")]
     [InlineData("/sessions", "Sessions")]
     [InlineData("/tools", "Tools")]
@@ -92,7 +93,7 @@ public class BlazorNavigationTests : PlaywrightTestBase
         });
     }
 
-    [Theory]
+    [SkippableTheory]
     [InlineData("Chat", "/")]
     [InlineData("Sessions", "/sessions")]
     [InlineData("Tools", "/tools")]
