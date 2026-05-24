@@ -666,7 +666,7 @@ $(($items -join "`n"))
 $(($suiteCards -join "`n"))
     </div>
     <div class="footer">
-      Rebuild with <code>scripts\publish-test-dashboard.ps1</code>. Do not hand-edit this page.
+      Rebuild with <code>scripts\test-and-publish.ps1</code>. Do not hand-edit this page.
     </div>
   </div>
 </body>

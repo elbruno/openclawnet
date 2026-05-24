@@ -4,7 +4,7 @@ Central catalogue of all end-to-end and integration tests in OpenClawNet.
 Each row links to the test file, describes what it proves, and shows the last recorded execution result.
 
 > **Test dashboard (live HTML):** [elbruno.github.io/openclawnet/test-dashboard](https://elbruno.github.io/openclawnet/test-dashboard/)  
-> **Update the dashboard:** run `scripts\publish-test-dashboard.ps1` after a full test run; it rebuilds `docs\test-dashboard\` in this repo, which is then mirrored to the public site.  
+> **Refresh test outputs:** run `scripts\test-and-publish.ps1` after a test run; it records runs, rebuilds `docs\test-dashboard\`, and regenerates this index in this repo before sync to the public site.  
 > **Team rule (mandatory):** Every time a test is executed OR a new E2E/integration test is added, this index must be updated in the same change.  
 > **Aspire AppHost rule (mandatory):** Any test that requires the AppHost must begin from a clean Aspire state with `aspire stop`, then start the stack with `aspire start`, then run `aspire describe --format Json` to confirm Aspire is running and to discover resource endpoints before executing the test. End the test run with `aspire stop`.
 
