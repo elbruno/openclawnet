@@ -2,8 +2,12 @@
 param(
     [switch]$SkipTests,
     [switch]$Headed,
+    [switch]$RecordRuns,
     [string]$ResultsDirectory = "TestResults",
-    [string]$DashboardDirectory = "docs\test-dashboard"
+    [string]$DashboardDirectory = "docs\test-dashboard",
+    [string]$CatalogPath = "tests\catalog.yaml",
+    [string]$RunsPath = "tests\runs.jsonl",
+    [string]$RunsIndexPath = "tests\runs-index.json"
 )
 
 Set-StrictMode -Version Latest
@@ -419,5 +423,28 @@ $suiteSummaries |
 
 New-DashboardHtml -Suites $suiteSummaries |
     Set-Content -LiteralPath $dashboardIndex -Encoding utf8
+
+if ($RecordRuns) {
+    $recordableTrxFiles = @(
+        $trxFiles |
+            Where-Object { Test-Path $_.Path } |
+            ForEach-Object { $_.Path }
+    )
+
+    if ($recordableTrxFiles.Count -eq 0) {
+        Write-Warning "RecordRuns was requested, but no known TRX files were available to record."
+    }
+    else {
+        & (Join-Path $PSScriptRoot "record-test-run.ps1") `
+            -TrxPath $recordableTrxFiles `
+            -CatalogPath $CatalogPath `
+            -RunsPath $RunsPath `
+            -RunsIndexPath $RunsIndexPath
+
+        if ($LASTEXITCODE -ne 0) {
+            throw "record-test-run.ps1 failed."
+        }
+    }
+}
 
 Write-Host "`nDashboard written to $dashboardDir" -ForegroundColor Green
