@@ -360,7 +360,16 @@ public sealed class OpenClawNetSkillsRegistryTests : IDisposable
             while (!cts.IsCancellationRequested)
             {
                 var dir = Path.Combine(_root, "skills", "system", "memory");
-                File.WriteAllText(Path.Combine(dir, "SKILL.md"), ValidSkill("memory", $"v{i++}"));
+                try
+                {
+                    File.WriteAllText(Path.Combine(dir, "SKILL.md"), ValidSkill("memory", $"v{i++}"));
+                }
+                catch (IOException)
+                {
+                    // Windows readers can transiently hold the file open while the
+                    // registry snapshots are being rebuilt. This test cares about
+                    // reader consistency, not about every write attempt succeeding.
+                }
                 await Task.Delay(50);
             }
         });

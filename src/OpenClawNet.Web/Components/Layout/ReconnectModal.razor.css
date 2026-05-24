@@ -1,5 +1,6 @@
 .components-reconnect-first-attempt-visible,
 .components-reconnect-repeated-attempt-visible,
+.components-reconnect-guidance-visible,
 .components-reconnect-failed-visible,
 .components-pause-visible,
 .components-resume-failed-visible,
@@ -8,13 +9,16 @@
 }
 
 #components-reconnect-modal.components-reconnect-show .components-reconnect-first-attempt-visible,
+#components-reconnect-modal.components-reconnect-show .components-reconnect-guidance-visible,
 #components-reconnect-modal.components-reconnect-show .components-rejoining-animation,
 #components-reconnect-modal.components-reconnect-paused .components-pause-visible,
 #components-reconnect-modal.components-reconnect-resume-failed .components-resume-failed-visible,
 #components-reconnect-modal.components-reconnect-retrying,
+#components-reconnect-modal.components-reconnect-retrying .components-reconnect-guidance-visible,
 #components-reconnect-modal.components-reconnect-retrying .components-reconnect-repeated-attempt-visible,
 #components-reconnect-modal.components-reconnect-retrying .components-rejoining-animation,
 #components-reconnect-modal.components-reconnect-failed,
+#components-reconnect-modal.components-reconnect-failed .components-reconnect-guidance-visible,
 #components-reconnect-modal.components-reconnect-failed .components-reconnect-failed-visible {
     display: block;
 }
@@ -86,6 +90,11 @@
 #components-reconnect-modal p {
     margin: 0;
     text-align: center;
+}
+
+#components-reconnect-modal code {
+    font-family: var(--bs-font-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace);
+    font-size: 0.95em;
 }
 
 #components-reconnect-modal button {

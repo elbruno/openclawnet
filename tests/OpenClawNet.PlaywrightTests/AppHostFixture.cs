@@ -93,6 +93,13 @@ public sealed class AppHostFixture : IAsyncLifetime
     /// </summary>
     public HttpClient CreateGatewayHttpClient()
     {
+        if (!IsReady)
+        {
+            throw new Xunit.SkipException(
+                StartupSkipReason
+                ?? "Playwright AppHost fixture did not initialize successfully.");
+        }
+
         var handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -107,6 +114,13 @@ public sealed class AppHostFixture : IAsyncLifetime
     /// </summary>
     public HttpClient CreateSchedulerHttpClient()
     {
+        if (!IsReady)
+        {
+            throw new Xunit.SkipException(
+                StartupSkipReason
+                ?? "Playwright AppHost fixture did not initialize successfully.");
+        }
+
         var handler = new HttpClientHandler
         {
             ServerCertificateCustomValidationCallback = HttpClientHandler.DangerousAcceptAnyServerCertificateValidator
@@ -173,6 +187,8 @@ public sealed class AppHostFixture : IAsyncLifetime
             await WaitForEndpointReadyAsync($"{SchedulerBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{WebBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{WebBaseUrl}/secrets-vault");
+
+            PlaywrightBinaryHelper.UnblockPlaywrightBinaries();
 
             // Initialize Playwright
             _playwright = await Playwright.CreateAsync();

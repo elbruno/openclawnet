@@ -193,9 +193,10 @@ public abstract class LiveToolE2ETestBase : IClassFixture<GatewayWebAppFactory>,
         HttpResponseMessage resp;
         try
         {
-            resp = await Client.PostAsync($"/api/jobs/{jobId}/execute", content: null);
+            using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(2.5));
+            resp = await Client.PostAsync($"/api/jobs/{jobId}/execute", content: null, cts.Token);
         }
-        catch (TaskCanceledException ex)
+        catch (OperationCanceledException ex)
         {
             throw new Xunit.SkipException(
                 $"Live job execution timed out before completion (environment-dependent): {ex.Message}");

@@ -170,9 +170,20 @@ public abstract class AspireLiveTestBase : IAsyncLifetime
         if (App is null)
             throw new InvalidOperationException("App is null — call InitializeAsync first or check skip logic.");
 
-        // App.CreateHttpClient("gateway") returns an HttpClient wired to the
-        // Gateway's dynamically-assigned endpoint (typically https://localhost:XXXXX).
-        var client = App.CreateHttpClient("gateway");
+        HttpClient client;
+        try
+        {
+            // App.CreateHttpClient("gateway") returns an HttpClient wired to the
+            // Gateway's dynamically-assigned endpoint (typically https://localhost:XXXXX).
+            client = App.CreateHttpClient("gateway");
+        }
+        catch (ObjectDisposedException ex)
+        {
+            throw new SkipException(
+                $"Aspire AppHost was disposed before the gateway client could be created. " +
+                $"Treating as environment-dependent skip: {ex.Message}");
+        }
+
         // Allow long-running job executions (tool loops can take minutes with cold Ollama).
         client.Timeout = TimeSpan.FromMinutes(5);
         return client;

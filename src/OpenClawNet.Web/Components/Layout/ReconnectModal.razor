@@ -7,16 +7,19 @@
             <div></div>
         </div>
         <p class="components-reconnect-first-attempt-visible">
-            Rejoining the server...
+            Rejoining OpenClaw .NET services...
         </p>
         <p class="components-reconnect-repeated-attempt-visible">
-            Rejoin failed... trying again in <span id="components-seconds-to-next-attempt"></span> seconds.
+            OpenClaw .NET services are unavailable. Trying again in <span id="components-seconds-to-next-attempt"></span> seconds.
         </p>
         <p class="components-reconnect-failed-visible">
-            Failed to rejoin.<br />Please retry or reload the page.
+            Couldn't reconnect to OpenClaw .NET services.<br />Start the local stack with <code>aspire start</code>, then retry or reload the page.
+        </p>
+        <p class="components-reconnect-guidance-visible">
+            If you're running locally, make sure the services are up with <code>aspire start</code>. We'll reconnect automatically when they return.
         </p>
         <button id="components-reconnect-button" class="components-reconnect-failed-visible">
-            Retry
+            Retry now
         </button>
         <p class="components-pause-visible">
             The session has been paused by the server.

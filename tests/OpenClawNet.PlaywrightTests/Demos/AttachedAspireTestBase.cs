@@ -135,6 +135,8 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
         {
             await ResolveOrStartAspireAsync();
 
+            PlaywrightBinaryHelper.UnblockPlaywrightBinaries();
+
             // Initialize Playwright — ALWAYS headed for demo tests.
             _playwright = await Playwright.CreateAsync();
 
