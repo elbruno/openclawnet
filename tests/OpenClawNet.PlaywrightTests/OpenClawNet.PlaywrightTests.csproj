@@ -26,6 +26,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\OpenClawNet.AppHost\OpenClawNet.AppHost.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.ServiceDefaults\OpenClawNet.ServiceDefaults.csproj" />
   </ItemGroup>
 
 </Project>

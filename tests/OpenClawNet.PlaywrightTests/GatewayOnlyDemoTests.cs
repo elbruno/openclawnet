@@ -41,7 +41,7 @@ public class GatewayOnlyDemoTests : IAsyncLifetime
         return true;
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Gateway_HealthEndpoint_ReturnsDetailedStatus()
     {
         var response = await _client.GetAsync("/health");
@@ -54,7 +54,7 @@ public class GatewayOnlyDemoTests : IAsyncLifetime
         Assert.True(DateTime.TryParse(ts.GetString(), out _), "Timestamp should be a parseable date-time");
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Gateway_ParallelSessions_AreIsolated()
     {

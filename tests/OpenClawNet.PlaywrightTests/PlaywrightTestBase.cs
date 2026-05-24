@@ -16,6 +16,7 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     private readonly AppHostFixture _fixture;
     private IBrowserContext? _context;
     private IPage? _page;
+    private string? _startupSkipReason;
 
     protected PlaywrightTestBase(AppHostFixture fixture)
     {
@@ -25,7 +26,14 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     /// <summary>
     /// The Playwright page instance for this test. Available after InitializeAsync completes.
     /// </summary>
-    protected IPage Page => _page ?? throw new InvalidOperationException("Page not initialized");
+    protected IPage Page
+    {
+        get
+        {
+            EnsureReadyOrSkip();
+            return _page ?? throw new InvalidOperationException("Page not initialized");
+        }
+    }
 
     /// <summary>
     /// The AppHost fixture for accessing base URLs and other test resources.
@@ -36,9 +44,10 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     {
         if (!_fixture.IsReady)
         {
-            throw new Xunit.SkipException(
+            _startupSkipReason =
                 _fixture.StartupSkipReason
-                ?? "Playwright AppHost fixture did not initialize successfully.");
+                ?? "Playwright AppHost fixture did not initialize successfully.";
+            return;
         }
 
         var contextOptions = new BrowserNewContextOptions
@@ -64,9 +73,18 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
             };
         }
 
-        _context = await _fixture.Browser.NewContextAsync(contextOptions);
-        _page = await _context.NewPageAsync();
-        _page.SetDefaultTimeout(30_000);
+        try
+        {
+            _context = await _fixture.Browser.NewContextAsync(contextOptions);
+            _page = await _context.NewPageAsync();
+            _page.SetDefaultTimeout(30_000);
+        }
+        catch (Exception ex)
+        {
+            _startupSkipReason =
+                "Playwright AppHost fixture could not start in this environment. " +
+                $"Startup error: {ex.GetType().Name}: {ex.Message}";
+        }
     }
 
     public virtual async Task DisposeAsync()
@@ -84,6 +102,8 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     /// <param name="testMethodName">The name of the calling test method (auto-populated)</param>
     protected async Task WithScreenshotOnFailure(Func<Task> testAction, [CallerMemberName] string testMethodName = "")
     {
+        EnsureReadyOrSkip();
+
         try
         {
             await testAction();
@@ -164,6 +184,8 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     /// </summary>
     protected async Task LogStepAsync(string message)
     {
+        EnsureReadyOrSkip();
+
         var stamp = DateTime.Now.ToString("HH:mm:ss");
         Console.WriteLine($"[{stamp}] ≡ƒº¬ {message}");
         if (_page is null) return;
@@ -197,6 +219,8 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
     /// </summary>
     protected async Task WaitForWithTicksAsync(ILocator locator, int timeoutMs, string what)
     {
+        EnsureReadyOrSkip();
+
         var deadline = DateTime.UtcNow.AddMilliseconds(timeoutMs);
         var start = DateTime.UtcNow;
         while (DateTime.UtcNow < deadline)
@@ -218,5 +242,13 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         }
         throw new TimeoutException($"Timeout {timeoutMs}ms exceeded waiting for {what}");
     }
-}
 
+    private void EnsureReadyOrSkip()
+    {
+        Skip.IfNot(
+            _fixture.IsReady,
+            _startupSkipReason
+            ?? _fixture.StartupSkipReason
+            ?? "Playwright AppHost fixture did not initialize successfully.");
+    }
+}

@@ -10,7 +10,7 @@ public sealed class SettingsGeneralE2ETests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SettingsPage_Loads_AllGeneralCardsVisible()
     {
         await WithScreenshotOnFailure(async () =>
@@ -31,7 +31,7 @@ public sealed class SettingsGeneralE2ETests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SettingsPage_SaveStorageLocation_SavesAndRestoresConfiguration()
     {
         var settingsPath = GetGatewayAppSettingsPath();

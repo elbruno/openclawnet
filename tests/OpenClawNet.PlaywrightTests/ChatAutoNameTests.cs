@@ -14,7 +14,7 @@ public sealed class ChatAutoNameTests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Chat_AutoNameFromConversation_UpdatesAndPersistsTitle()
     {

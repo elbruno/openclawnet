@@ -10,7 +10,7 @@ public sealed class SecretsVaultTests : PlaywrightTestBase
     {
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SecretsVaultPage_SecretLifecycle_WorksEndToEnd()
     {
         var secretName = $"ui-secret-{Guid.NewGuid():N}";
@@ -64,7 +64,7 @@ public sealed class SecretsVaultTests : PlaywrightTestBase
         await client.SendAsync(purgeRequest);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SecretsVaultPage_AzureOpenAITemplate_CreatesThreeSecrets()
     {
         using var client = Fixture.CreateGatewayHttpClient();

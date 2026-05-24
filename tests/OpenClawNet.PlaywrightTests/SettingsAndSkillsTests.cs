@@ -16,7 +16,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
 
     // ── Demo 04: Skills Page ──────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task SkillsPage_Loads_ShowsSkillsList()
     {
         await WithScreenshotOnFailure(async () =>
@@ -44,7 +44,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
 
     // ── Demo 06: Settings Page ────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task SettingsPage_Loads_ShowsSchedulerSettings()
     {
         await WithScreenshotOnFailure(async () =>
@@ -72,7 +72,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SettingsPage_GatewaySettingsApi_ReturnsCurrentSettings()
     {
         await WithScreenshotOnFailure(async () =>
@@ -86,7 +86,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task SettingsPage_GatewayToolLoggingApi_ReturnsCurrentSettings()
     {
         await WithScreenshotOnFailure(async () =>
@@ -102,7 +102,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
 
     // ── Skills Details + Settings Provider Selection ──────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task SkillsPage_ShowsSkillDetails_WhenExpanded()
     {
         await WithScreenshotOnFailure(async () =>
@@ -134,7 +134,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task ModelProvidersPage_Loads_ShowsProviderTable()
     {
         await WithScreenshotOnFailure(async () =>
@@ -161,7 +161,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
         });
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task ModelProvidersPage_GatewayApi_ReturnsProviders()
     {
         await WithScreenshotOnFailure(async () =>
@@ -178,7 +178,7 @@ public class SettingsAndSkillsTests : PlaywrightTestBase
 
     // ── Agent Profiles Page ───────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task AgentProfilesPage_Loads_ShowsProfilesList()
     {
         await WithScreenshotOnFailure(async () =>

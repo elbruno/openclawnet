@@ -48,7 +48,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 01: Health & Version ─────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Health_GetEndpoint_ReturnsHealthy()
     {
         var response = await _client.GetAsync("/health");
@@ -59,7 +59,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.True(json.TryGetProperty("timestamp", out _));
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Version_GetEndpoint_ReturnsVersionInfo()
     {
         var response = await _client.GetAsync("/api/version");
@@ -72,7 +72,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 02: Session + Chat ───────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Sessions_CreateSession_ReturnsCreated()
     {
         var response = await _client.PostAsJsonAsync("/api/sessions", new { title = "E2E Test Session" });
@@ -84,7 +84,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.Equal("E2E Test Session", json.GetProperty("title").GetString());
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Chat_SendMessage_ReturnsResponseWithContent()
     {
@@ -111,7 +111,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 03: Multi-turn Conversation ──────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task MultiTurn_CreateChatRenameDelete_FullLifecycle()
     {
@@ -160,7 +160,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.Equal(HttpStatusCode.NoContent, deleteResp.StatusCode);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Sessions_ListSessions_ReturnsArray()
     {
         // Create a session to ensure there's at least one
@@ -174,7 +174,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 04: Tools ────────────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Tools_GetList_ReturnsRegisteredTools()
     {
         var response = await _client.GetAsync("/api/tools");
@@ -189,7 +189,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.True(first.TryGetProperty("description", out _));
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Chat_FileQuestion_TriggersToolUse()
     {
@@ -213,7 +213,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 05: Skills ───────────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Skills_GetList_ReturnsSkills()
     {
         var response = await _client.GetAsync("/api/skills");
@@ -223,7 +223,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.True(json.GetArrayLength() >= 0, "Skills endpoint should return an array");
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task Skills_EnableDisable_TogglesState()
     {
         // Get initial skills list to find one to toggle
@@ -256,7 +256,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 06: SignalR Hub Connectivity (deprecated — chat now uses HTTP NDJSON) ──
 
-    [Fact]
+    [SkippableFact]
     public async Task SignalR_ChatHub_EndpointIsReachable()
     {
         // NOTE: The ChatHub is [Obsolete] — chat now uses POST /api/chat/stream (NDJSON).
@@ -270,7 +270,7 @@ public class GatewayApiTests : IAsyncLifetime
             "SignalR negotiate should return connection info");
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task ChatStream_PostEndpoint_ReturnsNdjsonResponse()
     {
@@ -296,7 +296,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Model Providers API ───────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task ModelProviders_GetList_ReturnsArray()
     {
         var response = await _client.GetAsync("/api/model-providers");
@@ -315,7 +315,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 08: Webhooks ─────────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Webhooks_PostEvent_CreatesSession()
     {
@@ -336,7 +336,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.False(string.IsNullOrEmpty(json.GetProperty("agentResponse").GetString()));
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Webhooks_GetList_ReturnsWebhookSessions()
     {
@@ -358,7 +358,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 01: OpenAPI Spec ─────────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task OpenApi_GetSpec_ReturnsValidJson()
     {
         var response = await _client.GetAsync("/openapi/v1.json");
@@ -371,7 +371,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 03: Session By ID + Message History ──────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Sessions_GetById_ReturnsFullSession()
     {
         // Create a session
@@ -391,7 +391,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.True(session.TryGetProperty("messages", out _), "Full session should include messages array");
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Sessions_GetMessages_ReturnsHistory()
     {
@@ -431,7 +431,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 04/05: Skills Reload ─────────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Skills_Reload_ReturnsSuccess()
     {
         var response = await _client.PostAsync("/api/skills/reload", null);
@@ -444,7 +444,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 06: Settings Provider Switch ─────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     public async Task Settings_UpdateProvider_ChangesRuntime()
     {
         // Capture current settings
@@ -479,7 +479,7 @@ public class GatewayApiTests : IAsyncLifetime
 
     // ── Demo 05/08: Webhook Payloads ──────────────────────────────────────────
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Webhooks_CodeReviewPayload_CreatesSession()
     {
@@ -499,7 +499,7 @@ public class GatewayApiTests : IAsyncLifetime
         Assert.True(json.TryGetProperty("sessionId", out _));
     }
 
-    [Fact]
+    [SkippableFact]
     [Trait("Category", "RequiresModel")]
     public async Task Webhooks_GitPushPayload_CreatesSession()
     {

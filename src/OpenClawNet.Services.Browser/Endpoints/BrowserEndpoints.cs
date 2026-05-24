@@ -1,10 +1,17 @@
 using Microsoft.Extensions.Options;
 using Microsoft.Playwright;
+using OpenClawNet.ServiceDefaults;
 
 namespace OpenClawNet.Services.Browser.Endpoints;
 
 public static class BrowserEndpoints
 {
+    private static IPlaywright CreatePlaywright()
+    {
+        PlaywrightRuntimeHelper.PrepareForCurrentProcess();
+        return Playwright.CreateAsync().GetAwaiter().GetResult();
+    }
+
     public static void MapBrowserEndpoints(this WebApplication app)
     {
         app.MapPost("/api/browser/execute", async (
@@ -38,7 +45,7 @@ public static class BrowserEndpoints
     private static async Task<IResult> NavigateAsync(BrowserExecuteRequest req, ILogger logger, BrowserOptions options)
     {
         if (string.IsNullOrEmpty(req.Url)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'url' is required" });
-        using var playwright = await Playwright.CreateAsync();
+        using var playwright = CreatePlaywright();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
         logger.LogInformation("Navigating to {Url}", req.Url);
@@ -50,7 +57,7 @@ public static class BrowserEndpoints
     private static async Task<IResult> ExtractTextAsync(BrowserExecuteRequest req, ILogger logger, BrowserOptions options)
     {
         if (string.IsNullOrEmpty(req.Url)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'url' is required" });
-        using var playwright = await Playwright.CreateAsync();
+        using var playwright = CreatePlaywright();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
         await page.GotoAsync(req.Url, new() { Timeout = options.NavigationTimeoutMs });
@@ -70,7 +77,7 @@ public static class BrowserEndpoints
     private static async Task<IResult> ScreenshotAsync(BrowserExecuteRequest req, ILogger logger, BrowserOptions options)
     {
         if (string.IsNullOrEmpty(req.Url)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'url' is required" });
-        using var playwright = await Playwright.CreateAsync();
+        using var playwright = CreatePlaywright();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
         await page.GotoAsync(req.Url, new() { Timeout = options.NavigationTimeoutMs });
@@ -84,7 +91,7 @@ public static class BrowserEndpoints
     {
         if (string.IsNullOrEmpty(req.Url)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'url' is required" });
         if (string.IsNullOrEmpty(req.Selector)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'selector' required for click" });
-        using var playwright = await Playwright.CreateAsync();
+        using var playwright = CreatePlaywright();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
         await page.GotoAsync(req.Url, new() { Timeout = options.NavigationTimeoutMs });
@@ -96,7 +103,7 @@ public static class BrowserEndpoints
     {
         if (string.IsNullOrEmpty(req.Url)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'url' is required" });
         if (string.IsNullOrEmpty(req.Selector)) return Results.BadRequest(new BrowserExecuteResponse { Success = false, Output = "'selector' required for fill" });
-        using var playwright = await Playwright.CreateAsync();
+        using var playwright = CreatePlaywright();
         await using var browser = await playwright.Chromium.LaunchAsync(new() { Headless = true });
         var page = await browser.NewPageAsync();
         await page.GotoAsync(req.Url, new() { Timeout = options.NavigationTimeoutMs });

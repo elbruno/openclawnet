@@ -20,7 +20,7 @@ public class ToolsScreenshotsTest : PlaywrightTestBase
         Directory.CreateDirectory(_screenshotDir);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task CaptureToolsScreenshots()
     {
         await WithScreenshotOnFailure(async () =>

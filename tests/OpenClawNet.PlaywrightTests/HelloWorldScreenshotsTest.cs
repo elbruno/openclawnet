@@ -21,7 +21,7 @@ public class HelloWorldScreenshotsTest : PlaywrightTestBase
         Directory.CreateDirectory(_screenshotDir);
     }
 
-    [Fact]
+    [SkippableFact]
     public async Task CaptureHelloWorldTutorialScreenshots()
     {
         await WithScreenshotOnFailure(async () =>
