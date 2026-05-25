@@ -17,24 +17,14 @@ var includeAllPlaywright = args.Any(arg =>
 
 var catalog = PlaywrightDemoCatalog.Load(Path.Combine(repoRoot, "tests", "catalog.yaml"));
 
-var playwrightTests = catalog.Tests
+var allPlaywrightTests = catalog.Tests
     .Where(test => test.Suite.Equals("playwright", StringComparison.OrdinalIgnoreCase))
-    .Where(test => includeAllPlaywright || IsAttachedDemoTest(test))
     .Select(test => new LauncherTest(test))
     .ToList();
 
-if (playwrightTests.Count == 0)
+if (allPlaywrightTests.Count == 0)
 {
-    if (includeAllPlaywright)
-    {
-        AnsiConsole.MarkupLine("[red]No Playwright tests were found in tests\\catalog.yaml.[/]");
-    }
-    else
-    {
-        AnsiConsole.MarkupLine(
-            "[red]No attached demo tests were found. Add tests in tests\\OpenClawNet.PlaywrightTests\\Demos\\ with [Trait(\"Category\", \"DemoLive\")].[/]");
-    }
-
+    AnsiConsole.MarkupLine("[red]No Playwright tests were found in tests\\catalog.yaml.[/]");
     return 1;
 }
 
@@ -45,7 +35,19 @@ if (!aspireStatus.IsRunning)
     return 1;
 }
 
-RenderPrereqBanner(repoRoot, catalog, includeAllPlaywright, aspireStatus);
+var selectedScope = PromptForScope(includeAllPlaywright);
+var playwrightTests = allPlaywrightTests
+    .Where(test => selectedScope.IncludeAllPlaywrightTests || IsAttachedDemoTest(test.Test))
+    .ToList();
+
+if (playwrightTests.Count == 0)
+{
+    AnsiConsole.MarkupLine(
+        "[red]No attached demo tests were found. Add tests in tests\\OpenClawNet.PlaywrightTests\\Demos\\ with [Trait(\"Category\", \"DemoLive\")], or choose \"All Playwright scenarios\".[/]");
+    return 1;
+}
+
+RenderPrereqBanner(repoRoot, catalog, selectedScope, aspireStatus);
 
 var categories = BuildCategories(playwrightTests);
 var selectedCategory = AnsiConsole.Prompt(
@@ -79,7 +81,7 @@ return await RunTestAsync(repoRoot, selectedTest, timingPreset);
 static void RenderPrereqBanner(
     string repoRoot,
     PlaywrightDemoCatalog catalog,
-    bool includeAllPlaywright,
+    LauncherScope selectedScope,
     AspireStatus aspireStatus)
 {
     var playwrightSuite = catalog.Suites.FirstOrDefault(s => s.Id.Equals("playwright", StringComparison.OrdinalIgnoreCase));
@@ -91,9 +93,13 @@ static void RenderPrereqBanner(
         $"Aspire web: [grey]{Markup.Escape(aspireStatus.WebUrl ?? "<not found>")}[/]\n" +
         $"Aspire gateway: [grey]{Markup.Escape(aspireStatus.GatewayUrl ?? "<not found>")}[/]";
 
-    if (includeAllPlaywright)
+    if (selectedScope.IncludeAllPlaywrightTests)
     {
-        prereqText += "\n[bold yellow]Mode[/]: include-all-playwright (non-demo tests visible)";
+        prereqText += "\n[bold yellow]Scope[/]: All Playwright scenarios";
+    }
+    else
+    {
+        prereqText += "\n[bold yellow]Scope[/]: Attached demos only (recommended)";
     }
 
     if (playwrightSuite is not null)
@@ -113,9 +119,9 @@ static void PrintHelp()
 {
     var helpText =
         "[bold]Usage[/]: OpenClawNet.PlaywrightDemoLauncher\n" +
-        "[bold]Flow[/]: category → test → timing preset\n" +
-        "[bold]Default scope[/]: attached demo tests only (`Demos/` + `Category=DemoLive`).\n" +
-        "[bold]Optional[/]: use `--include-all-playwright` to show non-demo Playwright tests.\n" +
+        "[bold]Flow[/]: scope → category → test → timing preset\n" +
+        "[bold]Default scope[/]: Attached demos only (recommended; `Demos/` + `Category=DemoLive`).\n" +
+        "[bold]Optional[/]: use `--include-all-playwright` to preselect all Playwright scenarios.\n" +
         "[bold]Runtime[/]: this launcher only runs `dotnet test`; it does not start or stop Aspire.\n" +
         $"[bold]Catalog[/]: {Markup.Escape(Path.Combine("tests", "catalog.yaml"))}";
 
@@ -228,6 +234,29 @@ static int CategoryRank(string name) => name switch
     "Activity" => 12,
     _ => 99
 };
+
+static LauncherScope PromptForScope(bool includeAllPlaywrightFromCli)
+{
+    var scopes = includeAllPlaywrightFromCli
+        ? new[]
+        {
+            new LauncherScope("All Playwright scenarios", IncludeAllPlaywrightTests: true, IsRecommended: false),
+            new LauncherScope("Attached demos only", IncludeAllPlaywrightTests: false, IsRecommended: true)
+        }
+        : new[]
+        {
+            new LauncherScope("Attached demos only", IncludeAllPlaywrightTests: false, IsRecommended: true),
+            new LauncherScope("All Playwright scenarios", IncludeAllPlaywrightTests: true, IsRecommended: false)
+        };
+
+    return AnsiConsole.Prompt(
+        new SelectionPrompt<LauncherScope>()
+            .Title("Choose test [green]scope[/]:")
+            .PageSize(10)
+            .MoreChoicesText("[grey](Use ↑/↓ to browse, Enter to select)[/]")
+            .UseConverter(scope => scope.IsRecommended ? $"{scope.Name} (Recommended)" : scope.Name)
+            .AddChoices(scopes));
+}
 
 static bool IsAttachedDemoTest(PlaywrightDemoTest test)
 {
@@ -563,6 +592,8 @@ static string Truncate(string value, int maxLength)
 }
 
 internal sealed record LauncherCategory(string Name, IReadOnlyList<LauncherTest> Tests);
+
+internal sealed record LauncherScope(string Name, bool IncludeAllPlaywrightTests, bool IsRecommended);
 
 internal sealed record LauncherTest
 {
