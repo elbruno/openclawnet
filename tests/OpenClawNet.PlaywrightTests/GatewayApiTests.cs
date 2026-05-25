@@ -8,13 +8,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// API-level E2E tests for the gateway service — covers gateway-only demos 01–08.
 /// Uses HttpClient directly (no browser needed).
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 public class GatewayApiTests : IAsyncLifetime
 {
-    private readonly AppHostFixture _fixture;
+    private readonly AspireHostFixture _fixture;
     private HttpClient _client = null!;
 
-    public GatewayApiTests(AppHostFixture fixture)
+    public GatewayApiTests(AspireHostFixture fixture)
     {
         _fixture = fixture;
     }

@@ -7,8 +7,13 @@ namespace OpenClawNet.PlaywrightTests.Demos;
 [Trait("Category", "DemoLive")]
 [Trait("Category", "E2E")]
 [Trait("Category", "Chat")]
-public sealed class ChatRssDailyTaskAttachedTests : AttachedAspireTestBase
+[Collection("AspireHost")]
+public sealed class ChatRssDailyTaskAttachedTests : AspireHostAttachedDemoTestBase
 {
+    public ChatRssDailyTaskAttachedTests(AspireHostFixture fixture) : base(fixture)
+    {
+    }
+
     private const string FirstPrompt =
         "check the rss for the latest episodes of https:www.notienenombre.com,and create a summary with the latest 5";
 

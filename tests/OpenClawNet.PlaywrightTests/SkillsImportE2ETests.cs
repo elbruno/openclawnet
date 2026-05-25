@@ -20,11 +20,11 @@ namespace OpenClawNet.PlaywrightTests;
 /// - File fixtures cleaned up in finally blocks
 /// - Tests verify both UI state and API responses (201/400/409 status codes)
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "E2E")]
-public class SkillsImportE2ETests : PlaywrightTestBase
+public class SkillsImportE2ETests : AspireHostPlaywrightTestBase
 {
-    public SkillsImportE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsImportE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

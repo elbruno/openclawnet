@@ -7,10 +7,10 @@ namespace OpenClawNet.PlaywrightTests;
 /// E2E tests for Aspire dashboard reachability — covers aspire-stack demo 01 and 07.
 /// Validates that the Aspire dashboard and web UI are accessible.
 /// </summary>
-[Collection("AppHost")]
-public class AspireDashboardTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class AspireDashboardTests : AspireHostPlaywrightTestBase
 {
-    public AspireDashboardTests(AppHostFixture fixture) : base(fixture)
+    public AspireDashboardTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

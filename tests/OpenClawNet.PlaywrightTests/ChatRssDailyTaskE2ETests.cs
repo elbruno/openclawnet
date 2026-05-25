@@ -3,9 +3,9 @@ using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
 
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "E2E")]
-public sealed class ChatRssDailyTaskE2ETests : PlaywrightTestBase
+public sealed class ChatRssDailyTaskE2ETests : AspireHostPlaywrightTestBase
 {
     private const string FirstPrompt =
         "check the rss for the latest episodes of https:www.notienenombre.com,and create a summary with the latest 5";
@@ -13,7 +13,7 @@ public sealed class ChatRssDailyTaskE2ETests : PlaywrightTestBase
     private const string SecondPrompt =
         "now create a daily task that runs at 9AM every day, runs the same RSS summary action, and save the results in the default storage location using the chat name";
 
-    public ChatRssDailyTaskE2ETests(AppHostFixture fixture) : base(fixture)
+    public ChatRssDailyTaskE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 
@@ -47,7 +47,7 @@ public sealed class ChatRssDailyTaskE2ETests : PlaywrightTestBase
                 : await CreateProfileAsync(new AgentProfileDraft(
                     Name: $"rss-daily-task-{Guid.NewGuid():N}".ToLowerInvariant(),
                     Provider: "ollama",
-                    Model: AppHostFixture.ToolCapableTestModel,
+                    Model: AspireHostFixture.ToolCapableTestModel,
                     Instructions: instructions,
                     RequireToolApproval: false));
 

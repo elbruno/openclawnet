@@ -28,7 +28,7 @@ namespace OpenClawNet.PlaywrightTests;
 /// Tagged <c>RequiresModel</c> so it is skipped automatically when no
 /// tool-capable Ollama model is available locally.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "RequiresModel")]
 public class WebsiteWatcherE2ETests : IAsyncLifetime
 {
@@ -36,7 +36,7 @@ public class WebsiteWatcherE2ETests : IAsyncLifetime
     private const string AzureProviderName = "azure-openai-e2e";
     private const string AzureProfileName = "website-watcher-azure-e2e";
 
-    private readonly AppHostFixture _fixture;
+    private readonly AspireHostFixture _fixture;
     private readonly ITestOutputHelper _output;
     private HttpClient _gateway = null!;
     private HttpClient _scheduler = null!;
@@ -44,7 +44,7 @@ public class WebsiteWatcherE2ETests : IAsyncLifetime
     private bool _createdAzureProvider;
     private bool _createdAzureProfile;
 
-    public WebsiteWatcherE2ETests(AppHostFixture fixture, ITestOutputHelper output)
+    public WebsiteWatcherE2ETests(AspireHostFixture fixture, ITestOutputHelper output)
     {
         _fixture = fixture;
         _output = output;
@@ -88,7 +88,7 @@ public class WebsiteWatcherE2ETests : IAsyncLifetime
         var useAzure = _fixture.IsAzureOpenAIAvailable;
         _output.WriteLine(useAzure
             ? $"[0] Using Azure OpenAI (deployment '{_fixture.AzureOpenAIDeployment}') for fast E2E."
-            : $"[0] Azure OpenAI not configured; falling back to local Ollama '{AppHostFixture.ToolCapableTestModel}'.");
+            : $"[0] Azure OpenAI not configured; falling back to local Ollama '{AspireHostFixture.ToolCapableTestModel}'.");
 
         // ── 0. (Azure path only) Provision provider + profile that points at it ──
         string? agentProfileName = null;

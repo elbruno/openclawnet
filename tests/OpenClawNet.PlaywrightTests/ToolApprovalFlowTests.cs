@@ -18,13 +18,13 @@ namespace OpenClawNet.PlaywrightTests;
 ///   Q4 = "Remember for this session" checkbox is offered
 ///   Q5 = browser tool stays in the requires-approval set
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "ToolApproval")]
-public class ToolApprovalFlowTests : PlaywrightTestBase
+public class ToolApprovalFlowTests : AspireHostPlaywrightTestBase
 {
     // Wave 4 PR-1 (Lambert UI) and PR-2 (Dallas backend) merged — tests live now.
     // Still gated by Trait("Category","ToolApproval") so they only run when explicitly selected.
-    public ToolApprovalFlowTests(AppHostFixture fixture) : base(fixture) { }
+    public ToolApprovalFlowTests(AspireHostFixture fixture) : base(fixture) { }
 
     // ---------------------------------------------------------------------
     // Helpers — placeholder shapes so the file compiles cleanly today.
@@ -166,10 +166,10 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
             // Arrange: create a profile that requires approval and open chat against it.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
                 Name: $"approval-required-{Guid.NewGuid():N}",
-                Provider: "ollama", Model: AppHostFixture.ToolCapableTestModel,
+                Provider: "ollama", Model: AspireHostFixture.ToolCapableTestModel,
                 Instructions: "Use the browser tool to fetch https://example.com when asked.",
                 RequireToolApproval: true));
-            await LogStepAsync($"Profile created: {profileName} (model: {AppHostFixture.ToolCapableTestModel})");
+            await LogStepAsync($"Profile created: {profileName} (model: {AspireHostFixture.ToolCapableTestModel})");
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
                 new PageGotoOptions { WaitUntil = WaitUntilState.NetworkIdle });
@@ -210,7 +210,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange: same setup as scenario 1.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"approval-required-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
             await LogStepAsync($"Profile created: {profileName}");
 
@@ -254,7 +254,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"approval-required-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
@@ -284,7 +284,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange: profile that does NOT require approval.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"auto-approve-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"auto-approve-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: false));
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
@@ -312,7 +312,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange: profile=require, open chat.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"approval-required-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 "Use the browser tool when asked.", RequireToolApproval: true));
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
@@ -350,7 +350,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange: requiring profile.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"approval-required-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 "Use the schedule tool to create jobs when asked.", RequireToolApproval: true));
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",
@@ -385,7 +385,7 @@ public class ToolApprovalFlowTests : PlaywrightTestBase
         {
             // Arrange.
             var profileName = await CreateProfileAsync(new AgentProfileDraft(
-                $"approval-required-{Guid.NewGuid():N}", "ollama", AppHostFixture.ToolCapableTestModel,
+                $"approval-required-{Guid.NewGuid():N}", "ollama", AspireHostFixture.ToolCapableTestModel,
                 $"Use the {expectedTool} tool when asked.", RequireToolApproval: true));
 
             await Page.GotoAsync($"{Fixture.WebBaseUrl}/chat?profile={profileName}",

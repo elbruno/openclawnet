@@ -7,13 +7,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// Captures the Tools catalog page and a focused
 /// shot of each individual tool card (file_system, shell, web_fetch, schedule).
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Screenshots")]
-public class ToolsScreenshotsTest : PlaywrightTestBase
+public class ToolsScreenshotsTest : AspireHostPlaywrightTestBase
 {
     private readonly string _screenshotDir;
 
-    public ToolsScreenshotsTest(AppHostFixture fixture) : base(fixture)
+    public ToolsScreenshotsTest(AspireHostFixture fixture) : base(fixture)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
         _screenshotDir = Path.Combine(repoRoot, "docs", "manuals", "images", "20-tools");

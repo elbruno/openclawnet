@@ -7,10 +7,10 @@ namespace OpenClawNet.PlaywrightTests;
 /// E2E tests for the Settings and Skills UI pages — covers aspire-stack demos 04 and 06.
 /// Validates that the settings and skills pages render correctly.
 /// </summary>
-[Collection("AppHost")]
-public class SettingsAndSkillsTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class SettingsAndSkillsTests : AspireHostPlaywrightTestBase
 {
-    public SettingsAndSkillsTests(AppHostFixture fixture) : base(fixture)
+    public SettingsAndSkillsTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

@@ -7,10 +7,10 @@ namespace OpenClawNet.PlaywrightTests;
 /// E2E coverage for the chat auto-name-from-conversation flow.
 /// Verifies the UI button, the renamed title, and persistence after reload.
 /// </summary>
-[Collection("AppHost")]
-public sealed class ChatAutoNameTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public sealed class ChatAutoNameTests : AspireHostPlaywrightTestBase
 {
-    public ChatAutoNameTests(AppHostFixture fixture) : base(fixture)
+    public ChatAutoNameTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

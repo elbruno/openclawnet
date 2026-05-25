@@ -7,13 +7,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// Captures the Jobs list (with demo templates), the Create Job form,
 /// the form filled with a cron expression, and the form switched to a one-shot trigger.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Screenshots")]
-public class JobsScreenshotsTest : PlaywrightTestBase
+public class JobsScreenshotsTest : AspireHostPlaywrightTestBase
 {
     private readonly string _screenshotDir;
 
-    public JobsScreenshotsTest(AppHostFixture fixture) : base(fixture)
+    public JobsScreenshotsTest(AspireHostFixture fixture) : base(fixture)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
         _screenshotDir = Path.Combine(repoRoot, "docs", "manuals", "images", "30-jobs");

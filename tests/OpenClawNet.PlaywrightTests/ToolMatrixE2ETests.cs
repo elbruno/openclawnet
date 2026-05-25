@@ -19,11 +19,11 @@ namespace OpenClawNet.PlaywrightTests;
 /// 
 /// Reference: Bruno's frustration — we MUST observe test pass, not just edit code.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "E2E")]
-public class ToolMatrixE2ETests : PlaywrightTestBase
+public class ToolMatrixE2ETests : AspireHostPlaywrightTestBase
 {
-    public ToolMatrixE2ETests(AppHostFixture fixture) : base(fixture) { }
+    public ToolMatrixE2ETests(AspireHostFixture fixture) : base(fixture) { }
 
     // ---------------------------------------------------------------------
     // Helpers

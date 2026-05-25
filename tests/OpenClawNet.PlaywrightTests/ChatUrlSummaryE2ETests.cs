@@ -21,14 +21,14 @@ namespace OpenClawNet.PlaywrightTests;
 /// 
 /// Related: Issue #148 (failing test tracking), Issue #149 (published page/workflow mismatch)
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "E2E")]
 [Trait("Area", "chat")]
 [Trait("Area", "url-fetch")]
 [Trait("TraceId", "chat-url-summary-elbruno")]
-public class ChatUrlSummaryE2ETests : PlaywrightTestBase
+public class ChatUrlSummaryE2ETests : AspireHostPlaywrightTestBase
 {
-    public ChatUrlSummaryE2ETests(AppHostFixture fixture) : base(fixture) { }
+    public ChatUrlSummaryE2ETests(AspireHostFixture fixture) : base(fixture) { }
 
     /// <summary>
     /// Test the exact prompt from issue #152 with manual tool approval.
