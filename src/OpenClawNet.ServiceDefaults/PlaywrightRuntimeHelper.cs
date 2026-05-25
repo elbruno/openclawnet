@@ -6,7 +6,9 @@ namespace OpenClawNet.ServiceDefaults;
 public static class PlaywrightRuntimeHelper
 {
     private const string RelativeNodePath = @"node\win32_x64\node.exe";
+    private const string RelativePackagePath = @"package";
     private const string PlaywrightNodePathVariable = "PLAYWRIGHT_NODEJS_PATH";
+    private const string PlaywrightDriverSearchPathVariable = "PLAYWRIGHT_DRIVER_SEARCH_PATH";
     private const string SystemNodePathVariable = "OPENCLAWNET_PLAYWRIGHT_SYSTEM_NODE";
 
     public static void PrepareForCurrentProcess()
@@ -16,82 +18,92 @@ public static class PlaywrightRuntimeHelper
             return;
         }
 
+        PrepareForWindowsBaseDirectory(AppContext.BaseDirectory);
+    }
+
+    internal static void PrepareForWindowsBaseDirectory(string baseDirectory)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseDirectory);
+
         var systemNodePath = ResolveSystemNodePath();
+        PrepareForWindowsBaseDirectory(baseDirectory, systemNodePath);
+    }
+
+    internal static void PrepareForWindowsBaseDirectory(string baseDirectory, string systemNodePath)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(baseDirectory);
+        ArgumentException.ThrowIfNullOrWhiteSpace(systemNodePath);
+
         if (!CanExecuteNode(systemNodePath))
         {
             throw new InvalidOperationException(
                 $"System node.exe at '{systemNodePath}' is not executable for Playwright runtime setup.");
         }
 
-        var playwrightRoot = Path.Combine(AppContext.BaseDirectory, ".playwright");
-        if (!Directory.Exists(playwrightRoot))
-        {
-            ConfigureNodeLaunchPath(systemNodePath);
-            return;
-        }
-
-        EnsureUsableNodeRuntime(playwrightRoot, systemNodePath);
         ConfigureNodeLaunchPath(systemNodePath);
-        UnblockExecutables(playwrightRoot);
+
+        var playwrightRoot = Path.Combine(baseDirectory, ".playwright");
+        ConfigureDriverSearchPath(playwrightRoot);
+        DeleteRepoLocalNodeRuntime(playwrightRoot);
     }
 
     private static void ConfigureNodeLaunchPath(string systemNodePath)
     {
-        var shimPath = ResolveNodeShimPath();
-        if (shimPath is not null && CanExecuteNode(shimPath))
-        {
-            Environment.SetEnvironmentVariable(PlaywrightNodePathVariable, shimPath, EnvironmentVariableTarget.Process);
-            Environment.SetEnvironmentVariable(SystemNodePathVariable, systemNodePath, EnvironmentVariableTarget.Process);
-            return;
-        }
-
-        // Fall back to trusted system node if the shim is not yet available.
         Environment.SetEnvironmentVariable(PlaywrightNodePathVariable, systemNodePath, EnvironmentVariableTarget.Process);
+        Environment.SetEnvironmentVariable(SystemNodePathVariable, systemNodePath, EnvironmentVariableTarget.Process);
     }
 
-    private static void EnsureUsableNodeRuntime(string playwrightRoot, string systemNodePath)
+    private static void ConfigureDriverSearchPath(string playwrightRoot)
     {
-        var targetNodePath = Path.Combine(playwrightRoot, RelativeNodePath);
-        if (CanExecuteNode(targetNodePath))
+        var sourcePackageDirectory = Path.Combine(playwrightRoot, RelativePackagePath);
+        var cliEntrypoint = Path.Combine(sourcePackageDirectory, "cli.js");
+        if (!File.Exists(cliEntrypoint))
+        {
+            Environment.SetEnvironmentVariable(PlaywrightDriverSearchPathVariable, null, EnvironmentVariableTarget.Process);
+            return;
+        }
+
+        var cacheRoot = Path.Combine(
+            Path.GetTempPath(),
+            "OpenClawNet",
+            "playwright-driver-cache",
+            ComputeDriverCacheKey(cliEntrypoint));
+        var targetPackageDirectory = Path.Combine(cacheRoot, ".playwright", RelativePackagePath);
+
+        CopyPackageDirectory(sourcePackageDirectory, targetPackageDirectory);
+        Environment.SetEnvironmentVariable(PlaywrightDriverSearchPathVariable, cacheRoot, EnvironmentVariableTarget.Process);
+    }
+
+    private static void DeleteRepoLocalNodeRuntime(string playwrightRoot)
+    {
+        if (!Directory.Exists(playwrightRoot))
         {
             return;
         }
 
-        Directory.CreateDirectory(Path.GetDirectoryName(targetNodePath)!);
+        var targetNodePath = Path.Combine(playwrightRoot, RelativeNodePath);
+        if (!File.Exists(targetNodePath))
+        {
+            return;
+        }
+
         try
         {
-            File.Copy(systemNodePath, targetNodePath, overwrite: true);
+            File.Delete(targetNodePath);
         }
-        catch (IOException)
+        catch (IOException ex)
         {
-            // Another process may hold node.exe; rely on PLAYWRIGHT_NODEJS_PATH fallback.
-            if (CanExecuteNode(systemNodePath))
-            {
-                return;
-            }
-
-            throw;
+            throw new InvalidOperationException(
+                $"Failed to delete Playwright node runtime under '{targetNodePath}'.", ex);
         }
-        catch (UnauthorizedAccessException)
+        catch (UnauthorizedAccessException ex)
         {
-            // Defender/quarantine or ACL hardening can block write; rely on fallback if usable.
-            if (CanExecuteNode(systemNodePath))
-            {
-                return;
-            }
-
-            throw;
+            throw new InvalidOperationException(
+                $"Failed to delete Playwright node runtime under '{targetNodePath}'.", ex);
         }
 
-        if (!CanExecuteNode(targetNodePath))
-        {
-            // Keep PLAYWRIGHT_NODEJS_PATH fallback active; fail only when neither runtime is usable.
-            if (!CanExecuteNode(systemNodePath))
-            {
-                throw new InvalidOperationException(
-                    $"Playwright node runtime under '{targetNodePath}' could not be repaired, and fallback system node '{systemNodePath}' is not executable.");
-            }
-        }
+        DeleteDirectoryIfEmpty(Path.GetDirectoryName(targetNodePath));
+        DeleteDirectoryIfEmpty(Path.Combine(playwrightRoot, "node"));
     }
 
     private static string ResolveSystemNodePath()
@@ -116,42 +128,6 @@ public static class PlaywrightRuntimeHelper
         return firstLine;
     }
 
-    private static string? ResolveNodeShimPath()
-    {
-        var repoRoot = FindRepositoryRoot();
-        if (repoRoot is null)
-        {
-            return null;
-        }
-
-        var shimPath = Path.Combine(
-            repoRoot,
-            "src",
-            "OpenClawNet.PlaywrightNodeShim",
-            "bin",
-            "Debug",
-            "net10.0",
-            OperatingSystem.IsWindows() ? "OpenClawNet.PlaywrightNodeShim.exe" : "OpenClawNet.PlaywrightNodeShim");
-
-        return File.Exists(shimPath) ? shimPath : null;
-    }
-
-    private static string? FindRepositoryRoot()
-    {
-        var directory = new DirectoryInfo(AppContext.BaseDirectory);
-        while (directory is not null)
-        {
-            if (File.Exists(Path.Combine(directory.FullName, "OpenClawNet.slnx")))
-            {
-                return directory.FullName;
-            }
-
-            directory = directory.Parent;
-        }
-
-        return null;
-    }
-
     private static bool CanExecuteNode(string nodePath)
     {
         if (!File.Exists(nodePath))
@@ -174,18 +150,42 @@ public static class PlaywrightRuntimeHelper
         }
     }
 
-    private static void UnblockExecutables(string playwrightRoot)
+    private static string ComputeDriverCacheKey(string cliEntrypoint)
     {
-        var command = $"Get-ChildItem -LiteralPath '{EscapeSingleQuotes(playwrightRoot)}' -Recurse -Filter '*.exe' | Unblock-File";
-        var probe = StartProcess(
-            "powershell.exe",
-            $"-NoLogo -NoProfile -NonInteractive -ExecutionPolicy Bypass -Command \"{command}\"");
+        var cliInfo = new FileInfo(cliEntrypoint);
+        var input = $"{cliInfo.FullName}|{cliInfo.Length}|{cliInfo.LastWriteTimeUtc.Ticks}";
+        var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(input));
+        return Convert.ToHexString(hash);
+    }
 
-        if (probe.ExitCode != 0)
+    private static void CopyPackageDirectory(string sourceDirectory, string targetDirectory)
+    {
+        Directory.CreateDirectory(targetDirectory);
+
+        foreach (var sourceFile in Directory.EnumerateFiles(sourceDirectory, "*", SearchOption.AllDirectories))
         {
-            throw new InvalidOperationException(
-                $"Failed to unblock Playwright binaries under '{playwrightRoot}'. ExitCode={probe.ExitCode}. Stdout={probe.Stdout} Stderr={probe.Stderr}");
+            var relativePath = Path.GetRelativePath(sourceDirectory, sourceFile);
+            var targetFile = Path.Combine(targetDirectory, relativePath);
+            var targetParent = Path.GetDirectoryName(targetFile)
+                ?? throw new InvalidOperationException($"Could not determine target directory for '{targetFile}'.");
+            Directory.CreateDirectory(targetParent);
+            File.Copy(sourceFile, targetFile, overwrite: true);
         }
+    }
+
+    private static void DeleteDirectoryIfEmpty(string? directoryPath)
+    {
+        if (string.IsNullOrWhiteSpace(directoryPath) || !Directory.Exists(directoryPath))
+        {
+            return;
+        }
+
+        if (Directory.EnumerateFileSystemEntries(directoryPath).Any())
+        {
+            return;
+        }
+
+        Directory.Delete(directoryPath);
     }
 
     private static ProcessResult StartProcess(string fileName, string arguments)
@@ -221,9 +221,6 @@ public static class PlaywrightRuntimeHelper
 
         return new ProcessResult(process.ExitCode, stdout, stderr);
     }
-
-    private static string EscapeSingleQuotes(string value)
-        => value.Replace("'", "''", StringComparison.Ordinal);
 
     private readonly record struct ProcessResult(int ExitCode, string Stdout, string Stderr);
 }

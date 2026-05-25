@@ -49,6 +49,7 @@
     <Project Path="src/OpenClawNet.Mcp.Browser/OpenClawNet.Mcp.Browser.csproj" />
     <Project Path="src/OpenClawNet.Mcp.FileSystem/OpenClawNet.Mcp.FileSystem.csproj" />
     <Project Path="src/OpenClawNet.Cli.Vault/OpenClawNet.Cli.Vault.csproj" />
+    <Project Path="src/OpenClawNet.PlaywrightDemoLauncher/OpenClawNet.PlaywrightDemoLauncher.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/OpenClawNet.IntegrationTests/OpenClawNet.IntegrationTests.csproj" />

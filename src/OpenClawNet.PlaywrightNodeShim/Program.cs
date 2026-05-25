@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using System.Diagnostics;
 
 var nodePath = Environment.GetEnvironmentVariable("OPENCLAWNET_PLAYWRIGHT_SYSTEM_NODE")
@@ -9,19 +10,53 @@ if (!File.Exists(nodePath))
     return 1;
 }
 
-var startInfo = new ProcessStartInfo(nodePath)
-{
-    UseShellExecute = false,
-    WorkingDirectory = Environment.CurrentDirectory,
-};
+var workingDirectory = Path.GetDirectoryName(nodePath) ?? Environment.CurrentDirectory;
 
-foreach (var arg in args)
+try
 {
-    startInfo.ArgumentList.Add(arg);
+    using var directProcess = StartNode(nodePath, workingDirectory, args);
+    directProcess.WaitForExit();
+    return directProcess.ExitCode;
+}
+catch (Win32Exception)
+{
+    using var shellProcess = StartNodeThroughCmd(nodePath, workingDirectory, args);
+    shellProcess.WaitForExit();
+    return shellProcess.ExitCode;
 }
 
-using var process = Process.Start(startInfo)
-    ?? throw new InvalidOperationException($"Failed to start node.exe shim target '{nodePath}'.");
+static Process StartNode(string executable, string workingDirectory, string[] args)
+{
+    var startInfo = new ProcessStartInfo(executable)
+    {
+        UseShellExecute = false,
+        WorkingDirectory = workingDirectory,
+    };
 
-process.WaitForExit();
-return process.ExitCode;
+    foreach (var arg in args)
+    {
+        startInfo.ArgumentList.Add(arg);
+    }
+
+    return Process.Start(startInfo)
+        ?? throw new InvalidOperationException($"Failed to start node.exe shim target '{executable}'.");
+}
+
+static Process StartNodeThroughCmd(string executable, string workingDirectory, string[] args)
+{
+    var startInfo = new ProcessStartInfo("cmd.exe")
+    {
+        UseShellExecute = false,
+        WorkingDirectory = workingDirectory,
+    };
+
+    startInfo.ArgumentList.Add("/c");
+    startInfo.ArgumentList.Add(executable);
+    foreach (var arg in args)
+    {
+        startInfo.ArgumentList.Add(arg);
+    }
+
+    return Process.Start(startInfo)
+        ?? throw new InvalidOperationException($"Failed to start node.exe shim target through cmd.exe '{executable}'.");
+}

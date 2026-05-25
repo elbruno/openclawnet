@@ -96,6 +96,35 @@ tests:
       - 'UI'
       - 'Chat'
     issueRef: null
+  - id: 'ChatRssDailyTaskE2ETests.Chat_RssSummary_Rename_AndCreateDailyJobDefinition'
+    suite: 'playwright'
+    file: 'tests/OpenClawNet.PlaywrightTests/ChatRssDailyTaskE2ETests.cs'
+    className: 'ChatRssDailyTaskE2ETests'
+    methodName: 'Chat_RssSummary_Rename_AndCreateDailyJobDefinition'
+    proves: 'Chat flow creates an RSS summary, renames the chat uniquely, then creates a daily 9AM recurring job tied to that chat context'
+    category:
+      - 'E2E'
+      - 'Playwright'
+      - 'UI'
+      - 'Chat'
+      - 'Scheduler'
+      - 'RSS'
+    issueRef: null
+  - id: 'ChatRssDailyTaskAttachedTests.Chat_RssSummary_Rename_AndCreateDailyJobDefinition_Attached'
+    suite: 'playwright'
+    file: 'tests/OpenClawNet.PlaywrightTests/Demos/ChatRssDailyTaskAttachedTests.cs'
+    className: 'ChatRssDailyTaskAttachedTests'
+    methodName: 'Chat_RssSummary_Rename_AndCreateDailyJobDefinition_Attached'
+    proves: 'Attached Aspire demo flow: create RSS summary chat, rename conversation uniquely, and create a recurring 9AM job using the chat title'
+    category:
+      - 'DemoLive'
+      - 'E2E'
+      - 'Playwright'
+      - 'UI'
+      - 'Chat'
+      - 'Scheduler'
+      - 'RSS'
+    issueRef: null
   - id: 'ChatUrlSummaryE2ETests.ElBrunoComSummary_WithAutoApprove_ReturnsUsableContent'
     suite: 'playwright'
     file: 'tests/OpenClawNet.PlaywrightTests/ChatUrlSummaryE2ETests.cs'
@@ -189,6 +218,7 @@ tests:
     className: 'PirateJourneyAttachedTests'
     proves: 'Coverage entry seeded from repository test inventory; refine with scenario prose before generator cutover.'
     category:
+      - 'DemoLive'
       - 'E2E'
       - 'Playwright'
       - 'UI'
