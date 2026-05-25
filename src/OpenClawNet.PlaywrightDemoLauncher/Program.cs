@@ -264,7 +264,9 @@ static async Task<int> RunTestAsync(string repoRoot, LauncherTest test, TimingPr
     var startInfo = new ProcessStartInfo("dotnet")
     {
         WorkingDirectory = repoRoot,
-        UseShellExecute = false
+        UseShellExecute = false,
+        RedirectStandardOutput = true,
+        RedirectStandardError = true
     };
 
     startInfo.ArgumentList.Add("test");
@@ -281,6 +283,7 @@ static async Task<int> RunTestAsync(string repoRoot, LauncherTest test, TimingPr
     startInfo.Environment["PLAYWRIGHT_SLOWMO"] = preset.SlowMoMs.ToString(CultureInfo.InvariantCulture);
 
     using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+    var noTestsMatched = false;
 
     ConsoleCancelEventHandler? handler = null;
     handler = (_, e) =>
@@ -302,6 +305,34 @@ static async Task<int> RunTestAsync(string repoRoot, LauncherTest test, TimingPr
     Console.CancelKeyPress += handler;
     try
     {
+        process.OutputDataReceived += (_, eventArgs) =>
+        {
+            if (string.IsNullOrWhiteSpace(eventArgs.Data))
+            {
+                return;
+            }
+
+            Console.WriteLine(eventArgs.Data);
+            if (eventArgs.Data.Contains("No test matches the given testcase filter", StringComparison.OrdinalIgnoreCase))
+            {
+                noTestsMatched = true;
+            }
+        };
+
+        process.ErrorDataReceived += (_, eventArgs) =>
+        {
+            if (string.IsNullOrWhiteSpace(eventArgs.Data))
+            {
+                return;
+            }
+
+            Console.Error.WriteLine(eventArgs.Data);
+            if (eventArgs.Data.Contains("No test matches the given testcase filter", StringComparison.OrdinalIgnoreCase))
+            {
+                noTestsMatched = true;
+            }
+        };
+
         AnsiConsole.MarkupLine("[cyan]Launching test process...[/]");
         AnsiConsole.MarkupLine($"[grey]dotnet test {Markup.Escape(test.Filter)}[/]");
 
@@ -310,7 +341,16 @@ static async Task<int> RunTestAsync(string repoRoot, LauncherTest test, TimingPr
             throw new InvalidOperationException("Failed to start dotnet test.");
         }
 
+        process.BeginOutputReadLine();
+        process.BeginErrorReadLine();
         await process.WaitForExitAsync();
+
+        if (noTestsMatched)
+        {
+            AnsiConsole.MarkupLine("[red]Demo failed: selected test filter did not match any test case.[/]");
+            return 2;
+        }
+
         AnsiConsole.MarkupLine(process.ExitCode == 0
             ? "[green]Demo completed successfully.[/]"
             : $"[red]Demo finished with exit code {process.ExitCode}.[/]");
@@ -546,11 +586,41 @@ internal sealed record LauncherTest
 
     private static string BuildFilter(PlaywrightDemoTest test)
     {
+        var namespacePrefix = BuildNamespacePrefix(test.File);
         var suffix = string.IsNullOrWhiteSpace(test.MethodName)
             ? test.ClassName
             : $"{test.ClassName}.{test.MethodName}";
 
-        return $"FullyQualifiedName~OpenClawNet.PlaywrightTests.{suffix}";
+        return $"FullyQualifiedName~OpenClawNet.PlaywrightTests.{namespacePrefix}{suffix}";
+    }
+
+    private static string BuildNamespacePrefix(string filePath)
+    {
+        var normalized = filePath.Replace('\\', '/');
+        const string marker = "tests/OpenClawNet.PlaywrightTests/";
+        var markerIndex = normalized.IndexOf(marker, StringComparison.OrdinalIgnoreCase);
+        if (markerIndex < 0)
+        {
+            return string.Empty;
+        }
+
+        var relativePath = normalized[(markerIndex + marker.Length)..];
+        var directory = Path.GetDirectoryName(relativePath);
+        if (string.IsNullOrWhiteSpace(directory))
+        {
+            return string.Empty;
+        }
+
+        var segments = directory
+            .Replace('\\', '/')
+            .Split('/', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
+
+        if (segments.Length == 0)
+        {
+            return string.Empty;
+        }
+
+        return string.Join('.', segments) + ".";
     }
 }
 
