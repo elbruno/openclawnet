@@ -1,0 +1,5 @@
+{
+  "MaxConcurrentJobs": 3,
+  "JobTimeoutSeconds": 300,
+  "PollIntervalSeconds": 60
+}

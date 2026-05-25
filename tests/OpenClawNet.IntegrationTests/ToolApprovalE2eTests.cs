@@ -88,6 +88,12 @@ public class ToolApprovalE2eTests : IAsyncLifetime
                 "Playwright browser runtime could not start in this environment " +
                 $"(known node.exe access-denied blocker): {ex.Message}");
         }
+        catch (PlaywrightException ex) when (ex.Message.Contains("Process exited", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new SkipException(
+                "Playwright browser runtime closed during startup in this environment. " +
+                $"Startup error: {ex.Message}");
+        }
 
         // 3. Initialize HTTP client for Gateway API
         var handler = new HttpClientHandler

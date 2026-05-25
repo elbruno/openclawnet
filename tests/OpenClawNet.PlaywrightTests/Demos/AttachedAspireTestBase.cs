@@ -100,7 +100,6 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     private IPlaywright? _playwright;
     private IBrowser? _browser;
     private IPage? _page;
-    private bool _startedAspireForRun;
     private bool _isReady;
     private string? _startupSkipReason;
 
@@ -133,7 +132,7 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
     {
         try
         {
-            await ResolveOrStartAspireAsync();
+            await ResolveAspireAsync();
 
             PlaywrightBinaryHelper.UnblockPlaywrightBinaries();
 
@@ -169,6 +168,21 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
         }
         catch (Exception ex)
         {
+            if (_page is not null)
+            {
+                await _page.CloseAsync();
+                _page = null;
+            }
+
+            if (_browser is not null)
+            {
+                await _browser.CloseAsync();
+                _browser = null;
+            }
+
+            _playwright?.Dispose();
+            _playwright = null;
+
             _isReady = false;
             _startupSkipReason =
                 "Attached Aspire demo prerequisites are unavailable. " +
@@ -187,11 +201,6 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             await _browser.CloseAsync();
         }
         _playwright?.Dispose();
-
-        if (_startedAspireForRun)
-        {
-            await RunAspireCommandAsync("stop");
-        }
     }
 
     /// <summary>
@@ -288,7 +297,7 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
         Skip.IfNot(_isReady, _startupSkipReason ?? "Attached Aspire demo prerequisites are unavailable.");
     }
 
-    private async Task ResolveOrStartAspireAsync()
+    private async Task ResolveAspireAsync()
     {
         var envWeb = Environment.GetEnvironmentVariable("OPENCLAW_WEB_URL");
         var envGateway = Environment.GetEnvironmentVariable("OPENCLAW_GATEWAY_URL");
@@ -304,34 +313,9 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             return;
         }
 
-        var startInfo = new ProcessStartInfo
-        {
-            FileName = "aspire",
-            Arguments = "start",
-            UseShellExecute = false,
-            RedirectStandardOutput = false,
-            RedirectStandardError = false,
-            WorkingDirectory = GetRepositoryRoot()
-        };
-
-        using var process = Process.Start(startInfo)
-            ?? throw new InvalidOperationException("Failed to run 'aspire start'.");
-        _startedAspireForRun = true;
-
-        var timeoutAt = DateTime.UtcNow.AddMinutes(2);
-        while (DateTime.UtcNow < timeoutAt)
-        {
-            if (await TryResolveUrlsFromDescribeAsync())
-            {
-                return;
-            }
-
-            await Task.Delay(TimeSpan.FromSeconds(5));
-        }
-
         throw new Xunit.SkipException(
-            "Aspire resources were not available within 2 minutes. " +
-            "Skipping demo-attached Playwright test because live Aspire prerequisites are unavailable.");
+            "Attached demo tests require an already-running Aspire instance. " +
+            "Run `aspire start` first (or set OPENCLAW_WEB_URL and OPENCLAW_GATEWAY_URL), then retry.");
     }
 
     private async Task<bool> TryResolveUrlsFromDescribeAsync()

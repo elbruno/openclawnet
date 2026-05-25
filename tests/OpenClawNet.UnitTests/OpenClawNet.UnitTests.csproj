@@ -76,6 +76,7 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Embeddings\OpenClawNet.Tools.Embeddings.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Memory\OpenClawNet.Tools.Memory.csproj" />
+    <ProjectReference Include="..\..\src\OpenClawNet.ServiceDefaults\OpenClawNet.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Web\OpenClawNet.Web.csproj">
       <!-- Copy all Web project satellite assemblies to test output -->
       <Private>true</Private>

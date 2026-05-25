@@ -31,18 +31,19 @@ public sealed class JobTemplatesE2ETests(GatewayWebAppFactory factory)
 {
     private static readonly JsonSerializerOptions JsonOpts = new(JsonSerializerDefaults.Web);
 
-    /// <summary>The 5 templates we ship today. If a new one is added, update this list.</summary>
+    /// <summary>The 6 templates we ship today. If a new one is added, update this list.</summary>
     public static IEnumerable<object[]> AllTemplateIds() =>
     [
         ["watched-folder-summarizer"],
         ["github-issue-triage"],
         ["research-and-archive"],
         ["image-batch-resize"],
-        ["text-to-speech-snippet"]
+        ["text-to-speech-snippet"],
+        ["rss-daily-summary"]
     ];
 
     [Fact]
-    public async Task ListTemplates_ReturnsAllFiveBuiltInTemplates()
+    public async Task ListTemplates_ReturnsAllBuiltInTemplates()
     {
         var client = factory.CreateClient();
 
@@ -56,7 +57,8 @@ public sealed class JobTemplatesE2ETests(GatewayWebAppFactory factory)
             "github-issue-triage",
             "research-and-archive",
             "image-batch-resize",
-            "text-to-speech-snippet");
+            "text-to-speech-snippet",
+            "rss-daily-summary");
 
         // Every template must have the fields the UI relies on.
         foreach (var t in templates)
@@ -141,6 +143,25 @@ public sealed class JobTemplatesE2ETests(GatewayWebAppFactory factory)
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound,
             "asking for events of a run that doesn't exist on this job must be a clean 404");
+    }
+
+    [Fact]
+    public async Task RssDailySummaryTemplate_SeedsDailyNineAmJob()
+    {
+        var client = factory.CreateClient();
+
+        var template = await client.GetFromJsonAsync<JobTemplate>(
+            "/api/jobs/templates/rss-daily-summary", JsonOpts);
+        template.Should().NotBeNull();
+
+        var createResponse = await client.PostAsJsonAsync("/api/jobs", template!.DefaultJob, JsonOpts);
+
+        createResponse.StatusCode.Should().Be(HttpStatusCode.Created);
+        var created = await createResponse.Content.ReadFromJsonAsync<CreatedJobShape>(JsonOpts);
+        created.Should().NotBeNull();
+        created!.IsRecurring.Should().BeTrue();
+        created.CronExpression.Should().Be("0 9 * * *");
+        created.Prompt.Should().ContainEquivalentOf("notienenombre.com");
     }
 
     /// <summary>Minimal shape we read back from POST /api/jobs.</summary>

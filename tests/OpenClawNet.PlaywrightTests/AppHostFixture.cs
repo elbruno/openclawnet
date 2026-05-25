@@ -222,6 +222,15 @@ public sealed class AppHostFixture : IAsyncLifetime
         }
         catch (Exception ex)
         {
+            if (_browser is not null)
+            {
+                await _browser.DisposeAsync();
+                _browser = null;
+            }
+
+            _playwright?.Dispose();
+            _playwright = null;
+
             IsReady = false;
             StartupSkipReason =
                 "Playwright AppHost fixture could not start in this environment. " +

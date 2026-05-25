@@ -22,6 +22,69 @@ function Resolve-RepoPath {
     return Join-Path $repoRoot $Path
 }
 
+function ConvertTo-HashtableCompat {
+    param([Parameter(ValueFromPipeline)] $InputObject)
+
+    if ($null -eq $InputObject) {
+        return $null
+    }
+
+    if ($InputObject -is [System.Collections.IDictionary]) {
+        $table = @{}
+        foreach ($key in $InputObject.Keys) {
+            $table[$key] = ConvertTo-HashtableCompat $InputObject[$key]
+        }
+
+        return $table
+    }
+
+    if (($InputObject -is [System.Collections.IEnumerable]) -and -not ($InputObject -is [string])) {
+        $items = @()
+        foreach ($item in $InputObject) {
+            $items += @(ConvertTo-HashtableCompat $item)
+        }
+
+        return $items
+    }
+
+    if ($InputObject -is [psobject]) {
+        $properties = @($InputObject.PSObject.Properties)
+        if ($properties.Count -gt 0) {
+            $table = @{}
+            foreach ($property in $properties) {
+                $table[$property.Name] = ConvertTo-HashtableCompat $property.Value
+            }
+
+            return $table
+        }
+    }
+
+    return $InputObject
+}
+
+function ConvertFrom-JsonCompat {
+    param(
+        [Parameter(Mandatory)] [string]$InputObject,
+        [switch]$AsHashtable
+    )
+
+    $convertFromJson = Get-Command ConvertFrom-Json
+    if ($convertFromJson.Parameters.ContainsKey('AsHashtable')) {
+        if ($AsHashtable) {
+            return $InputObject | ConvertFrom-Json -AsHashtable
+        }
+
+        return $InputObject | ConvertFrom-Json
+    }
+
+    $result = $InputObject | ConvertFrom-Json
+    if ($AsHashtable) {
+        return ConvertTo-HashtableCompat $result
+    }
+
+    return $result
+}
+
 function ConvertFrom-YamlScalar {
     param([AllowNull()] [string]$Value)
 
@@ -155,7 +218,7 @@ function Get-RunsIndex {
         return @{}
     }
 
-    return Get-Content -LiteralPath $Path -Raw | ConvertFrom-Json -AsHashtable
+    return ConvertFrom-JsonCompat -InputObject (Get-Content -LiteralPath $Path -Raw) -AsHashtable
 }
 
 function Get-SuiteFilterHint {

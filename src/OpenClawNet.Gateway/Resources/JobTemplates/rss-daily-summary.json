@@ -1,0 +1,19 @@
+{
+  "id": "rss-daily-summary",
+  "name": "RSS summary → Daily 9AM",
+  "description": "Every day at 09:00 UTC, fetch https://www.notienenombre.com, summarise the latest RSS items, and save the result under the chat name in the default storage location.",
+  "category": "rss",
+  "docsUrl": "https://github.com/elbruno/openclawnet-plan",
+  "prerequisites": [
+    "An agent profile with web_fetch and file_system enabled.",
+    "A chat name is available so the output folder can be derived from the chat context."
+  ],
+  "requiredSecrets": [],
+  "requiredTools": ["web_fetch", "file_system"],
+  "defaultJob": {
+    "name": "NotieneNombre RSS Summary",
+    "prompt": "Fetch https://www.notienenombre.com (prefer the canonical RSS/feed URL if one is exposed) and summarise the latest 5 items in Markdown. Save the final report to the default storage location for this chat, using the chat name as the folder name and today's UTC date in the filename. Keep the output concise and actionable.",
+    "cronExpression": "0 9 * * *",
+    "allowConcurrentRuns": false
+  }
+}

@@ -11,8 +11,8 @@ public sealed class JobTemplatesProviderTests
         var provider = new JobTemplatesProvider();
         var all = provider.GetAll();
 
-        // We seed 5 demos as built-in templates.
-        Assert.Equal(5, all.Count);
+        // We seed 6 demos as built-in templates.
+        Assert.Equal(6, all.Count);
         Assert.All(all, t =>
         {
             Assert.False(string.IsNullOrWhiteSpace(t.Id), $"Template missing id");
@@ -30,6 +30,7 @@ public sealed class JobTemplatesProviderTests
     [InlineData("research-and-archive")]
     [InlineData("image-batch-resize")]
     [InlineData("text-to-speech-snippet")]
+    [InlineData("rss-daily-summary")]
     public void Get_ReturnsKnownTemplate(string id)
     {
         var provider = new JobTemplatesProvider();
@@ -63,5 +64,17 @@ public sealed class JobTemplatesProviderTests
         var provider = new JobTemplatesProvider();
         var template = provider.Get("github-issue-triage")!;
         Assert.Contains("GITHUB_TOKEN", template.RequiredSecrets);
+    }
+
+    [Fact]
+    public void RssDailySummaryTemplate_HasExpectedCronAndTools()
+    {
+        var provider = new JobTemplatesProvider();
+        var template = provider.Get("rss-daily-summary")!;
+
+        Assert.Equal("0 9 * * *", template.DefaultJob.CronExpression);
+        Assert.Contains("web_fetch", template.RequiredTools);
+        Assert.Contains("file_system", template.RequiredTools);
+        Assert.Contains("notienenombre.com", template.DefaultJob.Prompt, StringComparison.OrdinalIgnoreCase);
     }
 }
