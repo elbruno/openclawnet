@@ -12,11 +12,11 @@ namespace OpenClawNet.PlaywrightTests;
 /// Tests verify UI selection state, checkbox behavior, bulk delete button visibility,
 /// confirmation dialogs, successful deletion, partial failure handling, and edge cases.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "E2E")]
-public class SkillsBulkDeleteE2ETests : PlaywrightTestBase
+public class SkillsBulkDeleteE2ETests : AspireHostPlaywrightTestBase
 {
-    public SkillsBulkDeleteE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsBulkDeleteE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

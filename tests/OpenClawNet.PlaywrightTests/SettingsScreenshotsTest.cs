@@ -7,13 +7,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// Walks through the General/Settings page, Model Providers (with the add-provider
 /// form for several provider types), and the Agent Profiles model picker.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Screenshots")]
-public class SettingsScreenshotsTest : PlaywrightTestBase
+public class SettingsScreenshotsTest : AspireHostPlaywrightTestBase
 {
     private readonly string _screenshotDir;
 
-    public SettingsScreenshotsTest(AppHostFixture fixture) : base(fixture)
+    public SettingsScreenshotsTest(AspireHostFixture fixture) : base(fixture)
     {
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));
         _screenshotDir = Path.Combine(repoRoot, "docs", "manuals", "images", "10-settings");

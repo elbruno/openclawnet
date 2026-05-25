@@ -1,20 +1,13 @@
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
-using Aspire.Hosting;
-using Aspire.Hosting.ApplicationModel;
-using Aspire.Hosting.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
 
-/// <summary>
-/// Shared Aspire AppHost + Playwright fixture for all E2E tests.
-/// Starts the full distributed application once, then reuses it across tests.
-/// </summary>
-public sealed class AppHostFixture : IAsyncLifetime
+public sealed class AspireHostFixture : IAsyncLifetime
 {
     public sealed record OllamaToolCallProbeResult(
         bool IsSupported,
@@ -23,16 +16,15 @@ public sealed class AppHostFixture : IAsyncLifetime
         string? ObservedArgumentsJson = null);
 
     /// <summary>
-    /// Ollama model used by the AppHost for E2E tests. Matches the AppHost default
-    /// (<c>gemma4:e2b</c>) so tests exercise the same model real users hit. Per
-    /// Bruno (2026-04-25): keep the test in lockstep with the shipped default
-    /// rather than pinning a different model just for tests.
+    /// Ollama model used for E2E tests. Matches the AppHost default (<c>gemma4:e2b</c>).
     /// </summary>
     public const string ToolCapableTestModel = "gemma4:e2b";
 
-    private DistributedApplication? _app;
     private IPlaywright? _playwright;
     private IBrowser? _browser;
+    private Process? _aspireProcess;
+    private bool _startedByFixture;
+    private DateTime _fixtureStartedAtUtc;
     private readonly ConcurrentDictionary<string, Lazy<Task<OllamaToolCallProbeResult>>> _ollamaToolCallProbeCache =
         new(StringComparer.OrdinalIgnoreCase);
 
@@ -43,42 +35,19 @@ public sealed class AppHostFixture : IAsyncLifetime
     public string? StartupSkipReason { get; private set; }
     public IBrowser Browser => _browser ?? throw new InvalidOperationException("Fixture not initialized");
 
-    /// <summary>
-    /// True when the configured tool-capable model (<see cref="ToolCapableTestModel"/>)
-    /// is present in the local Ollama tag listing. Tool-approval E2E scenarios should
-    /// <c>Skip.IfNot</c> on this when Ollama is unavailable or the model isn't pulled.
-    /// </summary>
     public bool IsToolCapableModelAvailable { get; private set; }
-
     public string ToolCapableModelSkipReason { get; private set; } =
         $"Ollama model '{ToolCapableTestModel}' not available locally; pull it with `ollama pull {ToolCapableTestModel}`.";
 
-    /// <summary>
-    /// True when AZURE_OPENAI_ENDPOINT + AZURE_OPENAI_API_KEY + AZURE_OPENAI_DEPLOYMENT
-    /// are set to non-placeholder values. Tests that prefer a fast cloud model for
-    /// orchestration validation (vs a slow local Ollama) can branch on this.
-    /// </summary>
     public bool IsAzureOpenAIAvailable { get; private set; }
-
-    /// <summary>Azure OpenAI endpoint URL discovered from env vars (null when unavailable).</summary>
     public string? AzureOpenAIEndpoint { get; private set; }
-
-    /// <summary>Azure OpenAI API key discovered from env vars (null when unavailable).</summary>
     public string? AzureOpenAIApiKey { get; private set; }
-
-    /// <summary>Azure OpenAI deployment / model name discovered from env vars (null when unavailable).</summary>
     public string? AzureOpenAIDeployment { get; private set; }
 
-    /// <summary>
-    /// Combined skip reason when neither a local tool-capable Ollama model nor an
-    /// Azure OpenAI deployment is available. Use this when a test can run against
-    /// either backend.
-    /// </summary>
     public string AnyToolCapableModelSkipReason =>
         $"No tool-capable model available. {ToolCapableModelSkipReason} " +
         $"Alternatively set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.";
 
-    /// <summary>True when EITHER local Ollama model OR Azure OpenAI is configured.</summary>
     public bool IsAnyToolCapableModelAvailable =>
         IsToolCapableModelAvailable || IsAzureOpenAIAvailable;
 
@@ -88,16 +57,12 @@ public sealed class AppHostFixture : IAsyncLifetime
                 () => ProbeOllamaToolCallCompatibilityCoreAsync(model)))
             .Value;
 
-    /// <summary>
-    /// Creates an HttpClient configured for the gateway endpoint with SSL validation disabled.
-    /// </summary>
     public HttpClient CreateGatewayHttpClient()
     {
         if (!IsReady)
         {
             throw new Xunit.SkipException(
-                StartupSkipReason
-                ?? "Playwright AppHost fixture did not initialize successfully.");
+                StartupSkipReason ?? "Aspire host fixture did not initialize successfully.");
         }
 
         var handler = new HttpClientHandler
@@ -107,18 +72,12 @@ public sealed class AppHostFixture : IAsyncLifetime
         return new HttpClient(handler) { BaseAddress = new Uri(GatewayBaseUrl) };
     }
 
-    /// <summary>
-    /// Creates an HttpClient pointed at the Scheduler service. The Scheduler hosts
-    /// the /api/scheduler/jobs/{id}/trigger endpoint that actually wires up the
-    /// artifact-capture path (gateway /api/jobs/{id}/execute does not).
-    /// </summary>
     public HttpClient CreateSchedulerHttpClient()
     {
         if (!IsReady)
         {
             throw new Xunit.SkipException(
-                StartupSkipReason
-                ?? "Playwright AppHost fixture did not initialize successfully.");
+                StartupSkipReason ?? "Aspire host fixture did not initialize successfully.");
         }
 
         var handler = new HttpClientHandler
@@ -130,81 +89,41 @@ public sealed class AppHostFixture : IAsyncLifetime
 
     public async Task InitializeAsync()
     {
+        _fixtureStartedAtUtc = DateTime.UtcNow;
+        PlaywrightProcessHygiene.CleanupOrphanedPlaywrightNodeProcesses(log: Console.WriteLine);
+
+        await ProbeOllamaModelAvailabilityAsync();
+        ProbeAzureOpenAIAvailability();
+
         try
         {
-            // Wave 5 PR-D: pin a tool-capable model BEFORE the AppHost reads its config.
-            // OPENCLAW_OLLAMA_MODEL is honoured first inside AppHost.cs:14-17.
-            Environment.SetEnvironmentVariable("OPENCLAW_OLLAMA_MODEL", ToolCapableTestModel);
+            var resolved = await TryResolveRunningAspireAsync();
+            if (resolved is null)
+            {
+                await StartAspireAsync();
+                resolved = await WaitForAspireUrlsAfterStartAsync();
+                _startedByFixture = true;
+            }
 
-            // Sqlite Web requires Docker. Disable it for Playwright test runs so the
-            // fixture can still boot the AppHost in Docker-less environments.
-            Environment.SetEnvironmentVariable("OPENCLAW_ENABLE_SQLITE_WEB", "false");
+            WebBaseUrl = resolved.WebBaseUrl;
+            GatewayBaseUrl = resolved.GatewayBaseUrl;
+            SchedulerBaseUrl = resolved.SchedulerBaseUrl;
 
-            // Wave 5 fix (Petey): Wipe per-agent skill state from previous test runs to
-            // prevent skill contamination. The doc-processor system skill and any test-
-            // created skills (e.g., emoji-teacher-journey) persist across runs and can
-            // poison tool selection (e.g., model picks `shell` instead of `browser`).
-            // Safe to delete: this fixture is only used by E2E tests, not by dev users.
-            CleanAgentSkillState();
-
-            // Best-effort probe of local Ollama; results expose IsToolCapableModelAvailable
-            // so live tool-approval scenarios can Skip cleanly when the model isn't pulled.
-            await ProbeOllamaModelAvailabilityAsync();
-
-            // Probe AZURE_OPENAI_* env vars so tests can prefer the (much faster) cloud
-            // model when the developer has it configured. Cheap synchronous check; no I/O.
-            ProbeAzureOpenAIAvailability();
-
-            // Build and start the Aspire AppHost
-            var appHost = await DistributedApplicationTestingBuilder
-                .CreateAsync<Projects.OpenClawNet_AppHost>();
-
-            _app = await appHost.BuildAsync();
-            await _app.StartAsync();
-
-            // Wait for both web and gateway resources to be running
-            var webTask = _app.ResourceNotifications
-                .WaitForResourceAsync("web", KnownResourceStates.Running)
-                .WaitAsync(TimeSpan.FromMinutes(5));
-
-            var gatewayTask = _app.ResourceNotifications
-                .WaitForResourceAsync("gateway", KnownResourceStates.Running)
-                .WaitAsync(TimeSpan.FromMinutes(5));
-
-            var schedulerTask = _app.ResourceNotifications
-                .WaitForResourceAsync("scheduler", KnownResourceStates.Running)
-                .WaitAsync(TimeSpan.FromMinutes(5));
-
-            await Task.WhenAll(webTask, gatewayTask, schedulerTask);
-
-            // Get endpoints
-            WebBaseUrl = _app.GetEndpoint("web", "https").ToString().TrimEnd('/');
-            GatewayBaseUrl = _app.GetEndpoint("gateway", "https").ToString().TrimEnd('/');
-            SchedulerBaseUrl = _app.GetEndpoint("scheduler", "http").ToString().TrimEnd('/');
-
-            // Resource state "Running" can be reached before HTTP endpoints are fully accepting requests.
-            await WaitForEndpointReadyAsync($"{GatewayBaseUrl}/health");
-            await WaitForEndpointReadyAsync($"{SchedulerBaseUrl}/health");
             await WaitForEndpointReadyAsync($"{WebBaseUrl}/health");
-            await WaitForEndpointReadyAsync($"{WebBaseUrl}/secrets-vault");
+            await WaitForEndpointReadyAsync($"{GatewayBaseUrl}/health");
+            if (!string.IsNullOrWhiteSpace(SchedulerBaseUrl))
+            {
+                await WaitForEndpointReadyAsync($"{SchedulerBaseUrl}/health");
+            }
 
             PlaywrightBinaryHelper.UnblockPlaywrightBinaries();
-
-            // Initialize Playwright
             _playwright = await Playwright.CreateAsync();
 
-            // Allow headed mode via environment variable: PLAYWRIGHT_HEADED=true
             var headed = Environment.GetEnvironmentVariable("PLAYWRIGHT_HEADED")
                 ?.Equals("true", StringComparison.OrdinalIgnoreCase) ?? false;
-
-            // Allow tuning the inter-step delay via PLAYWRIGHT_SLOWMO (milliseconds).
-            // Defaults: 1500ms when headed (good for voice-over), 0 when headless.
-            var defaultSlowMo = headed ? 1500 : 0;
-            var slowMo = defaultSlowMo;
-            var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
-            if (!string.IsNullOrWhiteSpace(slowMoRaw)
-                && int.TryParse(slowMoRaw, out var parsedSlowMo)
-                && parsedSlowMo >= 0)
+            var slowMo = headed ? 1500 : 0;
+            if (int.TryParse(Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO"), out var parsedSlowMo) &&
+                parsedSlowMo >= 0)
             {
                 slowMo = parsedSlowMo;
             }
@@ -214,30 +133,133 @@ public sealed class AppHostFixture : IAsyncLifetime
                 Headless = !headed,
                 SlowMo = slowMo
             });
+
             IsReady = true;
-        }
-        catch (Xunit.SkipException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
-            if (_browser is not null)
+            await DisposePlaywrightAsync();
+            if (_startedByFixture)
             {
-                await _browser.DisposeAsync();
-                _browser = null;
+                await StopAspireAsync();
             }
-
-            _playwright?.Dispose();
-            _playwright = null;
 
             IsReady = false;
             StartupSkipReason =
-                "Playwright AppHost fixture could not start in this environment. " +
-                "Ensure Aspire prerequisites are available (Docker/host resources as needed). " +
+                "AspireHostFixture could not initialize in this environment. " +
                 $"Startup error: {ex.GetType().Name}: {ex.Message}";
+            Console.WriteLine($"[AspireHostFixture] {StartupSkipReason}");
+        }
+    }
 
-            Console.WriteLine($"[AppHostFixture] {StartupSkipReason}");
+    public async Task DisposeAsync()
+    {
+        await DisposePlaywrightAsync();
+        PlaywrightProcessHygiene.CleanupOrphanedPlaywrightNodeProcesses(_fixtureStartedAtUtc, Console.WriteLine);
+
+        if (_startedByFixture)
+        {
+            await StopAspireAsync();
+        }
+    }
+
+    private async Task DisposePlaywrightAsync()
+    {
+        if (_browser is not null)
+        {
+            await _browser.CloseAsync();
+            _browser = null;
+        }
+
+        _playwright?.Dispose();
+        _playwright = null;
+    }
+
+    private async Task<AspireResolvedUrls?> TryResolveRunningAspireAsync()
+    {
+        var describe = await RunAspireCommandAsync("describe --format Json", TimeSpan.FromSeconds(30));
+        if (describe.ExitCode != 0)
+        {
+            return null;
+        }
+
+        return AspireDescribeResolver.TryResolveResources(describe.Stdout, out var resolved)
+            ? resolved
+            : null;
+    }
+
+    private async Task StartAspireAsync()
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = "start src\\OpenClawNet.AppHost",
+            WorkingDirectory = GetRepositoryRoot(),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        _aspireProcess = Process.Start(startInfo)
+            ?? throw new InvalidOperationException("Failed to start Aspire host process.");
+
+        _ = DrainOutputAsync(_aspireProcess.StandardOutput);
+        _ = DrainOutputAsync(_aspireProcess.StandardError);
+
+        Console.WriteLine("[AspireHostFixture] Started Aspire because no running resources were detected.");
+    }
+
+    private async Task<AspireResolvedUrls> WaitForAspireUrlsAfterStartAsync()
+    {
+        var deadline = DateTime.UtcNow.AddMinutes(3);
+
+        while (DateTime.UtcNow < deadline)
+        {
+            var resolved = await TryResolveRunningAspireAsync();
+            if (resolved is not null)
+            {
+                return resolved;
+            }
+
+            await Task.Delay(TimeSpan.FromSeconds(5));
+        }
+
+        throw new TimeoutException("Aspire did not surface web/gateway resources within 3 minutes.");
+    }
+
+    private async Task StopAspireAsync()
+    {
+        var stop = await RunAspireCommandAsync("stop", TimeSpan.FromSeconds(30));
+        if (stop.ExitCode != 0)
+        {
+            Console.WriteLine($"[AspireHostFixture] Warning: aspire stop returned {stop.ExitCode}. {stop.Stderr}");
+        }
+
+        if (_aspireProcess is null)
+        {
+            return;
+        }
+
+        try
+        {
+            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
+            await _aspireProcess.WaitForExitAsync(cts.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try
+            {
+                _aspireProcess.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Best-effort only.
+            }
+        }
+        finally
+        {
+            _aspireProcess.Dispose();
+            _aspireProcess = null;
         }
     }
 
@@ -282,6 +304,63 @@ public sealed class AppHostFixture : IAsyncLifetime
             lastException);
     }
 
+    private static async Task<(int ExitCode, string Stdout, string Stderr)> RunAspireCommandAsync(string arguments, TimeSpan timeout)
+    {
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "aspire",
+            Arguments = arguments,
+            WorkingDirectory = GetRepositoryRoot(),
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true
+        };
+
+        using var process = Process.Start(startInfo);
+        if (process is null)
+        {
+            return (-1, string.Empty, "Failed to launch aspire process.");
+        }
+
+        var stdoutTask = process.StandardOutput.ReadToEndAsync();
+        var stderrTask = process.StandardError.ReadToEndAsync();
+        var waitTask = process.WaitForExitAsync();
+        var timeoutTask = Task.Delay(timeout);
+        if (await Task.WhenAny(waitTask, timeoutTask) != waitTask)
+        {
+            try
+            {
+                process.Kill(entireProcessTree: true);
+            }
+            catch
+            {
+                // Process may already be exiting.
+            }
+        }
+
+        await waitTask;
+        return (process.ExitCode, await stdoutTask, await stderrTask);
+    }
+
+    private static async Task DrainOutputAsync(StreamReader reader)
+    {
+        try
+        {
+            while (true)
+            {
+                var line = await reader.ReadLineAsync();
+                if (line is null)
+                {
+                    break;
+                }
+            }
+        }
+        catch
+        {
+            // Best effort.
+        }
+    }
+
     private void ProbeAzureOpenAIAvailability()
     {
         var endpoint = Environment.GetEnvironmentVariable("AZURE_OPENAI_ENDPOINT");
@@ -289,7 +368,6 @@ public sealed class AppHostFixture : IAsyncLifetime
         var deployment = Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT")
             ?? Environment.GetEnvironmentVariable("AZURE_OPENAI_DEPLOYMENT_NAME");
 
-        // Reject obvious .env placeholders so the test doesn't try to call a fake endpoint.
         static bool IsRealValue(string? v) =>
             !string.IsNullOrWhiteSpace(v) &&
             !v!.StartsWith("your-", StringComparison.OrdinalIgnoreCase) &&
@@ -301,40 +379,6 @@ public sealed class AppHostFixture : IAsyncLifetime
             AzureOpenAIApiKey = apiKey;
             AzureOpenAIDeployment = deployment;
             IsAzureOpenAIAvailable = true;
-        }
-    }
-
-    /// <summary>
-    /// Wave 5 fix (Petey): Wipes the per-agent skill state folder so each test run
-    /// starts with a clean slate. Prevents skills from previous test runs (especially
-    /// doc-processor and emoji-teacher-journey) from contaminating tool selection.
-    /// </summary>
-    private void CleanAgentSkillState()
-    {
-        try
-        {
-            // The default storage root is C:\openclawnet on Windows. The per-agent
-            // skill enabled.json files live at C:\openclawnet\skills\agents\{agentName}\enabled.json.
-            var skillsAgentsPath = Path.Combine(
-                Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
-                "openclawnet", "skills", "agents");
-
-            // Also check the legacy path (might exist on dev machines)
-            var legacyPath = Path.Combine("C:", "openclawnet", "skills", "agents");
-
-            foreach (var root in new[] { skillsAgentsPath, legacyPath })
-            {
-                if (Directory.Exists(root))
-                {
-                    Console.WriteLine($"[AppHostFixture] Cleaning agent skill state: {root}");
-                    Directory.Delete(root, recursive: true);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine($"[AppHostFixture] Warning: Could not clean agent skill state: {ex.Message}");
-            // Non-fatal ΓÇö tests can still run with stale skill state; just log and continue.
         }
     }
 
@@ -355,7 +399,6 @@ public sealed class AppHostFixture : IAsyncLifetime
             }
 
             var body = await resp.Content.ReadAsStringAsync();
-            // Cheap substring match ΓÇö avoids pulling in an Ollama client just for this.
             IsToolCapableModelAvailable = body.Contains(ToolCapableTestModel, StringComparison.OrdinalIgnoreCase);
             if (!IsToolCapableModelAvailable)
             {
@@ -479,10 +522,19 @@ public sealed class AppHostFixture : IAsyncLifetime
         }
     }
 
-    public async Task DisposeAsync()
+    private static string GetRepositoryRoot()
     {
-        if (_browser is not null) await _browser.DisposeAsync();
-        _playwright?.Dispose();
-        if (_app is not null) await _app.DisposeAsync();
+        var directory = new DirectoryInfo(AppContext.BaseDirectory);
+        while (directory is not null)
+        {
+            if (File.Exists(Path.Combine(directory.FullName, "tests", "catalog.yaml")))
+            {
+                return directory.FullName;
+            }
+
+            directory = directory.Parent;
+        }
+
+        return Directory.GetCurrentDirectory();
     }
 }

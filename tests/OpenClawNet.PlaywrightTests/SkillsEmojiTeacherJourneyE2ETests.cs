@@ -24,9 +24,9 @@ namespace OpenClawNet.PlaywrightTests;
 ///   $env:PLAYWRIGHT_HEADED="true"
 ///   dotnet test tests\OpenClawNet.PlaywrightTests --filter "FullyQualifiedName~SkillsEmojiTeacherJourneyE2ETests"
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Live")]
-public class SkillsEmojiTeacherJourneyE2ETests : PlaywrightTestBase
+public class SkillsEmojiTeacherJourneyE2ETests : AspireHostPlaywrightTestBase
 {
     private const string SkillName = "emoji-teacher-journey";
     private const string SkillDescription =
@@ -55,7 +55,7 @@ public class SkillsEmojiTeacherJourneyE2ETests : PlaywrightTestBase
     private static readonly Regex LightBulbTip = new("💡\\s*Pro tip", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex WarningMistake = new("⚠️\\s*Common mistake", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-    public SkillsEmojiTeacherJourneyE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsEmojiTeacherJourneyE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

@@ -6,17 +6,17 @@ namespace OpenClawNet.PlaywrightTests;
 /// E2E tests that validate the Blazor web app is running and all navigation
 /// menu items are accessible via the Aspire-hosted distributed application.
 /// </summary>
-[Collection("AppHost")]
-public class BlazorNavigationTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class BlazorNavigationTests : AspireHostPlaywrightTestBase
 {
-    public BlazorNavigationTests(AppHostFixture fixture) : base(fixture)
+    public BlazorNavigationTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 
     [SkippableFact]
     public async Task WebApp_HomePage_LoadsSuccessfully()
     {
-        Skip.IfNot(Fixture.IsReady, Fixture.StartupSkipReason ?? "Playwright AppHost fixture not available.");
+        Skip.IfNot(Fixture.IsReady, Fixture.StartupSkipReason ?? "Playwright Aspire host fixture not available.");
         await WithScreenshotOnFailure(async () =>
         {
             await Page.GotoAsync(Fixture.WebBaseUrl, new PageGotoOptions

@@ -26,9 +26,9 @@ namespace OpenClawNet.PlaywrightTests;
 ///   $env:PLAYWRIGHT_HEADED="true"
 ///   dotnet test tests\OpenClawNet.PlaywrightTests --filter "FullyQualifiedName~SkillsPirateJourneyE2ETests"
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Live")]
-public class SkillsPirateJourneyE2ETests : PlaywrightTestBase
+public class SkillsPirateJourneyE2ETests : AspireHostPlaywrightTestBase
 {
     private const string SkillName = "pirate-mode-journey";
     private const string SkillDescription =
@@ -55,7 +55,7 @@ public class SkillsPirateJourneyE2ETests : PlaywrightTestBase
         @"\b(arr+|matey|ahoy|plunder|booty|landlubber|scallywag|seafarin'?|seafaring|treasure|cap'?n|aye)\b",
         RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
-    public SkillsPirateJourneyE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsPirateJourneyE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

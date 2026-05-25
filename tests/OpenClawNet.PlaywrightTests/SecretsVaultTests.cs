@@ -3,10 +3,10 @@ using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
 
-[Collection("AppHost")]
-public sealed class SecretsVaultTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public sealed class SecretsVaultTests : AspireHostPlaywrightTestBase
 {
-    public SecretsVaultTests(AppHostFixture fixture) : base(fixture)
+    public SecretsVaultTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

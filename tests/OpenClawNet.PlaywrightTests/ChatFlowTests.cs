@@ -7,10 +7,10 @@ namespace OpenClawNet.PlaywrightTests;
 /// E2E tests for the Blazor Web UI chat flow — covers aspire-stack demo 02.
 /// Validates new chat creation, message sending, and session list updates.
 /// </summary>
-[Collection("AppHost")]
-public class ChatFlowTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class ChatFlowTests : AspireHostPlaywrightTestBase
 {
-    public ChatFlowTests(AppHostFixture fixture) : base(fixture)
+    public ChatFlowTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

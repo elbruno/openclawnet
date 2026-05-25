@@ -8,13 +8,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// Tests specifically for the gateway-only demo track — validates health detail,
 /// session isolation, and gateway behaviour without requiring the Blazor UI.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 public class GatewayOnlyDemoTests : IAsyncLifetime
 {
-    private readonly AppHostFixture _fixture;
+    private readonly AspireHostFixture _fixture;
     private HttpClient _client = null!;
 
-    public GatewayOnlyDemoTests(AppHostFixture fixture)
+    public GatewayOnlyDemoTests(AspireHostFixture fixture)
     {
         _fixture = fixture;
     }

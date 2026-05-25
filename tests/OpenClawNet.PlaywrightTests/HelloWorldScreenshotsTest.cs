@@ -7,13 +7,13 @@ namespace OpenClawNet.PlaywrightTests;
 /// Drives the UI through the first-time user tutorial flow and captures screenshots
 /// at each step for inclusion in the manual.
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Screenshots")]
-public class HelloWorldScreenshotsTest : PlaywrightTestBase
+public class HelloWorldScreenshotsTest : AspireHostPlaywrightTestBase
 {
     private readonly string _screenshotDir;
 
-    public HelloWorldScreenshotsTest(AppHostFixture fixture) : base(fixture)
+    public HelloWorldScreenshotsTest(AspireHostFixture fixture) : base(fixture)
     {
         // Save to docs/manuals/images/02-hello-world/ (relative to repo root)
         var repoRoot = Path.GetFullPath(Path.Combine(AppContext.BaseDirectory, "..", "..", "..", "..", ".."));

@@ -8,12 +8,12 @@
     "durationMs": 10
   },
   "JobRunArtifactTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1161
+    "durationMs": 2267
   },
   "FileSkillLoaderTests.ReloadAsync_LoadsFlatMdFiles": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -24,7 +24,7 @@
     "durationMs": 8
   },
   "DpapiSecretStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Windows uses DPAPI; non-Windows fallback only.",
@@ -40,36 +40,36 @@
     "durationMs": 57
   },
   "McpSuggestionsProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 305
+    "durationMs": 139
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_ConvertsMessages_Correctly": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 4
+    "durationMs": 3
   },
   "ServiceRegistrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 50
+    "durationMs": 42
   },
   "HtmlQueryToolTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 15
+    "durationMs": 9
   },
   "FileSkillLoaderTests.InstallSkillAsync_CreatesSkillMdInInstalledDirectory": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -80,12 +80,12 @@
     "durationMs": 141
   },
   "AgentProfileStoreDefaultEnforcementTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 31
+    "durationMs": 37
   },
   "ConceptReviewEntitiesTests.ChatSessionArtifact_CascadeDeletesWithSession": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -96,60 +96,60 @@
     "durationMs": 123
   },
   "ChannelDetailViewEndpointTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 357
+    "durationMs": 281
   },
   "SchedulerRunStateTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 8
+    "durationMs": 6
   },
   "CronExpressionEvaluatorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 5
+    "durationMs": 6
   },
   "ModelClientChatClientAdapterTests.ToOpenClawMessage_ExtractsFunctionCallContent": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 11
+    "durationMs": 6
   },
   "AgentProfileEndpointTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1172
+    "durationMs": 1298
   },
   "CronTextTranslatorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 12
+    "durationMs": 10
   },
   "DocumentPipelineTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 81
+    "durationMs": 71
   },
   "FileSkillLoaderTests.InstallSkillAsync_SetsSourceToInstalled": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -160,52 +160,52 @@
     "durationMs": 40
   },
   "ModelClientChatClientAdapterTests.GetStreamingResponseAsync_YieldsUpdates": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 12
+    "durationMs": 10
   },
   "AgentRuntimeStreamTests.ProcessAsync_ToolCall_SecondTurnChatRequestContainsToolContent": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2013
+    "durationMs": 363
   },
   "RuntimeModelClientTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 82
+    "durationMs": 57
   },
   "AgentProfileStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1389
+    "durationMs": 880
   },
   "ProviderResolverTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 207
+    "durationMs": 144
   },
   "FileSystemToolTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 179
+    "durationMs": 140
   },
   "ConceptReviewEntitiesTests.McpServerDefinition_DefaultRequireApproval_DefaultsToNull": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -216,20 +216,20 @@
     "durationMs": 1
   },
   "SchemaMigratorSeedDefaultsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 150
+    "durationMs": 1537
   },
   "SchedulerOptionsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 4
+    "durationMs": 9
   },
   "AgentInvocationLoggerTests.RecordAsync_WritesRow_WithKindAndSourceId": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -240,28 +240,28 @@
     "durationMs": 16
   },
   "AgentRuntimeEnabledToolsFilterTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 262
+    "durationMs": 40
   },
   "ToolApprovalAuditorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 137
+    "durationMs": 95
   },
   "ToolExecutorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 88
+    "durationMs": 30
   },
   "FileSkillLoaderTests.UninstallSkillAsync_DeletesDirectory": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -272,12 +272,12 @@
     "durationMs": 10
   },
   "SchedulerSettingsServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 79
+    "durationMs": 87
   },
   "SchemaParityTests.JobRuns_TableContainsAllJobRunColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -296,20 +296,20 @@
     "durationMs": 14
   },
   "ToolRegistryTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 11
+    "durationMs": 7
   },
   "InMemoryChannelEventBusTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 304
+    "durationMs": 194
   },
   "FileSkillLoaderTests.BuiltInSkills_HaveSourceBuiltIn": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -320,12 +320,12 @@
     "durationMs": 54
   },
   "RuntimeModelSettingsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 158
+    "durationMs": 281
   },
   "JobsFromTemplateStoreTests.CreateFromTemplate_InitialNameIncludesSequenceSuffix": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -336,7 +336,7 @@
     "durationMs": 10
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesValidJson": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
@@ -360,12 +360,12 @@
     "durationMs": 57
   },
   "McpToolProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 43
+    "durationMs": 13
   },
   "SchemaParityTests.ModelProviders_TableContainsCoreColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -384,36 +384,36 @@
     "durationMs": 9
   },
   "ToolApprovalCoordinatorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 85
+    "durationMs": 42
   },
   "ModelClientChatClientAdapterTests.ToOpenClawMessage_MapsRoles_Correctly": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1
+    "durationMs": 0
   },
   "JobsDomainModelTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2405
+    "durationMs": 318
   },
   "PromptComposerTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 23
+    "durationMs": 27
   },
   "ConceptReviewEntitiesTests.JobDefinitionStateChange_RoundTripsAcrossSave": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -424,100 +424,100 @@
     "durationMs": 225
   },
   "AgentRuntimeMcpDedupTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 14
+    "durationMs": 63
   },
   "SchemaMigratorDropAgentProfileModelTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 499
+    "durationMs": 244
   },
   "ChatStreamEndpointTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 738
+    "durationMs": 421
   },
   "BundledMcpWrapperTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 229
+    "durationMs": 134
   },
   "DemoAndSchedulerHelpersEndpointTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 841
+    "durationMs": 536
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_PropagatesExceptions": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 7
+    "durationMs": 40
   },
   "ImageEditToolTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 602
+    "durationMs": 480
   },
   "AutoCaptureIntegrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2398
+    "durationMs": 977
   },
   "JobTemplatesProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 16
+    "durationMs": 22
   },
   "McpProcessIsolationPolicyTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 62
+    "durationMs": 9
   },
   "ArtifactRetentionTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1076
+    "durationMs": 2578
   },
   "JobsRenamePageTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2576
+    "durationMs": 1968
   },
   "SkillParserTests.Parse_WithValidFrontmatter_ExtractsMetadata": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -528,12 +528,12 @@
     "durationMs": 6
   },
   "JobExecutorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 267
+    "durationMs": 439
   },
   "FileSkillLoaderTests.ReloadAsync_IgnoresSubdirectoriesWithoutSkillMd": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -544,12 +544,12 @@
     "durationMs": 7
   },
   "DefaultToolResultSanitizerTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 8
+    "durationMs": 38
   },
   "SchemaParityTests.JobRunArtifacts_TableContainsAllJobRunArtifactColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -576,12 +576,12 @@
     "durationMs": 28
   },
   "SchedulerPollingServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 5
+    "durationMs": 4
   },
   "FileSkillLoaderTests.UninstallSkillAsync_DoesNotThrow_WhenSkillNotFound": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -592,12 +592,12 @@
     "durationMs": 52
   },
   "JobsEndpointsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 3501
+    "durationMs": 2120
   },
   "SkillParserTests.Parse_WithDisabledFlag_SetsEnabled": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -608,12 +608,12 @@
     "durationMs": 2
   },
   "AzureOpenAIModelClientTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 169
+    "durationMs": 113
   },
   "SkillParserTests.Parse_WithEmptyContent_ReturnsEmptyBody": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -624,87 +624,87 @@
     "durationMs": 44
   },
   "SecretsStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 734
+    "durationMs": 90
   },
   "ModelClientChatClientAdapterTests.GetStreamingResponseAsync_WithToolCalls_YieldsFunctionContent": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 8
+    "durationMs": 17
   },
   "JobStatusTransitionsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 16
+    "durationMs": 21
   },
   "ToolTestRecordStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 86
+    "durationMs": 1488
   },
   "SchedulerOrphanReclaimTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 145
+    "durationMs": 146
   },
   "AgentOrchestratorProfileTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 32
+    "durationMs": 22
   },
   "OllamaAgentProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "OllamaSharp assembly load failure — issue #95",
     "suite": "unit",
-    "durationMs": 4176
+    "durationMs": 4105
   },
   "ChatHubTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 67
+    "durationMs": 43
   },
   "CalculatorToolTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 546
+    "durationMs": 371
   },
   "McpServerCatalogServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1562
+    "durationMs": 1518
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesInvalidJson": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
@@ -720,12 +720,12 @@
     "durationMs": 63
   },
   "AgentProfileMarkdownParserTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 26
+    "durationMs": 69
   },
   "JobsFromTemplateStoreTests.CreateFromTemplate_PreservesSourceTemplateReference": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -736,20 +736,20 @@
     "durationMs": 1752
   },
   "ModelProviderDefinitionStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1593
+    "durationMs": 196
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesEmptyString": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1
+    "durationMs": 6
   },
   "SchemaParityTests.Jobs_TableContainsAllScheduledJobColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -760,7 +760,7 @@
     "durationMs": 36
   },
   "AgentProfileTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
@@ -776,36 +776,36 @@
     "durationMs": 23
   },
   "OllamaModelClientTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 105
+    "durationMs": 70
   },
   "ChatSmokeTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 56
+    "durationMs": 46
   },
   "GitHubCopilotAgentProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 653
+    "durationMs": 515
   },
   "RuntimeAgentProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 59
+    "durationMs": 29
   },
   "FileSkillLoaderTests.ReloadAsync_LoadsSubdirectorySkillMd": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -824,20 +824,20 @@
     "durationMs": 535
   },
   "ConversationStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1585
+    "durationMs": 954
   },
   "ChatEndpointProfileTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 120
+    "durationMs": 169
   },
   "AgentInvocationLoggerTests.RecordAsync_DoesNotThrow_OnPersistenceFailure": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -856,44 +856,44 @@
     "durationMs": 15
   },
   "AzureOpenAIAgentProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 26
+    "durationMs": 54
   },
   "ChannelsApiEndpointsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 3020
+    "durationMs": 1121
   },
   "ChannelsHomeSmokeTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "\\ud83d\\udccc Pending: ChannelStore.GetAllAsync() does not exist yet; channels are registry-backed only. Once a ChannelStore with GetAllAsync is implemented (likely as part of Mark's ChannelDetail report work), this test can verify that Ensu...",
     "suite": "unit",
-    "durationMs": 176
+    "durationMs": 41
   },
   "ModelProviderEndpointTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 576
+    "durationMs": 479
   },
   "AppRazorMudBlazorRegressionTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 36
+    "durationMs": 33
   },
   "SchemaParityTests.Channels_TableExists_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -936,36 +936,36 @@
     "durationMs": 3011
   },
   "ChatApiTests": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 0
+    "durationMs": 2033
   },
   "ToolApprovalEndpointTests": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 0
+    "durationMs": 1790
   },
   "ChatHubStreamTests": {
-    "lastRunId": "2026-04-24T02-19-49Z",
-    "lastDate": "2026-04-24",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 65
+    "durationMs": 96
   },
   "AgentProfilesBulkDeleteTests": {
-    "lastRunId": "2026-04-24T02-19-49Z",
-    "lastDate": "2026-04-24",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 2982
+    "durationMs": 1634
   },
   "ToolApprovalCronJobTests": {
     "lastRunId": "2026-05-12-backfill",
@@ -976,8 +976,8 @@
     "durationMs": 0
   },
   "WatchedFolderSummarizerLiveE2ETests": {
-    "lastRunId": "2026-04-24T02-19-49Z",
-    "lastDate": "2026-04-24",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Live demo execution skipped. Set OPENCLAWNET_LIVE_DEMOS=1 and run aspire+Ollama, then run with --filter \"Category=Live\" to exercise the full demo against a real model.",
     "suite": "integration",
@@ -1024,111 +1024,111 @@
     "durationMs": 33
   },
   "WebsiteWatcherE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "ToolsScreenshotsTest": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "GatewayOnlyDemoTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "AspireDashboardTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 3
   },
   "BlazorNavigationTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 22
   },
   "SettingsAndSkillsTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 8
   },
   "ToolApprovalFlowTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 14
   },
   "ChatFlowTests.Chat_NewChatAndSendMessage_ShowsStreamingResponse": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "ProviderSwitchTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "SettingsScreenshotsTest": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "JobsScreenshotsTest": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "HelloWorldScreenshotsTest": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "GatewayApiTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 22
   },
   "ToolMatrixE2ETests.Calculator_NoApproval_DirectResult": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1136,7 +1136,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.GitHub_NoApproval_DirectResult": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1144,7 +1144,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.WebFetch_SingleApproval_EndToEnd": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1152,7 +1152,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.MarkdownConvert_RequiresApproval_EndToEnd": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.",
@@ -1160,7 +1160,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.MarkdownConvert_AutoApproveProfile_CompletesWithoutApprovalCard": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.",
@@ -1168,7 +1168,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.Shell_RequiresApproval_EndToEnd": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1176,7 +1176,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.FileSystem_RequiresApproval_EndToEnd": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1184,7 +1184,7 @@
     "durationMs": 1
   },
   "ToolMatrixE2ETests.ApproveButton_DisablesAndPostsCorrectly": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1216,87 +1216,87 @@
     "durationMs": 0
   },
   "ChatAutoNameTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "ActivityPanelExportTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "SessionsDeleteConfirmationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "playwright",
-    "durationMs": 1093
+    "durationMs": 883
   },
   "SecretsVaultTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "SkillsBulletPointJourneyE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "SkillsEmojiTeacherJourneyE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "SkillsImportE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 7
   },
   "SkillsPirateJourneyE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "SkillsPirateModeE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "SkillsBulkDeleteE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 6
   },
   "ChatUrlSummaryE2ETests.ElBrunoComSummary_WithManualApproval_ReturnsUsableContent": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.",
@@ -1304,7 +1304,7 @@
     "durationMs": 1
   },
   "ChatUrlSummaryE2ETests.ElBrunoComSummary_WithAutoApprove_ReturnsUsableContent": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.",
@@ -1312,20 +1312,20 @@
     "durationMs": 1
   },
   "AzureOpenAiSkillsChatTests.Chat_BaselineWithoutSkills_StreamsAssistantContent": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
+    "lastRunId": "2026-05-25T16-15-35Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
-    "notes": "Skips without `AZURE_OPENAI_*` env vars",
+    "notes": null,
     "suite": "gateway-e2e",
-    "durationMs": 0
+    "durationMs": 9897
   },
   "AzureOpenAiSkillsChatTests.Chat_WithEnabledSkill_RespectsSkillInstruction": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
-    "outcome": "skip",
-    "notes": "Skills wiring gap: `/api/chat/stream` bypasses ChatClientAgent. See `.squad/decisions/inbox/dylan-e2e-skills-chat-wiring-gap.md`",
+    "lastRunId": "2026-05-25T16-15-35Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
     "suite": "gateway-e2e",
-    "durationMs": 0
+    "durationMs": 3556
   },
   "ChatAutoRenameE2ETests": {
     "lastRunId": "2026-05-12-backfill",
@@ -1392,12 +1392,12 @@
     "durationMs": 0
   },
   "JobToolE2ETests": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
-    "notes": "Includes markdown_convert job-path regression coverage",
+    "notes": null,
     "suite": "integration",
-    "durationMs": 0
+    "durationMs": 4833
   },
   "GmailSummarizeToolWireMockTests": {
     "lastRunId": "2026-05-12-backfill",
@@ -1408,12 +1408,12 @@
     "durationMs": 0
   },
   "GitHubToolWireMockTests": {
-    "lastRunId": "2026-05-12-backfill",
-    "lastDate": "2026-05-12",
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 0
+    "durationMs": 1612
   },
   "DashboardPublisherToolWireMockTests": {
     "lastRunId": "2026-05-12-backfill",
@@ -1472,20 +1472,20 @@
     "durationMs": 0
   },
   "SettingsGeneralE2ETests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 2
   },
   "SkillRegistryRoundtripTests.Skills_Endpoints_RoundTripPerAgentEnable": {
-    "lastRunId": "2026-05-23-backfill",
-    "lastDate": "2026-05-23",
+    "lastRunId": "2026-05-25T16-15-35Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
-    "notes": "Does not require Azure OpenAI",
+    "notes": null,
     "suite": "gateway-e2e",
-    "durationMs": 0
+    "durationMs": 6148
   },
   "SkillsEndpointTests": {
     "lastRunId": "2026-05-23-backfill",
@@ -1512,20 +1512,20 @@
     "durationMs": 0
   },
   "MemoryRoundTripE2ETests": {
-    "lastRunId": "2026-05-23-backfill",
-    "lastDate": "2026-05-23",
+    "lastRunId": "2026-05-25T16-15-35Z",
+    "lastDate": "2026-05-25",
     "outcome": "pass",
-    "notes": "Added for memory phases validation",
+    "notes": null,
     "suite": "gateway-e2e",
-    "durationMs": 0
+    "durationMs": 6585
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_WithToolRoundTrip_ToolResultContentReachesSecondTurn": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 24
+    "durationMs": 19
   },
   "AppInsightsAuditSinkTests": {
     "lastRunId": "2026-05-23-backfill",
@@ -1568,23 +1568,23 @@
     "durationMs": 0
   },
   "LiveBrowserToolE2ETests": {
-    "lastRunId": "2026-05-24-backfill",
-    "lastDate": "2026-05-24",
-    "outcome": "skip",
-    "notes": "Browser-service execution now skips cleanly on the known Playwright `node.exe` access-denied machine blocker tracked in #257.",
-    "suite": "integration",
-    "durationMs": 0
-  },
-  "ChatRssDailyTaskE2ETests.Chat_RssSummary_Rename_AndCreateDailyJobDefinition": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-14-12Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Playwright AppHost fixture could not start in this environment. Ensure Aspire prerequisites are available (Docker/host resources as needed). Startup error: TaskCanceledException: A task was canceled.",
+    "notes": "Aspire browser live job execution returned 400 (BadRequest). Treating as environment-dependent skip. Body: {\"error\":\"Tool 'browser' failed: Browser error: An error occurred trying to start process 'C:\\\\Program Files\\\\nodejs\\\\node.exe' with ...",
+    "suite": "integration",
+    "durationMs": 1
+  },
+  "ChatRssDailyTaskE2ETests.Chat_RssSummary_Rename_AndCreateDailyJobDefinition": {
+    "lastRunId": "2026-05-25T16-20-03Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "ToolMatrixE2ETests.ToolsRequiringApproval_ShowCard": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured.",
@@ -1592,15 +1592,15 @@
     "durationMs": 3
   },
   "PirateJourneyAttachedTests": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
-    "notes": "Attached Aspire demo prerequisites are unavailable. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.PlaywrightTest...",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
     "suite": "playwright",
     "durationMs": 1
   },
   "ToolMatrixE2ETests.MultiTool_GitHubReadAndMarkdownWrite_ShowsApprovalBubbles": {
-    "lastRunId": "2026-05-25T10-53-58Z",
+    "lastRunId": "2026-05-25T16-20-03Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Azure OpenAI not configured — set AZURE_OPENAI_ENDPOINT, AZURE_OPENAI_API_KEY, AZURE_OPENAI_DEPLOYMENT.",
@@ -1608,71 +1608,71 @@
     "durationMs": 1
   },
   "ChainedSecretsStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 63
+    "durationMs": 17
   },
   "LiveConsoleEventTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 107
+    "durationMs": 47
   },
   "UserFolderClientTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 62
+    "durationMs": 22
   },
   "OpenClawNetSkillsProviderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 125
+    "durationMs": 122
   },
   "SkillInjectionValidationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 66
+    "durationMs": 111
   },
   "EnvironmentSecretsStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 87
+    "durationMs": 29
   },
   "ModelStorageQuotaTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "needs virtual time injection — re-enable once IClock seam exists",
     "suite": "unit",
-    "durationMs": 101
+    "durationMs": 75
   },
   "ChannelDeliveryAdapterFactoryTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 31
+    "durationMs": 18
   },
   "DefaultPromptComposerSemanticTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "skip",
     "notes": "Awaiting Story 3: SemanticSkillRanker integration into DefaultPromptComposer.EnrichSkillsAsync — see issue #89",
@@ -1680,23 +1680,23 @@
     "durationMs": 33
   },
   "DefaultHybridSearchServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 53
+    "durationMs": 42
   },
   "UserFolderDeleteDialogTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 73
+    "durationMs": 841
   },
   "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_StringResult": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
@@ -1704,371 +1704,491 @@
     "durationMs": 1
   },
   "DashboardPublisherToolUnitTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 75
+    "durationMs": 54
   },
   "TeamsProactiveAdapterTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 64
+    "durationMs": 35
   },
   "ReconnectModalTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 29
+    "durationMs": 156
   },
   "SecretsVaultPhase1Tests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1835
+    "durationMs": 3262
   },
   "OpenClawNetSkillsRegistryTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2386
+    "durationMs": 2389
   },
   "ChatNamingServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 23
+    "durationMs": 43
   },
   "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_ObjectResult": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 4
+    "durationMs": 10
   },
   "SkillsHotReloadTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 9488
+    "durationMs": 9556
   },
   "SlackWebhookAdapterTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 92
+    "durationMs": 44
   },
   "SkillEnableMatrixTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2391
+    "durationMs": 1989
   },
   "OllamaHealthCheckTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 84
+    "durationMs": 45
   },
   "GenericWebhookAdapterTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 6050
+    "durationMs": 6047
   },
   "EmbeddingsToolDiTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 174
-  },
-  "SecretsVaultPhase4LifecycleTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 1744
-  },
-  "StorageAclVerifierTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 20
-  },
-  "AgentProfileVaultIntegrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 8
-  },
-  "ChannelDeliveryServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 1723
-  },
-  "VaultCommandTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 125603
-  },
-  "MempalaceNetPerformanceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 57
-  },
-  "PlaywrightRuntimeHelperTests.PrepareForWindowsBaseDirectory_UsesSystemNode_AndDeletesRepoLocalNodeRuntime": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 277
-  },
-  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_NullResult": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 0
-  },
-  "GmailSummarizeToolUnitTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 182
-  },
-  "HybridSearchServiceIntegrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 338
-  },
-  "SkillImportTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 222
-  },
-  "DefaultPromptComposerSemanticWiringTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 36
   },
-  "SlackProactiveAdapterTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+  "SecretsVaultPhase4LifecycleTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 60
+    "durationMs": 479
+  },
+  "StorageAclVerifierTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 22
+  },
+  "AgentProfileVaultIntegrationTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 51
+  },
+  "ChannelDeliveryServiceTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 101
+  },
+  "VaultCommandTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 79824
+  },
+  "MempalaceNetPerformanceTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 178
+  },
+  "PlaywrightRuntimeHelperTests.PrepareForWindowsBaseDirectory_UsesSystemNode_AndDeletesRepoLocalNodeRuntime": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 216
+  },
+  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_NullResult": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 1
+  },
+  "GmailSummarizeToolUnitTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 147
+  },
+  "HybridSearchServiceIntegrationTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 105
+  },
+  "SkillImportTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 308
+  },
+  "DefaultPromptComposerSemanticWiringTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 22
+  },
+  "SlackProactiveAdapterTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 50
   },
   "SkillsLogTaxonomyTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 579
+    "durationMs": 569
   },
   "InMemoryGoogleOAuthTokenStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 12
+    "durationMs": 10
   },
   "SkillAuthoringDialogTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 154
+    "durationMs": 122
   },
   "MemoryToolsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 47
+    "durationMs": 116
   },
   "VaultConfigBackendsTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2410
+    "durationMs": 2089
   },
   "SkillServiceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 841
+    "durationMs": 112
   },
   "ModelProviderVaultIntegrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 41
+    "durationMs": 9
   },
   "SkillVectorTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 33
+    "durationMs": 16
   },
   "MarkItDownToolTests.ExecuteAsync_WithValidUrl_ReturnsMarkdownContent": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 72
+    "durationMs": 39
   },
   "DefaultSummaryServiceConfigTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 190
+  },
+  "GitHubToolTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 342
+  },
+  "SlackProactiveAdapterIntegrationTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 4342
+  },
+  "VectorStorageFormatTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 133
+  },
+  "SemanticSkillRankerTests": {
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 53
   },
-  "GitHubToolTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 232
-  },
-  "SlackProactiveAdapterIntegrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 3103
-  },
-  "VectorStorageFormatTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 81
-  },
-  "SemanticSkillRankerTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 65
-  },
   "SkillsClientTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 126
+    "durationMs": 321
   },
   "InMemoryOAuthFlowStateStoreTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 66
+    "durationMs": 41
   },
   "EmbedderInterfaceTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 67
+    "durationMs": 52
   },
   "CalendarCreateEventToolUnitTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 179
+    "durationMs": 253
   },
   "SemanticSkillRankerRegistrationTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 7
+    "durationMs": 8
   },
   "StorageOptionsAgentFolderTests": {
-    "lastRunId": "2026-05-25T10-56-20Z",
+    "lastRunId": "2026-05-25T16-21-41Z",
     "lastDate": "2026-05-25",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 96
+    "durationMs": 63
+  },
+  "AspireHostFixturePilotTests.AspireHostFixture_AttachesOrStarts_AndExposesHealthyGateway": {
+    "lastRunId": "2026-05-25T16-20-03Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
+    "suite": "playwright",
+    "durationMs": 1
+  },
+  "ChatRssDailyTaskAttachedTests.Chat_RssSummary_Rename_AndCreateDailyJobDefinition_Attached": {
+    "lastRunId": "2026-05-25T16-20-03Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "AspireHostFixture could not initialize in this environment. Startup error: Win32Exception: An error occurred trying to start process 'C:\\Program Files\\nodejs\\node.exe' with working directory 'C:\\src\\openclawnet-plan\\tests\\OpenClawNet.Playwr...",
+    "suite": "playwright",
+    "durationMs": 1
+  },
+  "ToolApprovalLogTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 31793
+  },
+  "LiveEmbeddingsToolSearchE2ETests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "Live job execution timed out before completion (environment-dependent): A task was canceled.",
+    "suite": "integration",
+    "durationMs": 1
+  },
+  "JobScheduleEndpointsTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 1741
+  },
+  "FakeAssertingToolCallingModelClientTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 36
+  },
+  "LiveAzureKeyVaultTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "AZURE_KEYVAULT_URI environment variable not set or Azure credentials not available. Run 'az login' first.",
+    "suite": "integration",
+    "durationMs": 10
+  },
+  "SecondPassEndpointsEdgeCasesTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "Clear endpoint uses ExecuteDeleteAsync not supported by InMemory provider. Production uses SQLite.",
+    "suite": "integration",
+    "durationMs": 4169
+  },
+  "UserFolderEndpointTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 1791
+  },
+  "ToolLoggingSettingsEndpointsTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 1651
+  },
+  "McpServerToolsEndpointsTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 1615
+  },
+  "RestCoverageEndpointsTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 2040
+  },
+  "LiveWebToolE2ETests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "skip",
+    "notes": "Live job execution timed out before completion (environment-dependent): A task was canceled.",
+    "suite": "integration",
+    "durationMs": 1
+  },
+  "JobStateChangeTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 1661
+  },
+  "JobStreamEndpointsTests": {
+    "lastRunId": "2026-05-25T16-14-12Z",
+    "lastDate": "2026-05-25",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "integration",
+    "durationMs": 7521
   }
 }

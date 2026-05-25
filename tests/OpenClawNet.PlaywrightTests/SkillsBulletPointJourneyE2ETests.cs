@@ -24,9 +24,9 @@ namespace OpenClawNet.PlaywrightTests;
 ///   $env:PLAYWRIGHT_HEADED="true"
 ///   dotnet test tests\OpenClawNet.PlaywrightTests --filter "FullyQualifiedName~SkillsBulletPointJourneyE2ETests"
 /// </summary>
-[Collection("AppHost")]
+[Collection("AspireHost")]
 [Trait("Category", "Live")]
-public class SkillsBulletPointJourneyE2ETests : PlaywrightTestBase
+public class SkillsBulletPointJourneyE2ETests : AspireHostPlaywrightTestBase
 {
     private const string SkillName = "bullet-point-journey";
     private const string SkillDescription =
@@ -55,7 +55,7 @@ public class SkillsBulletPointJourneyE2ETests : PlaywrightTestBase
     private static readonly Regex CheckmarkEnd = new("✅.*Formatted as requested", RegexOptions.Compiled | RegexOptions.IgnoreCase);
     private static readonly Regex BulletMarkers = new(@"(?:^|\n)\s*[•\-\*]\s+", RegexOptions.Compiled | RegexOptions.Multiline);
 
-    public SkillsBulletPointJourneyE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsBulletPointJourneyE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

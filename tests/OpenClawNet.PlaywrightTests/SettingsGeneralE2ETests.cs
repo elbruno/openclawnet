@@ -3,10 +3,10 @@ using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
 
-[Collection("AppHost")]
-public sealed class SettingsGeneralE2ETests : PlaywrightTestBase
+[Collection("AspireHost")]
+public sealed class SettingsGeneralE2ETests : AspireHostPlaywrightTestBase
 {
-    public SettingsGeneralE2ETests(AppHostFixture fixture) : base(fixture)
+    public SettingsGeneralE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

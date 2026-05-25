@@ -24,8 +24,8 @@ namespace OpenClawNet.PlaywrightTests;
 ///   $env:PLAYWRIGHT_HEADED="true"
 ///   dotnet test tests\OpenClawNet.PlaywrightTests --filter "FullyQualifiedName~SkillsPirateModeE2ETests"
 /// </summary>
-[Collection("AppHost")]
-public class SkillsPirateModeE2ETests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class SkillsPirateModeE2ETests : AspireHostPlaywrightTestBase
 {
     private const string SkillName = "pirate-mode-e2e";
     private const string SkillDescription =
@@ -42,7 +42,7 @@ public class SkillsPirateModeE2ETests : PlaywrightTestBase
         Stay in character at all times.
         """;
 
-    public SkillsPirateModeE2ETests(AppHostFixture fixture) : base(fixture)
+    public SkillsPirateModeE2ETests(AspireHostFixture fixture) : base(fixture)
     {
     }
 

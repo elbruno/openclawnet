@@ -146,7 +146,7 @@ a new issue with label `area:jobs-pipeline`.
 | Test reports **Skipped** | `qwen2.5:3b` not pulled, or Ollama not running | `ollama pull qwen2.5:3b`; start `ollama serve` |
 | Step 3 fails: scheduler returns 5xx | Scheduler service didn't start. Look for `health check` errors in test log | Stop any external Aspire instance, retry |
 | Step 3b times out | Agent exhausted `MaxToolIterations` (currently `25`) | Inspect run via `GET /api/jobs/{id}/runs`; check for tool-loop in logs |
-| Step 3b output doesn't match contract | Model regression — prompt isn't being followed | Re-pull the model or pin a different one in `AppHostFixture.cs` |
+| Step 3b output doesn't match contract | Model regression — prompt isn't being followed | Re-pull the model or pin a different one in `AspireHostFixture.cs` |
 | Step 7 fails: channel doesn't appear within 15 s | `ArtifactStorageService.CreateArtifactFromJobRunAsync` regressed | Check Scheduler logs; was the run actually `completed`? |
 | Step 8 returns `runs` (not `recentRuns`) | DTO renamed | Update test to match new `ChannelDetailDto` field name |
 

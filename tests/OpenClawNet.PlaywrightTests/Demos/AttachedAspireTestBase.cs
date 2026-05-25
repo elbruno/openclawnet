@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using System.Text.Json;
 using Microsoft.Playwright;
 using Xunit;
 
@@ -32,13 +31,13 @@ namespace OpenClawNet.PlaywrightTests.Demos;
 /// ┌──────────────────────────────────────────────────────────────────────────────┐
 /// │                         WHEN NOT TO USE THIS                                  │
 /// ├──────────────────────────────────────────────────────────────────────────────┤
-/// │ ❌ CI/CD pipelines       — use AppHostFixture-based tests instead            │
-/// │ ❌ Regression testing    — use AppHostFixture-based tests instead            │
-/// │ ❌ Automated validation  — use AppHostFixture-based tests instead            │
+/// │ ❌ CI/CD pipelines       — use AspireHostFixture-based tests instead         │
+/// │ ❌ Regression testing    — use AspireHostFixture-based tests instead         │
+/// │ ❌ Automated validation  — use AspireHostFixture-based tests instead         │
 /// │                                                                                │
 /// │ For standard in-process E2E tests, see:                                       │
 /// │   tests\OpenClawNet.PlaywrightTests\*JourneyE2ETests.cs                      │
-/// │   tests\OpenClawNet.PlaywrightTests\AppHostFixture.cs                        │
+/// │   tests\OpenClawNet.PlaywrightTests\AspireHostFixture.cs                     │
 /// └──────────────────────────────────────────────────────────────────────────────┘
 ///
 /// ┌──────────────────────────────────────────────────────────────────────────────┐
@@ -93,8 +92,9 @@ namespace OpenClawNet.PlaywrightTests.Demos;
 /// │   dotnet test --filter "Category=DemoLive"                                   │
 /// └──────────────────────────────────────────────────────────────────────────────┘
 ///
-/// <seealso cref="AppHostFixture"/> — In-process Aspire test infrastructure for CI
+/// <seealso cref="AspireHostFixture"/> — In-process Aspire test infrastructure for CI
 /// </summary>
+[Obsolete("Phase 2 migration path: prefer AspireHostAttachedDemoTestBase + [Collection(\"AspireHost\")]. Kept as fallback for rollback safety.")]
 public abstract class AttachedAspireTestBase : IAsyncLifetime
 {
     private IPlaywright? _playwright;
@@ -140,7 +140,7 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             _playwright = await Playwright.CreateAsync();
 
             // SlowMo: read from PLAYWRIGHT_SLOWMO, default 1500ms for voice-over comfort.
-            // Match the AppHostFixture pattern (lines ~141–160) for consistency.
+            // Match the AspireHostFixture pattern (lines ~141–160) for consistency.
             var defaultSlowMo = 1500;
             var slowMo = defaultSlowMo;
             var slowMoRaw = Environment.GetEnvironmentVariable("PLAYWRIGHT_SLOWMO");
@@ -205,7 +205,7 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
 
     /// <summary>
     /// Creates an HttpClient configured for the Gateway endpoint with SSL validation disabled.
-    /// Matches the AppHostFixture pattern for API calls.
+    /// Matches the AspireHostFixture pattern for API calls.
     /// </summary>
     protected HttpClient CreateGatewayHttpClient()
     {
@@ -326,63 +326,13 @@ public abstract class AttachedAspireTestBase : IAsyncLifetime
             return false;
         }
 
-        var trimmed = result.Stdout.Trim();
-        var jsonStart = trimmed.IndexOf('{');
-        var jsonEnd = trimmed.LastIndexOf('}');
-        if (jsonStart < 0 || jsonEnd <= jsonStart)
+        if (!AspireDescribeResolver.TryResolveResources(result.Stdout, out var resolved) || resolved is null)
         {
             return false;
         }
 
-        var json = trimmed.Substring(jsonStart, jsonEnd - jsonStart + 1);
-        using var doc = JsonDocument.Parse(json);
-        if (!doc.RootElement.TryGetProperty("resources", out var resources) || resources.ValueKind != JsonValueKind.Array)
-        {
-            return false;
-        }
-
-        string? webUrl = null;
-        string? gatewayUrl = null;
-        foreach (var resource in resources.EnumerateArray())
-        {
-            var name = resource.TryGetProperty("displayName", out var nameProp)
-                ? nameProp.GetString() ?? string.Empty
-                : string.Empty;
-            if (!resource.TryGetProperty("urls", out var urlsProp) || urlsProp.ValueKind != JsonValueKind.Array)
-            {
-                continue;
-            }
-
-            var urls = urlsProp.EnumerateArray()
-                .Select(u => u.TryGetProperty("url", out var urlProp) ? urlProp.GetString() : null)
-                .Where(u => !string.IsNullOrWhiteSpace(u))
-                .Select(u => u!)
-                .ToList();
-            var selectedUrl = urls.FirstOrDefault(u => u.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
-                ?? urls.FirstOrDefault(u => u.StartsWith("http://", StringComparison.OrdinalIgnoreCase));
-
-            if (string.IsNullOrWhiteSpace(selectedUrl))
-            {
-                continue;
-            }
-
-            if (name.Equals("web", StringComparison.OrdinalIgnoreCase))
-            {
-                webUrl = selectedUrl;
-            }
-            else if (name.Equals("gateway", StringComparison.OrdinalIgnoreCase))
-            {
-                gatewayUrl = selectedUrl;
-            }
-        }
-
-        if (string.IsNullOrWhiteSpace(webUrl) || string.IsNullOrWhiteSpace(gatewayUrl))
-        {
-            return false;
-        }
-
-        WebBaseUrl = webUrl.TrimEnd('/');
-        GatewayBaseUrl = gatewayUrl.TrimEnd('/');
+        WebBaseUrl = resolved.WebBaseUrl;
+        GatewayBaseUrl = resolved.GatewayBaseUrl;
         return true;
     }
 

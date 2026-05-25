@@ -5,27 +5,23 @@ using Xunit;
 namespace OpenClawNet.PlaywrightTests;
 
 /// <summary>
-/// Base class for Playwright tests that provides screenshot-on-failure infrastructure.
-/// Automatically captures full-page screenshots when tests fail.
+/// Base class for tests that run on <see cref="AspireHostFixture"/> and capture screenshots on failure.
 /// </summary>
-public abstract class PlaywrightTestBase : IAsyncLifetime
+public abstract class AspireHostPlaywrightTestBase : IAsyncLifetime
 {
     private const string VideoOutputDirectoryEnvVar = "OPENCLAW_PLAYWRIGHT_VIDEO_DIR";
     private const string ScreenshotOutputDirectoryEnvVar = "OPENCLAW_PLAYWRIGHT_SCREENSHOT_DIR";
 
-    private readonly AppHostFixture _fixture;
+    private readonly AspireHostFixture _fixture;
     private IBrowserContext? _context;
     private IPage? _page;
     private string? _startupSkipReason;
 
-    protected PlaywrightTestBase(AppHostFixture fixture)
+    protected AspireHostPlaywrightTestBase(AspireHostFixture fixture)
     {
         _fixture = fixture;
     }
 
-    /// <summary>
-    /// The Playwright page instance for this test. Available after InitializeAsync completes.
-    /// </summary>
     protected IPage Page
     {
         get
@@ -35,10 +31,10 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         }
     }
 
-    /// <summary>
-    /// The AppHost fixture for accessing base URLs and other test resources.
-    /// </summary>
-    protected AppHostFixture Fixture => _fixture;
+    /// <summary>Nullable page accessor for helpers that need null-safe access without throwing.</summary>
+    private IPage? PageOrNull => _page;
+
+    protected AspireHostFixture Fixture => _fixture;
 
     public virtual async Task InitializeAsync()
     {
@@ -46,7 +42,7 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         {
             _startupSkipReason =
                 _fixture.StartupSkipReason
-                ?? "Playwright AppHost fixture did not initialize successfully.";
+                ?? "Playwright Aspire host fixture did not initialize successfully.";
             return;
         }
 
@@ -82,7 +78,7 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         catch (Exception ex)
         {
             _startupSkipReason =
-                "Playwright AppHost fixture could not start in this environment. " +
+                "Playwright Aspire host fixture could not start in this environment. " +
                 $"Startup error: {ex.GetType().Name}: {ex.Message}";
         }
     }
@@ -93,13 +89,6 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         if (_context is not null) await _context.DisposeAsync();
     }
 
-    /// <summary>
-    /// Wraps a test action and captures a screenshot on failure.
-    /// Screenshots are saved to TestResults/screenshots/ by default, or to
-    /// OPENCLAW_PLAYWRIGHT_SCREENSHOT_DIR when set for video-production runs.
-    /// </summary>
-    /// <param name="testAction">The test code to execute</param>
-    /// <param name="testMethodName">The name of the calling test method (auto-populated)</param>
     protected async Task WithScreenshotOnFailure(Func<Task> testAction, [CallerMemberName] string testMethodName = "")
     {
         EnsureReadyOrSkip();
@@ -187,12 +176,11 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
         EnsureReadyOrSkip();
 
         var stamp = DateTime.Now.ToString("HH:mm:ss");
-        Console.WriteLine($"[{stamp}] ≡ƒº¬ {message}");
-        if (_page is null) return;
+        Console.WriteLine($"[{stamp}] 🔬 {message}");
+        if (PageOrNull is null) return;
         try
         {
-            // Inject (or update) a fixed banner at top of page showing current test step.
-            await _page.EvaluateAsync(@"(text) => {
+            await PageOrNull.EvaluateAsync(@"(text) => {
                 let el = document.getElementById('__e2e_banner__');
                 if (!el) {
                     el = document.createElement('div');
@@ -204,12 +192,12 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
                         + 'pointer-events:none;';
                     document.body.appendChild(el);
                 }
-                el.textContent = '≡ƒº¬ E2E: ' + text;
+                el.textContent = '🔬 E2E: ' + text;
             }", message);
         }
         catch
         {
-            // Page navigation can race the eval ΓÇö non-fatal.
+            // Page navigation can race the eval — non-fatal.
         }
     }
 
@@ -231,13 +219,13 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
             {
                 await locator.First.WaitForAsync(new LocatorWaitForOptions { Timeout = tick });
                 var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
-                await LogStepAsync($"Γ£à {what} appeared after {elapsed}s");
+                await LogStepAsync($"✅ {what} appeared after {elapsed}s");
                 return;
             }
             catch (TimeoutException)
             {
                 var elapsed = (int)(DateTime.UtcNow - start).TotalSeconds;
-                await LogStepAsync($"ΓÅ│ Still waiting for {what}... {elapsed}s elapsed");
+                await LogStepAsync($"⏳ Still waiting for {what}... {elapsed}s elapsed");
             }
         }
         throw new TimeoutException($"Timeout {timeoutMs}ms exceeded waiting for {what}");
@@ -249,6 +237,6 @@ public abstract class PlaywrightTestBase : IAsyncLifetime
             _fixture.IsReady,
             _startupSkipReason
             ?? _fixture.StartupSkipReason
-            ?? "Playwright AppHost fixture did not initialize successfully.");
+            ?? "Playwright Aspire host fixture did not initialize successfully.");
     }
 }

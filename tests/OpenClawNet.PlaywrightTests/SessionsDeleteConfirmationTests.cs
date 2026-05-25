@@ -4,10 +4,10 @@ using Microsoft.Playwright;
 
 namespace OpenClawNet.PlaywrightTests;
 
-[Collection("AppHost")]
-public class SessionsDeleteConfirmationTests : PlaywrightTestBase
+[Collection("AspireHost")]
+public class SessionsDeleteConfirmationTests : AspireHostPlaywrightTestBase
 {
-    public SessionsDeleteConfirmationTests(AppHostFixture fixture) : base(fixture)
+    public SessionsDeleteConfirmationTests(AspireHostFixture fixture) : base(fixture)
     {
     }
 
