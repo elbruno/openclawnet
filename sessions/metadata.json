@@ -102,10 +102,23 @@
     {
       "id": "session-4",
       "number": 4,
-      "status": "coming-soon",
+      "status": "published",
+      "releasedAt": "2026-05-26",
       "languages": {
-        "en": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-nunes-lopes"] },
-        "es": { "title": "TBD", "speakers": ["bruno-capuano", "pablo-piovano"] }
+        "en": {
+          "title": "Deploy, Operate & Scale",
+          "description": "What’s new in OpenClaw .NET (file-based skills, secrets vault, job scheduling), then Aspire deployment and operations from observe to scale.",
+          "slides": "session-4/slides.md",
+          "html": "session-4/slides.html",
+          "speakers": ["bruno-capuano", "pablo-nunes-lopes"]
+        },
+        "es": {
+          "title": "Despliega, opera y escala",
+          "description": "Novedades de OpenClaw .NET (skills basados en archivos, bóveda de secretos y programación de jobs), seguido de despliegue con Aspire y operación a escala.",
+          "slides": "session-4/slides-es.md",
+          "html": "session-4/slides-es.html",
+          "speakers": ["bruno-capuano", "pablo-piovano"]
+        }
       }
     },
     {
