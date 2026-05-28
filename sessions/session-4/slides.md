@@ -112,7 +112,13 @@ approval_required: false
 ---
 
 # Invoice Validation Skill
+
 You are an invoice validation assistant...
+
+## Rules
+1. Check invoice total matches line items
+2. Verify vendor is in approved list
+3. Flag invoices >$10K for manual review
 ```
 
 **Frontmatter drives:** tool binding, approval gates, version tracking
@@ -219,9 +225,9 @@ Reference: [Microsoft Agent Framework](https://github.com/microsoft/agents)
 
 ---
 
-## ISecretsProvider interface
+## Integration patterns: ISecretsProvider usage
 
-**Contract:**
+**Interface contract:**
 
 ```csharp
 public interface ISecretsProvider
@@ -231,21 +237,24 @@ public interface ISecretsProvider
 }
 ```
 
----
-
-## Using secrets in agent startup
+**Usage in agent startup:**
 
 ```csharp
 public class AgentService
 {
     private readonly ISecretsProvider _secrets;
 
-    public AgentService(ISecretsProvider secrets) => _secrets = secrets;
+    public AgentService(ISecretsProvider secrets)
+    {
+        _secrets = secrets;
+    }
 
     public async Task InitializeAsync()
     {
         var apiKey = await _secrets.GetSecretAsync("OpenAI:ApiKey");
         var dbConn = await _secrets.GetSecretAsync("Database:ConnectionString");
+        
+        // Use secrets to configure services
         _aiClient = new OpenAIClient(apiKey);
     }
 }
@@ -325,7 +334,9 @@ public class AgentService
 
 ---
 
-## Recurring job pattern
+## Job types + patterns
+
+**Recurring jobs:**
 
 ```csharp
 [RecurringJob("daily-cleanup", Schedule = "0 2 * * *")] // 2 AM daily
@@ -333,15 +344,14 @@ public class DailyCleanupJob : IJob
 {
     public async Task ExecuteAsync(JobContext context)
     {
+        // Delete old temp files, archive logs, etc.
         await CleanupTempFilesAsync();
         await ArchiveOldLogsAsync();
     }
 }
 ```
 
----
-
-## One-time deferred jobs
+**One-time deferred jobs:**
 
 ```csharp
 // Enqueue job to run once, 5 minutes from now
@@ -351,7 +361,7 @@ await _jobScheduler.EnqueueAsync<PostDeploymentCheckJob>(
 );
 ```
 
-**Idempotency:** Jobs check state before acting — safe to retry without side effects.
+**Idempotency pattern:** Jobs should check state before acting (avoid duplicate work if retried).
 
 ---
 
@@ -482,22 +492,15 @@ public class UnreliableJob : IJob { ... }
 
 ---
 
-## Deployment readiness checklist (1/2)
+## Deployment readiness checklist
 
-**Infrastructure & access:**
+**Before deploying to production:**
 
 - [ ] **Networking:** Private endpoints, firewall rules, DNS config
 - [ ] **Identity:** Managed identity for Azure resources, RBAC assigned
 - [ ] **Secrets:** All secrets in Key Vault, no hardcoded credentials
 - [ ] **Observability:** App Insights configured, logs/metrics/traces enabled
 - [ ] **Health probes:** `/health` endpoint implemented and tested
-
----
-
-## Deployment readiness checklist (2/2)
-
-**Runtime & governance:**
-
 - [ ] **Scaling rules:** CPU/memory thresholds, min/max replicas defined
 - [ ] **Backup/DR:** Data backup strategy, failover plan documented
 - [ ] **Security:** Least privilege, no public admin endpoints
@@ -512,14 +515,19 @@ public class UnreliableJob : IJob { ... }
 ```csharp
 app.MapHealthChecks("/health", new HealthCheckOptions
 {
-    ResponseWriter = async (ctx, report) =>
+    ResponseWriter = async (context, report) =>
     {
-        var result = new {
+        var result = new
+        {
             status = report.Status.ToString(),
-            checks = report.Entries.Select(e =>
-                new { name = e.Key, status = e.Value.Status.ToString() })
+            checks = report.Entries.Select(e => new
+            {
+                name = e.Key,
+                status = e.Value.Status.ToString(),
+                description = e.Value.Description
+            })
         };
-        await ctx.Response.WriteAsJsonAsync(result);
+        await context.Response.WriteAsJsonAsync(result);
     }
 });
 ```
@@ -528,7 +536,9 @@ app.MapHealthChecks("/health", new HealthCheckOptions
 
 ---
 
-## Auto-scaling (Container Apps)
+## Scaling + resource governance
+
+**Horizontal scaling example (Container Apps):**
 
 ```yaml
 scale:
@@ -541,11 +551,7 @@ scale:
           concurrentRequests: 50
 ```
 
----
-
-## Resource limits + governance
-
-**Per-replica limits:**
+**Resource limits (per replica):**
 
 ```yaml
 resources:
@@ -553,9 +559,10 @@ resources:
   memory: 2Gi
 ```
 
+**Considerations:**
 - Scale based on load (CPU, memory, request count)
-- Set limits to prevent runaway costs
-- Load test to validate scaling behavior
+- Set resource limits to prevent runaway costs
+- Test scaling behavior under load (load testing)
 
 ---
 
@@ -651,7 +658,9 @@ Trace ID: abc123...
 
 ---
 
-## Platform automation use cases
+## Automation with scheduled jobs
+
+**Platform automation use cases:**
 
 - **Drift detection:** Compare deployed config vs source-of-truth
 - **Resource cleanup:** Delete old logs, temp files, stale caches
@@ -659,20 +668,21 @@ Trace ID: abc123...
 - **Data reconciliation:** Verify data consistency across systems
 - **Cost optimization:** Identify idle resources, suggest rightsizing
 
----
-
-## Drift detection job example
+**Example: Drift detection job**
 
 ```csharp
-[RecurringJob("config-drift-check", Schedule = "0 */6 * * *")]
+[RecurringJob("config-drift-check", Schedule = "0 */6 * * *")] // Every 6 hours
 public class ConfigDriftCheckJob : IJob
 {
     public async Task ExecuteAsync(JobContext context)
     {
         var deployed = await GetDeployedConfigAsync();
         var expected = await LoadSourceOfTruthAsync();
+        
         if (!deployed.Equals(expected))
+        {
             await NotifyOpsTeamAsync("Config drift detected!");
+        }
     }
 }
 ```
@@ -733,37 +743,36 @@ Is the task...
 
 ---
 
-## Secrets best practices
+## Secrets from vault, least privilege
+
+**Secrets best practices:**
 
 ✅ **Do:**
 - Store secrets in Azure Key Vault
-- Use managed identity (no stored credentials)
+- Use managed identity to access vault (no credentials)
 - Rotate secrets automatically (Key Vault rotation policy)
 - Audit secret access (who accessed what, when)
 
 ❌ **Don't:**
 - Hardcode secrets in code or config files
 - Log secrets (even accidentally in trace data)
-- Share secrets between environments
+- Share secrets between environments (dev vs prod)
 - Grant broad access ("everyone can read all secrets")
 
----
+**Least privilege example:**
 
-## Least privilege for secrets
-
-Grant only what's needed — nothing more:
-
-```bash
+```csharp
+// Grant only specific secret read permission
 az keyvault set-policy --name MyVault \
   --object-id <managed-identity-id> \
   --secret-permissions get
 ```
 
-One identity · one vault · one permission scope.
-
 ---
 
-## Tool approval policy
+## Approval boundaries for risky actions
+
+**Tool approval policy:**
 
 ```yaml
 # skill frontmatter
@@ -771,25 +780,23 @@ tools: ["database", "email", "file-delete"]
 approval_required: true  # High-risk tools need human approval
 ```
 
+**Runtime enforcement:**
+
 ```csharp
 if (tool.RequiresApproval && !context.HasApproval)
 {
     await RequestApprovalAsync(context, tool);
-    // Execution blocked until operator approves
+    // Block execution until operator approves
 }
 ```
 
----
-
-## Risky actions requiring approval
-
-**Examples:**
+**Examples of risky actions:**
 - Delete records from production database
 - Send emails to customers
 - Modify financial data
 - Deploy infrastructure changes
 
-**Workflow:** Slack/Teams alert → operator reviews → approve or reject
+**Approval workflow:** Slack/Teams notification → operator reviews → approve/reject
 
 ---
 
@@ -840,32 +847,32 @@ skills/
 
 ---
 
-## Skill version promotion
+## Promote with version tags + rollback
+
+**Version promotion workflow:**
 
 ```bash
-# Tag and push validated skill version
+# Tag skill version after validation
 git tag skill-invoice-validation-v1.2.0
 git push origin skill-invoice-validation-v1.2.0
 
-# Merge to production branch
+# Deploy to prod
 git checkout production
 git merge skill-invoice-validation-v1.2.0
 ```
 
----
-
-## Skill rollback strategy
+**Rollback strategy:**
 
 ```bash
-# Revert problematic commit
-git revert abc123
+# If skill causes issues, revert to previous version
+git revert abc123  # Revert problematic skill commit
 git push origin production
 
-# Or roll back to last good tag
+# Or: point to last known good tag
 git checkout skill-invoice-validation-v1.1.0
 ```
 
-Skill file + version metadata tracked in deployment log.
+**Deployment artifact:** Skill file + version metadata tracked in deployment log
 
 ---
 
@@ -905,23 +912,24 @@ Skill file + version metadata tracked in deployment log.
 
 ---
 
-## Retry with exponential backoff
+## Fault handling strategy
+
+**Retry with exponential backoff:**
 
 ```csharp
 await Policy
     .Handle<HttpRequestException>()
     .WaitAndRetryAsync(
         retryCount: 3,
-        sleepDurationProvider: attempt =>
-            TimeSpan.FromSeconds(Math.Pow(2, attempt)),
-        onRetry: (ex, ts, count, ctx) =>
-            _logger.LogWarning($"Retry {count} after {ts}"))
-    .ExecuteAsync(() => CallExternalApiAsync());
+        sleepDurationProvider: attempt => TimeSpan.FromSeconds(Math.Pow(2, attempt)),
+        onRetry: (exception, timeSpan, retryCount, context) =>
+        {
+            _logger.LogWarning($"Retry {retryCount} after {timeSpan}");
+        })
+    .ExecuteAsync(async () => await CallExternalApiAsync());
 ```
 
----
-
-## Dead-letter queue + circuit breaker
+**Dead-letter queue for failed jobs:**
 
 ```csharp
 if (job.FailureCount >= MaxRetries)
@@ -931,7 +939,7 @@ if (job.FailureCount >= MaxRetries)
 }
 ```
 
-**Circuit breaker:** Stop calling unhealthy dependency → fail fast → retry after cooldown.
+**Circuit breaker:** Stop calling unhealthy dependency, fail fast, retry after cooldown.
 
 ---
 
@@ -948,42 +956,45 @@ Phase 3: 100% traffic → Monitor for 24 hours → Success!
 **Feature flags for skill enablement:**
 
 ```csharp
-if (await _featureFlags.IsEnabledAsync("invoice-validation-skill", ctx))
-    // route to new skill
+if (await _featureFlags.IsEnabledAsync("invoice-validation-skill", context))
+{
+    // Use new skill
+}
 else
-    // fall back to previous logic
+{
+    // Use old logic (fallback)
+}
 ```
 
 **Fast rollback:** Revert deployment or disable feature flag within minutes.
 
 ---
 
-## Cost tracking by category
+## Cost and performance governance
+
+**Cost tracking:**
 
 ```text
 ┌─────────────────────────────────────────┐
 │ Cost Category       │ Monthly $ │ Trend │
 ├─────────────────────────────────────────┤
 │ Compute (replicas)  │ $1,200    │ ↑ 10% │
-│ LLM API (tokens)    │ $800      │ ↓ 5%  │
 │ Database (storage)  │ $300      │ → 0%  │
-│ Networking + other  │ $200      │ → 0%  │
+│ LLM API (tokens)    │ $800      │ ↓ 5%  │
+│ Networking (egress) │ $150      │ → 0%  │
+│ Key Vault           │ $50       │ → 0%  │
 ├─────────────────────────────────────────┤
 │ Total               │ $2,500    │ ↑ 8%  │
 └─────────────────────────────────────────┘
 ```
 
----
-
-## Cost optimization + governance
-
-**Strategies:**
+**Optimization strategies:**
 - Cache frequently accessed data (reduce DB queries)
 - Batch LLM requests (reduce API calls)
-- Scale down non-prod environments
+- Scale down non-prod environments (save compute cost)
 - Right-size instances (avoid over-provisioning)
 
-**Governance:** Monthly cost review · budget alerts · tag by team/project
+**Governance:** Monthly cost review, set budget alerts, tag resources by team/project.
 
 ---
 
