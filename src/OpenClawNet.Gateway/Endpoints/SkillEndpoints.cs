@@ -51,6 +51,8 @@ public static class SkillEndpoints
         group.MapGet("/", ListSkills).WithName("ListSkills");
         group.MapGet("/agents/{agentName}", GetAgentSkills).WithName("GetAgentSkills");
         group.MapGet("/changes-since/{snapshotId}", GetChangesSince).WithName("GetSkillsChangesSince");
+        group.MapGet("/storage-paths", GetStoragePaths).WithName("GetSkillsStoragePaths");
+        group.MapPost("/open-folder", OpenSkillsFolder).WithName("OpenSkillsFolder");
         group.MapGet("/{name}", GetSkill).WithName("GetSkill");
         group.MapPost("/", CreateSkill).WithName("CreateSkill");
         group.MapPost("/reload", ReloadSkills).WithName("ReloadSkills");
@@ -60,6 +62,59 @@ public static class SkillEndpoints
         group.MapPatch("/enabled", PatchEnabled).WithName("PatchSkillEnabled");
         group.MapDelete("/{name}", DeleteSkill).WithName("DeleteSkill");
         group.MapPost("/bulk-delete", BulkDeleteSkills).WithName("BulkDeleteSkills");
+    }
+
+    // ====================================================================
+    // GET /api/skills/storage-paths
+    // ====================================================================
+    private static IResult GetStoragePaths()
+    {
+        var systemPath    = OpenClawNetPaths.ResolveSkillsSystemRoot();
+        var installedPath = OpenClawNetPaths.ResolveSkillsInstalledRoot();
+        return Results.Ok(new SkillsStoragePathsDtoOut(
+            SystemPath: systemPath,
+            InstalledPath: installedPath));
+    }
+
+    // ====================================================================
+    // POST /api/skills/open-folder
+    // ====================================================================
+    private static IResult OpenSkillsFolder(
+        [Microsoft.AspNetCore.Mvc.FromQuery] string? layer,
+        ILoggerFactory loggerFactory)
+    {
+        var logger = loggerFactory.CreateLogger(nameof(SkillEndpoints));
+        var path = string.Equals(layer, "system", StringComparison.OrdinalIgnoreCase)
+            ? OpenClawNetPaths.ResolveSkillsSystemRoot(logger)
+            : OpenClawNetPaths.ResolveSkillsInstalledRoot(logger);
+
+        if (!Directory.Exists(path))
+        {
+            try { Directory.CreateDirectory(path); }
+            catch (Exception ex)
+            {
+                return Results.Problem(
+                    detail: $"Cannot create directory: {ex.Message}",
+                    statusCode: StatusCodes.Status500InternalServerError);
+            }
+        }
+
+        try
+        {
+            if (OperatingSystem.IsWindows())
+                System.Diagnostics.Process.Start("explorer.exe", path);
+            else if (OperatingSystem.IsMacOS())
+                System.Diagnostics.Process.Start("open", path);
+            else
+                System.Diagnostics.Process.Start("xdg-open", path);
+
+            return Results.Ok(new { path, opened = true });
+        }
+        catch (Exception ex)
+        {
+            logger.LogWarning(ex, "Could not open folder '{Path}' in file explorer.", path);
+            return Results.Ok(new { path, opened = false, error = ex.Message });
+        }
     }
 
     // ====================================================================
@@ -671,3 +726,7 @@ internal sealed record CreateSkillRequestIn(
     string Body);
 
 internal sealed record SkillsProblemOut(string Reason, string? Detail);
+
+internal sealed record SkillsStoragePathsDtoOut(
+    string SystemPath,
+    string InstalledPath);

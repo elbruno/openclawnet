@@ -55,3 +55,9 @@ public sealed record BulkDeleteResult(
     int FailureCount,
     Dictionary<string, string> Failures
 );
+
+/// <summary>Storage paths for the skills directories (system + installed layers).</summary>
+public sealed record SkillsStoragePathsDto(
+    string SystemPath,
+    string InstalledPath
+);
