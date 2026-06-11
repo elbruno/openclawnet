@@ -74,6 +74,10 @@ public static class SkillsServiceCollectionExtensions
         services.TryAddSingleton<ISkillImportLogger>(NullSkillImportLogger.Instance);
         services.AddSingleton<ISkillImportService, SkillImportService>();
 
+        // Agent skill assignment — copies/deletes SKILL.md files between
+        // global layers and agent-specific directories.
+        services.AddSingleton<IAgentSkillAssignmentService, AgentSkillAssignmentService>();
+
         return services;
     }
 }

@@ -497,6 +497,55 @@ else
                             </div>
                         }
                     </div>
+                    @* ── File-Based Skills ──────────────────────────────── *@
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Skills</label>
+                        @if (_skillsLoading)
+                        {
+                            <div class="text-muted small"><span class="spinner-border spinner-border-sm me-1"></span>Loading skills…</div>
+                        }
+                        else if (_availableSkills.Count == 0)
+                        {
+                            <div class="text-muted small">No skills available. Add skills to <code>skills/system/</code> or <code>skills/installed/</code>.</div>
+                        }
+                        else
+                        {
+                            <div class="border rounded p-2 mb-1" style="max-height:200px;overflow-y:auto;">
+                                @foreach (var layerGroup in _availableSkills.GroupBy(s => s.Layer, StringComparer.OrdinalIgnoreCase))
+                                {
+                                    <div class="text-muted small fw-bold mb-1 mt-1 text-uppercase">@layerGroup.Key</div>
+                                    @foreach (var skill in layerGroup)
+                                    {
+                                        var skillName = skill.Name;
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox"
+                                                   id="skill-@skillName"
+                                                   checked="@_form.SelectedSkills.Contains(skillName)"
+                                                   @onchange="e => ToggleSkill(skillName, (bool)(e.Value ?? false))" />
+                                            <label class="form-check-label" for="skill-@skillName">
+                                                <strong>@skill.Name</strong>
+                                                @if (!string.IsNullOrWhiteSpace(skill.Description))
+                                                {
+                                                    <span class="text-muted small ms-1">— @skill.Description</span>
+                                                }
+                                            </label>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="d-flex gap-2 mt-1">
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        @onclick="() => { _form.SelectedSkills = new HashSet<string>(_availableSkills.Select(s => s.Name), StringComparer.Ordinal); }">
+                                    Select all
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm"
+                                        @onclick="() => { _form.SelectedSkills = new HashSet<string>(StringComparer.Ordinal); }">
+                                    Clear all
+                                </button>
+                            </div>
+                            <div class="form-text">Skills are physically copied to the agent's storage directory. Unassigned skills are deleted so new agent instances won't load them.</div>
+                        }
+                    </div>
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label class="form-label fw-semibold">Temperature</label>
@@ -617,6 +666,10 @@ else
     private string _exportContainerImage = "ghcr.io/elbruno/openclawnet-hosted-agent:latest";
     private int _exportContainerPort = 8080;
 
+    // ── Skills assignment state ──────────────────────────────
+    private List<AvailableSkillDto> _availableSkills = new();
+    private bool _skillsLoading;
+
     // ── Bulk selection ──────────────────────────────────────
     private readonly HashSet<string> _selected = new(StringComparer.Ordinal);
     private bool _bulkDeleting;
@@ -628,7 +681,7 @@ else
     // ── Lifecycle ────────────────────────────────────────────
     protected override async Task OnInitializedAsync()
     {
-        await Task.WhenAll(LoadProfiles(), LoadModelProviders(), LoadToolGroups());
+        await Task.WhenAll(LoadProfiles(), LoadModelProviders(), LoadToolGroups(), LoadAvailableSkills());
         _loading = false;
     }
 
@@ -651,6 +704,64 @@ else
         finally
         {
             _toolGroupsLoading = false;
+        }
+    }
+
+    private async Task LoadAvailableSkills()
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var result = await http.GetFromJsonAsync<List<AvailableSkillDto>>("/api/skills");
+            // Only show system and installed layer skills — agent-layer skills are already owned by agents
+            _availableSkills = (result ?? [])
+                .Where(s => string.Equals(s.Layer, "system", StringComparison.OrdinalIgnoreCase) ||
+                            string.Equals(s.Layer, "installed", StringComparison.OrdinalIgnoreCase))
+                .OrderBy(s => s.Layer)
+                .ThenBy(s => s.Name)
+                .ToList();
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load available skills");
+            _availableSkills = [];
+        }
+    }
+
+    private async Task LoadAssignedSkillsForForm(string agentName)
+    {
+        _skillsLoading = true;
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var result = await http.GetFromJsonAsync<AgentSkillsResponseDto>(
+                $"/api/agent-profiles/{Uri.EscapeDataString(agentName)}/skills");
+            _form.SelectedSkills = result?.AssignedSkills is { Count: > 0 }
+                ? new HashSet<string>(result.AssignedSkills, StringComparer.Ordinal)
+                : new HashSet<string>(StringComparer.Ordinal);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to load assigned skills for agent {Name}", agentName);
+            _form.SelectedSkills = new(StringComparer.Ordinal);
+        }
+        finally
+        {
+            _skillsLoading = false;
+        }
+    }
+
+    private async Task SyncAgentSkills(string agentName)
+    {
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var request = new { skillNames = _form.SelectedSkills.ToArray() };
+            await http.PutAsJsonAsync($"/api/agent-profiles/{Uri.EscapeDataString(agentName)}/skills", request);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Failed to sync skills for agent {Name}", agentName);
         }
     }
 
@@ -749,6 +860,8 @@ else
         _saveSuccess = null;
         _errorMessage = string.Empty;
         _showExport = false;
+        // Load assigned skills asynchronously without blocking render
+        _ = LoadAssignedSkillsForForm(profile.Name).ContinueWith(_ => InvokeAsync(StateHasChanged));
     }
 
     // ── Tool picker helpers ─────────────────────────────────
@@ -963,6 +1076,8 @@ else
             var response = await http.PutAsJsonAsync($"/api/agent-profiles/{_form.Name}", request);
             if (response.IsSuccessStatusCode)
             {
+                // Sync skill assignments (assign new, unassign removed)
+                await SyncAgentSkills(_form.Name);
                 _saveSuccess = true;
                 _showForm = false;
                 await LoadProfiles();
@@ -1173,6 +1288,7 @@ else
         public string Provider        { get; set; } = "ollama";
         public string Instructions    { get; set; } = string.Empty;
         public HashSet<string> SelectedTools { get; set; } = new(StringComparer.Ordinal);
+        public HashSet<string> SelectedSkills { get; set; } = new(StringComparer.Ordinal);
         public double? Temperature    { get; set; }
         public int? MaxTokens         { get; set; }
         public bool IsDefault         { get; set; }
@@ -1298,6 +1414,20 @@ else
         public DateTime? LastTestedAt { get; init; }
         public bool? LastTestSucceeded { get; init; }
         public string? LastTestError { get; init; }
+    }
+
+    // ── Skills DTOs ───────────────────────────────────────────
+    private sealed record AvailableSkillDto(string Name, string Description, string Layer, string SnapshotId);
+    private sealed record AgentSkillsResponseDto
+    {
+        public string AgentName { get; init; } = string.Empty;
+        public List<string> AssignedSkills { get; init; } = [];
+    }
+
+    private void ToggleSkill(string skillName, bool selected)
+    {
+        if (selected) _form.SelectedSkills.Add(skillName);
+        else _form.SelectedSkills.Remove(skillName);
     }
 
     private static string FormatRelativeTime(DateTime utcTime)
