@@ -420,6 +420,7 @@ public sealed class OpenClawNetSkillsRegistry : ISkillsRegistry, ISkillsSnapshot
     {
         try
         {
+            // Watcher 1 — watches SKILL.md file changes (create/change/rename)
             var w = new FileSystemWatcher(root, "SKILL.md")
             {
                 IncludeSubdirectories = true,
@@ -434,12 +435,21 @@ public sealed class OpenClawNetSkillsRegistry : ISkillsRegistry, ISkillsSnapshot
                 "FileSystemWatcher error in '{Layer}' layer at '{Root}'.", layerName, root);
             _watchers.Add(w);
 
-            // Also watch the layer root for directory create/delete events
-            // (a brand-new "skills/installed/foo/" dir won't fire SKILL.md
-            // events on Windows until the file appears; the SKILL.md filter
-            // catches it because IncludeSubdirectories=true and the file is
-            // inside the watched root, but the directory creation itself
-            // should still trigger a rescan to be safe).
+            // Watcher 2 — watches for skill FOLDER deletions.
+            // On Windows, deleting a skill directory fires a DirectoryName event
+            // for the folder itself — NOT a FileName event for SKILL.md inside it.
+            // Without this second watcher the deletion is invisible to the registry.
+            var wDir = new FileSystemWatcher(root)
+            {
+                IncludeSubdirectories = true,
+                NotifyFilter = NotifyFilters.DirectoryName,
+                EnableRaisingEvents = true,
+            };
+            wDir.Deleted += (_, _) => ScheduleRebuild(layerName, "dir-deleted");
+            wDir.Renamed += (_, _) => ScheduleRebuild(layerName, "dir-renamed");
+            wDir.Error += (_, e) => _logger.LogWarning(e.GetException(),
+                "Skills dir-watcher error in '{Layer}' layer at '{Root}'.", layerName, root);
+            _watchers.Add(wDir);
         }
         catch (Exception ex)
         {
