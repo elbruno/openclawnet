@@ -257,6 +257,9 @@ public static class AgentProfileEndpoints
                     Name = $"test-{name}",
                     Provider = definition.ProviderType,
                     Endpoint = definition.Endpoint,
+                    // Issue #122: prefer the profile's own model, fall back to the provider definition's
+                    // model so Ollama and other providers receive a concrete model name.
+                    Model = profile.Model ?? definition.Model,
                     ApiKey = definition.ApiKey,
                     DeploymentName = definition.DeploymentName,
                     AuthMode = definition.AuthMode,

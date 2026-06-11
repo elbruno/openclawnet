@@ -1,0 +1,182 @@
+services:
+  env-dashboard:
+    image: "mcr.microsoft.com/dotnet/nightly/aspire-dashboard:latest"
+    ports:
+      - "18888"
+    expose:
+      - "18889"
+      - "18890"
+    networks:
+      - "aspire"
+    restart: "always"
+  openclawnet-db-sqliteweb:
+    image: "ghcr.io/coleifer/sqlite-web:latest"
+    command:
+      - "openclawnet.db"
+    expose:
+      - "8080"
+    volumes:
+      - type: "bind"
+        target: "/data"
+        source: "${OPENCLAWNET_DB_SQLITEWEB_BINDMOUNT_0}"
+        read_only: false
+    networks:
+      - "aspire"
+  shell-service:
+    image: "${SHELL_SERVICE_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${SHELL_SERVICE_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "shell-service"
+    expose:
+      - "${SHELL_SERVICE_PORT}"
+    networks:
+      - "aspire"
+  browser-service:
+    image: "${BROWSER_SERVICE_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${BROWSER_SERVICE_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "browser-service"
+    expose:
+      - "${BROWSER_SERVICE_PORT}"
+    networks:
+      - "aspire"
+  gateway:
+    image: "${GATEWAY_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${GATEWAY_PORT}"
+      ConnectionStrings__openclawnet-db: "Data Source=C:\\src\\openclawnet-plan\\src\\OpenClawNet.AppHost\\.data\\openclawnet.db;Cache=Shared;Mode=ReadWriteCreate"
+      OPENCLAWNET_DB_DATASOURCE: "C:\\src\\openclawnet-plan\\src\\OpenClawNet.AppHost\\.data\\openclawnet.db"
+      SHELL_SERVICE_HTTP: "http://shell-service:${SHELL_SERVICE_PORT}"
+      services__shell-service__http__0: "http://shell-service:${SHELL_SERVICE_PORT}"
+      SHELL_SERVICE_HTTPS: "https://shell-service:${SHELL_SERVICE_PORT}"
+      BROWSER_SERVICE_HTTP: "http://browser-service:${BROWSER_SERVICE_PORT}"
+      services__browser-service__http__0: "http://browser-service:${BROWSER_SERVICE_PORT}"
+      BROWSER_SERVICE_HTTPS: "https://browser-service:${BROWSER_SERVICE_PORT}"
+      Model__Model: "gemma4:e2b"
+      OTEL_DOTNET_EXPERIMENTAL_GENAI_EMIT_EVENTS: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "gateway"
+    ports:
+      - "${GATEWAY_PORT}"
+    depends_on:
+      shell-service:
+        condition: "service_started"
+      browser-service:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  scheduler:
+    image: "${SCHEDULER_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${SCHEDULER_PORT}"
+      ConnectionStrings__openclawnet-db: "Data Source=C:\\src\\openclawnet-plan\\src\\OpenClawNet.AppHost\\.data\\openclawnet.db;Cache=Shared;Mode=ReadWriteCreate"
+      OPENCLAWNET_DB_DATASOURCE: "C:\\src\\openclawnet-plan\\src\\OpenClawNet.AppHost\\.data\\openclawnet.db"
+      GATEWAY_HTTP: "http://gateway:${GATEWAY_PORT}"
+      services__gateway__http__0: "http://gateway:${GATEWAY_PORT}"
+      GATEWAY_HTTPS: "https://gateway:${GATEWAY_PORT}"
+      SCHEDULER_HTTP: "http://scheduler:${SCHEDULER_PORT}"
+      services__scheduler__http__0: "http://scheduler:${SCHEDULER_PORT}"
+      SCHEDULER_HTTPS: "https://scheduler:${SCHEDULER_PORT}"
+      Channels__BaseUrl: "https://channels-website:${CHANNELS_WEBSITE_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "scheduler"
+    expose:
+      - "${SCHEDULER_PORT}"
+    depends_on:
+      gateway:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  web:
+    image: "${WEB_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${WEB_PORT}"
+      GATEWAY_HTTP: "http://gateway:${GATEWAY_PORT}"
+      services__gateway__http__0: "http://gateway:${GATEWAY_PORT}"
+      GATEWAY_HTTPS: "https://gateway:${GATEWAY_PORT}"
+      SCHEDULER_HTTP: "http://scheduler:${SCHEDULER_PORT}"
+      services__scheduler__http__0: "http://scheduler:${SCHEDULER_PORT}"
+      SCHEDULER_HTTPS: "https://scheduler:${SCHEDULER_PORT}"
+      Channels__BaseUrl: "https://channels-website:${CHANNELS_WEBSITE_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "web"
+    ports:
+      - "${WEB_PORT}"
+    depends_on:
+      gateway:
+        condition: "service_started"
+      scheduler:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  channels-website:
+    image: "${CHANNELS_WEBSITE_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${CHANNELS_WEBSITE_PORT}"
+      GATEWAY_HTTP: "http://gateway:${GATEWAY_PORT}"
+      services__gateway__http__0: "http://gateway:${GATEWAY_PORT}"
+      GATEWAY_HTTPS: "https://gateway:${GATEWAY_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "channels-website"
+    ports:
+      - "${CHANNELS_WEBSITE_PORT}"
+    depends_on:
+      gateway:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  channels:
+    image: "${CHANNELS_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${CHANNELS_PORT}"
+      GATEWAY_HTTP: "http://gateway:${GATEWAY_PORT}"
+      services__gateway__http__0: "http://gateway:${GATEWAY_PORT}"
+      GATEWAY_HTTPS: "https://gateway:${GATEWAY_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "channels"
+    ports:
+      - "${CHANNELS_PORT}"
+    depends_on:
+      gateway:
+        condition: "service_started"
+    networks:
+      - "aspire"
+  memory-service:
+    image: "${MEMORY_SERVICE_IMAGE}"
+    environment:
+      OTEL_DOTNET_EXPERIMENTAL_OTLP_RETRY: "in_memory"
+      ASPNETCORE_FORWARDEDHEADERS_ENABLED: "true"
+      HTTP_PORTS: "${MEMORY_SERVICE_PORT}"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "http://env-dashboard:18889"
+      OTEL_EXPORTER_OTLP_PROTOCOL: "grpc"
+      OTEL_SERVICE_NAME: "memory-service"
+    expose:
+      - "${MEMORY_SERVICE_PORT}"
+    networks:
+      - "aspire"
+networks:
+  aspire:
+    driver: "bridge"

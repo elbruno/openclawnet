@@ -1,5 +1,17 @@
 var builder = DistributedApplication.CreateBuilder(args);
 
+// Configurable deploy target: "docker" (default) or "azure"
+// For Azure: use `aspire publish --publisher azure-container-apps` or `azd up` at deploy time.
+// Set via appsettings.json or OPENCLAW_DEPLOY_TARGET env var.
+var deployTarget = builder.Configuration["OpenClawNet:Deploy:Target"]
+    ?? Environment.GetEnvironmentVariable("OPENCLAW_DEPLOY_TARGET")
+    ?? "docker";
+
+if (deployTarget.Equals("docker", StringComparison.OrdinalIgnoreCase))
+{
+    builder.AddDockerComposeEnvironment("env");
+}
+
 var dbPath = builder.Configuration["OpenClawNet:ConnectionStrings:DbPath"]
     ?? Path.Combine(builder.AppHostDirectory, ".data");
 

@@ -2,7 +2,7 @@
   "$schema": "./metadata.schema.json",
   "series": {
     "name": "OpenClawNet",
-    "tagline": "Build a .NET Aspire + Blazor AI agent platform, stage by stage.",
+    "tagline": "Build a Aspire + Blazor AI agent platform, stage by stage.",
     "repo": "https://github.com/elbruno/openclawnet",
     "site": "https://elbruno.github.io/openclawnet/"
   },

@@ -38,7 +38,7 @@ dotnet --version
 
 ---
 
-### .NET Aspire CLI
+### Aspire CLI
 
 **Version Required:** Latest stable release (13.2+)
 

@@ -27,7 +27,9 @@ public sealed class OllamaAgentProvider : IAgentProvider
     {
         // Profile endpoint overrides DI options (supports per-definition endpoints)
         var endpoint = profile.Endpoint ?? _options.Value.Endpoint ?? "http://localhost:11434";
-        var model = _options.Value.Model ?? "gemma4:e2b";
+        // Profile model takes priority, then DI-configured default, then built-in fallback.
+        // The fallback ensures test profiles (which carry no model) still produce a valid client.
+        var model = profile.Model ?? _options.Value.Model ?? "gemma4:e2b";
 
         _logger.LogDebug("Creating Ollama IChatClient: endpoint={Endpoint}, model={Model}", endpoint, model);
 

@@ -8,12 +8,12 @@
     "durationMs": 10
   },
   "JobRunArtifactTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2267
+    "durationMs": 2506
   },
   "FileSkillLoaderTests.ReloadAsync_LoadsFlatMdFiles": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -24,8 +24,8 @@
     "durationMs": 8
   },
   "DpapiSecretStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "skip",
     "notes": "Windows uses DPAPI; non-Windows fallback only.",
     "suite": "unit",
@@ -40,36 +40,36 @@
     "durationMs": 57
   },
   "McpSuggestionsProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 139
+    "durationMs": 254
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_ConvertsMessages_Correctly": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 3
   },
   "ServiceRegistrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 42
+    "durationMs": 56
   },
   "HtmlQueryToolTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 9
+    "durationMs": 7
   },
   "FileSkillLoaderTests.InstallSkillAsync_CreatesSkillMdInInstalledDirectory": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -80,12 +80,12 @@
     "durationMs": 141
   },
   "AgentProfileStoreDefaultEnforcementTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 37
+    "durationMs": 1290
   },
   "ConceptReviewEntitiesTests.ChatSessionArtifact_CascadeDeletesWithSession": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -96,60 +96,60 @@
     "durationMs": 123
   },
   "ChannelDetailViewEndpointTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 281
+    "durationMs": 415
   },
   "SchedulerRunStateTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 6
+    "durationMs": 57
   },
   "CronExpressionEvaluatorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 6
+    "durationMs": 16
   },
   "ModelClientChatClientAdapterTests.ToOpenClawMessage_ExtractsFunctionCallContent": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 6
+    "durationMs": 3
   },
   "AgentProfileEndpointTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1298
+    "durationMs": 2514
   },
   "CronTextTranslatorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 10
+    "durationMs": 5
   },
   "DocumentPipelineTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 71
+    "durationMs": 114
   },
   "FileSkillLoaderTests.InstallSkillAsync_SetsSourceToInstalled": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -160,52 +160,52 @@
     "durationMs": 40
   },
   "ModelClientChatClientAdapterTests.GetStreamingResponseAsync_YieldsUpdates": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 10
+    "durationMs": 30
   },
   "AgentRuntimeStreamTests.ProcessAsync_ToolCall_SecondTurnChatRequestContainsToolContent": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 363
+    "durationMs": 512
   },
   "RuntimeModelClientTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 57
+    "durationMs": 35
   },
   "AgentProfileStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 880
+    "durationMs": 34
   },
   "ProviderResolverTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 144
+    "durationMs": 308
   },
   "FileSystemToolTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 140
+    "durationMs": 151
   },
   "ConceptReviewEntitiesTests.McpServerDefinition_DefaultRequireApproval_DefaultsToNull": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -216,20 +216,20 @@
     "durationMs": 1
   },
   "SchemaMigratorSeedDefaultsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1537
+    "durationMs": 1165
   },
   "SchedulerOptionsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 9
+    "durationMs": 1
   },
   "AgentInvocationLoggerTests.RecordAsync_WritesRow_WithKindAndSourceId": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -240,28 +240,28 @@
     "durationMs": 16
   },
   "AgentRuntimeEnabledToolsFilterTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 40
+    "durationMs": 393
   },
   "ToolApprovalAuditorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 95
+    "durationMs": 751
   },
   "ToolExecutorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 30
+    "durationMs": 20
   },
   "FileSkillLoaderTests.UninstallSkillAsync_DeletesDirectory": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -272,12 +272,12 @@
     "durationMs": 10
   },
   "SchedulerSettingsServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 87
+    "durationMs": 80
   },
   "SchemaParityTests.JobRuns_TableContainsAllJobRunColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -296,20 +296,20 @@
     "durationMs": 14
   },
   "ToolRegistryTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 7
+    "durationMs": 13
   },
   "InMemoryChannelEventBusTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 194
+    "durationMs": 173
   },
   "FileSkillLoaderTests.BuiltInSkills_HaveSourceBuiltIn": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -320,12 +320,12 @@
     "durationMs": 54
   },
   "RuntimeModelSettingsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 281
+    "durationMs": 150
   },
   "JobsFromTemplateStoreTests.CreateFromTemplate_InitialNameIncludesSequenceSuffix": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -336,8 +336,8 @@
     "durationMs": 10
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesValidJson": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
@@ -360,12 +360,12 @@
     "durationMs": 57
   },
   "McpToolProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 13
+    "durationMs": 11
   },
   "SchemaParityTests.ModelProviders_TableContainsCoreColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -384,36 +384,36 @@
     "durationMs": 9
   },
   "ToolApprovalCoordinatorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 42
+    "durationMs": 157
   },
   "ModelClientChatClientAdapterTests.ToOpenClawMessage_MapsRoles_Correctly": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 0
   },
   "JobsDomainModelTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 318
+    "durationMs": 1901
   },
   "PromptComposerTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 27
+    "durationMs": 16
   },
   "ConceptReviewEntitiesTests.JobDefinitionStateChange_RoundTripsAcrossSave": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -424,100 +424,100 @@
     "durationMs": 225
   },
   "AgentRuntimeMcpDedupTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 63
+    "durationMs": 8
   },
   "SchemaMigratorDropAgentProfileModelTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 244
+    "durationMs": 2016
   },
   "ChatStreamEndpointTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 421
+    "durationMs": 368
   },
   "BundledMcpWrapperTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 134
+    "durationMs": 182
   },
   "DemoAndSchedulerHelpersEndpointTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 536
+    "durationMs": 1219
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_PropagatesExceptions": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 40
+    "durationMs": 6
   },
   "ImageEditToolTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 480
+    "durationMs": 389
   },
   "AutoCaptureIntegrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 977
+    "durationMs": 730
   },
   "JobTemplatesProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 22
+    "durationMs": 14
   },
   "McpProcessIsolationPolicyTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 9
+    "durationMs": 18
   },
   "ArtifactRetentionTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2578
+    "durationMs": 929
   },
   "JobsRenamePageTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1968
+    "durationMs": 1318
   },
   "SkillParserTests.Parse_WithValidFrontmatter_ExtractsMetadata": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -528,12 +528,12 @@
     "durationMs": 6
   },
   "JobExecutorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 439
+    "durationMs": 438
   },
   "FileSkillLoaderTests.ReloadAsync_IgnoresSubdirectoriesWithoutSkillMd": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -544,12 +544,12 @@
     "durationMs": 7
   },
   "DefaultToolResultSanitizerTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 38
+    "durationMs": 63
   },
   "SchemaParityTests.JobRunArtifacts_TableContainsAllJobRunArtifactColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -576,12 +576,12 @@
     "durationMs": 28
   },
   "SchedulerPollingServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 4
+    "durationMs": 1
   },
   "FileSkillLoaderTests.UninstallSkillAsync_DoesNotThrow_WhenSkillNotFound": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -592,12 +592,12 @@
     "durationMs": 52
   },
   "JobsEndpointsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2120
+    "durationMs": 3587
   },
   "SkillParserTests.Parse_WithDisabledFlag_SetsEnabled": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -608,12 +608,12 @@
     "durationMs": 2
   },
   "AzureOpenAIModelClientTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 113
+    "durationMs": 176
   },
   "SkillParserTests.Parse_WithEmptyContent_ReturnsEmptyBody": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -624,92 +624,92 @@
     "durationMs": 44
   },
   "SecretsStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 90
+    "durationMs": 57
   },
   "ModelClientChatClientAdapterTests.GetStreamingResponseAsync_WithToolCalls_YieldsFunctionContent": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 17
+    "durationMs": 9
   },
   "JobStatusTransitionsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 21
+    "durationMs": 18
   },
   "ToolTestRecordStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1488
+    "durationMs": 74
   },
   "SchedulerOrphanReclaimTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 146
+    "durationMs": 202
   },
   "AgentOrchestratorProfileTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 22
+    "durationMs": 16
   },
   "OllamaAgentProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "skip",
     "notes": "OllamaSharp assembly load failure — issue #95",
     "suite": "unit",
-    "durationMs": 4105
+    "durationMs": 6347
   },
   "ChatHubTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "integration",
-    "durationMs": 43
+    "durationMs": 171
   },
   "CalculatorToolTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 371
+    "durationMs": 441
   },
   "McpServerCatalogServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1518
+    "durationMs": 117
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesInvalidJson": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1
+    "durationMs": 0
   },
   "SchemaParityTests.JobRunEvents_TableContainsAllJobRunEventColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -720,12 +720,12 @@
     "durationMs": 63
   },
   "AgentProfileMarkdownParserTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 69
+    "durationMs": 24
   },
   "JobsFromTemplateStoreTests.CreateFromTemplate_PreservesSourceTemplateReference": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -736,20 +736,20 @@
     "durationMs": 1752
   },
   "ModelProviderDefinitionStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 196
+    "durationMs": 1403
   },
   "ModelClientChatClientAdapterTests.ParseArguments_HandlesEmptyString": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 6
+    "durationMs": 0
   },
   "SchemaParityTests.Jobs_TableContainsAllScheduledJobColumns_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -760,12 +760,12 @@
     "durationMs": 36
   },
   "AgentProfileTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 17
+    "durationMs": 4
   },
   "FileSkillLoaderTests.DisableSkill_ExcludesItFromActiveSkills": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -776,36 +776,36 @@
     "durationMs": 23
   },
   "OllamaModelClientTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 70
+    "durationMs": 85
   },
   "ChatSmokeTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 46
+    "durationMs": 48
   },
   "GitHubCopilotAgentProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 515
+    "durationMs": 492
   },
   "RuntimeAgentProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 29
+    "durationMs": 59
   },
   "FileSkillLoaderTests.ReloadAsync_LoadsSubdirectorySkillMd": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -824,20 +824,20 @@
     "durationMs": 535
   },
   "ConversationStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 954
+    "durationMs": 121
   },
   "ChatEndpointProfileTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 169
+    "durationMs": 128
   },
   "AgentInvocationLoggerTests.RecordAsync_DoesNotThrow_OnPersistenceFailure": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -856,44 +856,44 @@
     "durationMs": 15
   },
   "AzureOpenAIAgentProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 54
+    "durationMs": 13
   },
   "ChannelsApiEndpointsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1121
+    "durationMs": 818
   },
   "ChannelsHomeSmokeTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "skip",
     "notes": "\\ud83d\\udccc Pending: ChannelStore.GetAllAsync() does not exist yet; channels are registry-backed only. Once a ChannelStore with GetAllAsync is implemented (likely as part of Mark's ChannelDetail report work), this test can verify that Ensu...",
     "suite": "unit",
-    "durationMs": 41
+    "durationMs": 9
   },
   "ModelProviderEndpointTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 479
+    "durationMs": 1309
   },
   "AppRazorMudBlazorRegressionTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 33
+    "durationMs": 15
   },
   "SchemaParityTests.Channels_TableExists_AfterMigration": {
     "lastRunId": "2026-04-24T02-19-11Z",
@@ -1232,12 +1232,12 @@
     "durationMs": 2
   },
   "SessionsDeleteConfirmationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "playwright",
-    "durationMs": 883
+    "durationMs": 1313
   },
   "SecretsVaultTests": {
     "lastRunId": "2026-05-25T16-20-03Z",
@@ -1520,12 +1520,12 @@
     "durationMs": 6585
   },
   "ModelClientChatClientAdapterTests.GetResponseAsync_WithToolRoundTrip_ToolResultContentReachesSecondTurn": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 19
+    "durationMs": 20
   },
   "AppInsightsAuditSinkTests": {
     "lastRunId": "2026-05-23-backfill",
@@ -1608,468 +1608,468 @@
     "durationMs": 1
   },
   "ChainedSecretsStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 17
+    "durationMs": 54
   },
   "LiveConsoleEventTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 47
+    "durationMs": 177
   },
   "UserFolderClientTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 22
+    "durationMs": 243
   },
   "OpenClawNetSkillsProviderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 122
+    "durationMs": 178
   },
   "SkillInjectionValidationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 111
+    "durationMs": 236
   },
   "EnvironmentSecretsStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 29
+    "durationMs": 38
   },
   "ModelStorageQuotaTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "skip",
     "notes": "needs virtual time injection — re-enable once IClock seam exists",
     "suite": "unit",
-    "durationMs": 75
+    "durationMs": 78
   },
   "ChannelDeliveryAdapterFactoryTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 18
+    "durationMs": 12
   },
   "DefaultPromptComposerSemanticTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "skip",
     "notes": "Awaiting Story 3: SemanticSkillRanker integration into DefaultPromptComposer.EnrichSkillsAsync — see issue #89",
     "suite": "unit",
     "durationMs": 33
   },
   "DefaultHybridSearchServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 42
+    "durationMs": 36
   },
   "UserFolderDeleteDialogTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 841
+    "durationMs": 94
   },
   "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_StringResult": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 1
   },
   "DashboardPublisherToolUnitTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 54
-  },
-  "TeamsProactiveAdapterTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 35
-  },
-  "ReconnectModalTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 156
-  },
-  "SecretsVaultPhase1Tests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 3262
-  },
-  "OpenClawNetSkillsRegistryTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 2389
-  },
-  "ChatNamingServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 43
-  },
-  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_ObjectResult": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 10
-  },
-  "SkillsHotReloadTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 9556
-  },
-  "SlackWebhookAdapterTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 44
   },
-  "SkillEnableMatrixTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+  "TeamsProactiveAdapterTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 1989
+    "durationMs": 17
   },
-  "OllamaHealthCheckTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 45
-  },
-  "GenericWebhookAdapterTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 6047
-  },
-  "EmbeddingsToolDiTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 36
-  },
-  "SecretsVaultPhase4LifecycleTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 479
-  },
-  "StorageAclVerifierTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 22
-  },
-  "AgentProfileVaultIntegrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 51
-  },
-  "ChannelDeliveryServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 101
-  },
-  "VaultCommandTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 79824
-  },
-  "MempalaceNetPerformanceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 178
-  },
-  "PlaywrightRuntimeHelperTests.PrepareForWindowsBaseDirectory_UsesSystemNode_AndDeletesRepoLocalNodeRuntime": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 216
-  },
-  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_NullResult": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 1
-  },
-  "GmailSummarizeToolUnitTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 147
-  },
-  "HybridSearchServiceIntegrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 105
-  },
-  "SkillImportTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 308
-  },
-  "DefaultPromptComposerSemanticWiringTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 22
-  },
-  "SlackProactiveAdapterTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 50
-  },
-  "SkillsLogTaxonomyTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 569
-  },
-  "InMemoryGoogleOAuthTokenStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 10
-  },
-  "SkillAuthoringDialogTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+  "ReconnectModalTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 122
   },
-  "MemoryToolsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+  "SecretsVaultPhase1Tests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 116
+    "durationMs": 1580
+  },
+  "OpenClawNetSkillsRegistryTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 2731
+  },
+  "ChatNamingServiceTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 27
+  },
+  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_ObjectResult": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 3
+  },
+  "SkillsHotReloadTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 9818
+  },
+  "SlackWebhookAdapterTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 142
+  },
+  "SkillEnableMatrixTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 1555
+  },
+  "OllamaHealthCheckTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 42
+  },
+  "GenericWebhookAdapterTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 6103
+  },
+  "EmbeddingsToolDiTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 38
+  },
+  "SecretsVaultPhase4LifecycleTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 1920
+  },
+  "StorageAclVerifierTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 14
+  },
+  "AgentProfileVaultIntegrationTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 18
+  },
+  "ChannelDeliveryServiceTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 64
+  },
+  "VaultCommandTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 68653
+  },
+  "MempalaceNetPerformanceTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 110
+  },
+  "PlaywrightRuntimeHelperTests.PrepareForWindowsBaseDirectory_UsesSystemNode_AndDeletesRepoLocalNodeRuntime": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 456
+  },
+  "ModelClientChatClientAdapterTests.PropagatesFunctionResultContent_NullResult": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 0
+  },
+  "GmailSummarizeToolUnitTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 219
+  },
+  "HybridSearchServiceIntegrationTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 106
+  },
+  "SkillImportTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 300
+  },
+  "DefaultPromptComposerSemanticWiringTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 19
+  },
+  "SlackProactiveAdapterTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 32
+  },
+  "SkillsLogTaxonomyTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 429
+  },
+  "InMemoryGoogleOAuthTokenStoreTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 28
+  },
+  "SkillAuthoringDialogTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 176
+  },
+  "MemoryToolsTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 59
   },
   "VaultConfigBackendsTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 2089
+    "durationMs": 544
   },
   "SkillServiceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 112
+    "durationMs": 250
   },
   "ModelProviderVaultIntegrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 9
   },
   "SkillVectorTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 16
   },
   "MarkItDownToolTests.ExecuteAsync_WithValidUrl_ReturnsMarkdownContent": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 31
+  },
+  "DefaultSummaryServiceConfigTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 206
+  },
+  "GitHubToolTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 116
+  },
+  "SlackProactiveAdapterIntegrationTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 3370
+  },
+  "VectorStorageFormatTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 118
+  },
+  "SemanticSkillRankerTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
     "durationMs": 39
   },
-  "DefaultSummaryServiceConfigTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 190
-  },
-  "GitHubToolTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 342
-  },
-  "SlackProactiveAdapterIntegrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 4342
-  },
-  "VectorStorageFormatTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 133
-  },
-  "SemanticSkillRankerTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
-    "outcome": "pass",
-    "notes": null,
-    "suite": "unit",
-    "durationMs": 53
-  },
   "SkillsClientTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 321
+    "durationMs": 65
   },
   "InMemoryOAuthFlowStateStoreTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 41
+    "durationMs": 40
   },
   "EmbedderInterfaceTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 52
+    "durationMs": 46
   },
   "CalendarCreateEventToolUnitTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 253
+    "durationMs": 88
   },
   "SemanticSkillRankerRegistrationTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 8
+    "durationMs": 7
   },
   "StorageOptionsAgentFolderTests": {
-    "lastRunId": "2026-05-25T16-21-41Z",
-    "lastDate": "2026-05-25",
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
     "outcome": "pass",
     "notes": null,
     "suite": "unit",
-    "durationMs": 63
+    "durationMs": 74
   },
   "AspireHostFixturePilotTests.AspireHostFixture_AttachesOrStarts_AndExposesHealthyGateway": {
     "lastRunId": "2026-05-25T16-20-03Z",
@@ -2190,5 +2190,45 @@
     "notes": null,
     "suite": "integration",
     "durationMs": 7521
+  },
+  "LiveMcpToolTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "skip",
+    "notes": "GITHUB_TOKEN not set — export a PAT with read:user + repo scopes to run this test.",
+    "suite": "unit",
+    "durationMs": 1235
+  },
+  "LiveLlmTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "fail",
+    "notes": "Expected contentEvents not to be empty because at least one content token should stream through the pipeline.",
+    "suite": "unit",
+    "durationMs": 36828
+  },
+  "OllamaStreamingToolCallLiveTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "pass",
+    "notes": null,
+    "suite": "unit",
+    "durationMs": 27731
+  },
+  "AzureOpenAILiveTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "fail",
+    "notes": "System.ClientModel.ClientResultException : HTTP 401 (: 401) Access denied due to invalid subscription key or wrong API endpoint. Make sure to provide a valid key for an active subscription and use a correct regional API endpoint for your re...",
+    "suite": "unit",
+    "durationMs": 1677
+  },
+  "LiveAgentLoopTests": {
+    "lastRunId": "2026-05-29T12-28-58Z",
+    "lastDate": "2026-05-29",
+    "outcome": "fail",
+    "notes": "System.ClientModel.ClientResultException : HTTP 401 (: 401) Access denied due to invalid subscription key or wrong API endpoint. Make sure to provide a valid key for an active subscription and use a correct regional API endpoint for your re...",
+    "suite": "unit",
+    "durationMs": 25162
   }
 }
