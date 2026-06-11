@@ -197,7 +197,7 @@ public static class AgentProfileEndpoints
             var assigned = await assignments.GetAssignedAsync(name, ct);
             return Results.Ok(new AgentSkillsResponse(name, assigned));
         })
-        .WithName("GetAgentSkills")
+        .WithName("GetAgentProfileSkills")
         .WithDescription("Returns the skills currently assigned to an agent profile.");
 
         group.MapPut("/{name}/skills", async (
