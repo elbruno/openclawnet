@@ -256,6 +256,7 @@ public static class AgentProfileEndpoints
                 {
                     Name = $"test-{name}",
                     Provider = definition.ProviderType,
+                    Model = profile.Model ?? definition.Model,
                     Endpoint = definition.Endpoint,
                     ApiKey = definition.ApiKey,
                     DeploymentName = definition.DeploymentName,

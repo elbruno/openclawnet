@@ -120,6 +120,7 @@ public static class ModelProviderEndpoints
                 {
                     Name = $"test-{name}",
                     Provider = def.ProviderType,
+                    Model = def.Model,
                     Endpoint = def.Endpoint,
                     ApiKey = def.ApiKey,
                     DeploymentName = def.DeploymentName,
