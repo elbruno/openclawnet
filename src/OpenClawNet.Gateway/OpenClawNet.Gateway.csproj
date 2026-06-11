@@ -36,7 +36,6 @@
     <ProjectReference Include="..\OpenClawNet.Models.Foundry\OpenClawNet.Models.Foundry.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
-    <ProjectReference Include="..\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Shell\OpenClawNet.Tools.Shell.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Web\OpenClawNet.Tools.Web.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Scheduler\OpenClawNet.Tools.Scheduler.csproj" />

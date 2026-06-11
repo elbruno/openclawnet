@@ -21,7 +21,6 @@
     <Project Path="src/OpenClawNet.Storage/OpenClawNet.Storage.csproj" />
     <Project Path="src/OpenClawNet.Tools.Abstractions/OpenClawNet.Tools.Abstractions.csproj" />
     <Project Path="src/OpenClawNet.Tools.Core/OpenClawNet.Tools.Core.csproj" />
-    <Project Path="src/OpenClawNet.Tools.FileSystem/OpenClawNet.Tools.FileSystem.csproj" />
     <Project Path="src/OpenClawNet.Tools.Scheduler/OpenClawNet.Tools.Scheduler.csproj" />
     <Project Path="src/OpenClawNet.Tools.Shell/OpenClawNet.Tools.Shell.csproj" />
     <Project Path="src/OpenClawNet.Tools.Web/OpenClawNet.Tools.Web.csproj" />
