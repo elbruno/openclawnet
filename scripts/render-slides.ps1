@@ -120,7 +120,7 @@ foreach ($s in $Sessions) {
       continue
     }
     Write-Host "▶ Rendering $md"
-    & npx --yes "@marp-team/marp-cli@latest" --html --allow-local-files --theme $ThemeCss $md -o $html
+    & npx --yes "@marp-team/marp-cli@latest" --html --bespoke --allow-local-files --theme $ThemeCss $md -o $html
     if ($LASTEXITCODE -ne 0) { throw "marp failed for $s/$variant (exit $LASTEXITCODE)" }
     if (Inject-Switcher -HtmlPath $html) {
       Write-Host "  ✔ Theme switcher injected → $html"

@@ -97,7 +97,7 @@ public class GatewayApiTests : IAsyncLifetime
         var chatResp = await _client.PostAsJsonAsync("/api/chat", new
         {
             sessionId,
-            message = "What is .NET Aspire in one sentence?"
+            message = "What is Aspire in one sentence?"
         });
 
         if (!AssertSuccessOrServiceUnavailable(chatResp))

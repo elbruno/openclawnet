@@ -85,7 +85,7 @@ var profile = new AgentProfile
 IChatClient chatClient = provider.CreateChatClient(profile);
 
 // The question to ask
-var question = "What is Aspire (formerly know as .NET Aspire) and why should I use it? What is the latest version and when was it released?";
+var question = "What is Aspire (formerly know as Aspire) and why should I use it? What is the latest version and when was it released?";
 
 Console.ForegroundColor = ConsoleColor.Cyan;
 Console.Write("You: ");

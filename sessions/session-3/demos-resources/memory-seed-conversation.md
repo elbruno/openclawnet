@@ -8,7 +8,7 @@ The topic mix is intentional — three different frameworks, a couple of persona
 
 ## Messages to send (in order)
 
-1. `I'm building a distributed app in .NET Aspire. What does the AppHost project actually do at runtime?`
+1. `I'm building a distributed app in Aspire. What does the AppHost project actually do at runtime?`
 2. `Got it. Now compare that to Dapr — how do they overlap?`
 3. `Which one would you pick for a new greenfield project where the team has no prior service-mesh experience?`
 4. `Switching topics — what's the current state of Blazor United (server + WASM hybrid render modes) in net10.0?`

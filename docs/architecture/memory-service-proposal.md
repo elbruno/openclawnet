@@ -688,7 +688,7 @@ Per the hard constraint, these are listed only — no code changes:
 - Qdrant docs — https://qdrant.tech/documentation/
 - Qdrant .NET client — https://github.com/qdrant/qdrant-dotnet
 - Qdrant on NuGet — https://www.nuget.org/packages/Qdrant.Client
-- .NET Aspire Qdrant integration — https://learn.microsoft.com/dotnet/aspire/database/qdrant-integration
+- Aspire Qdrant integration — https://learn.microsoft.com/dotnet/aspire/database/qdrant-integration
 - `Microsoft.Extensions.AI` `IEmbeddingGenerator` — https://learn.microsoft.com/dotnet/ai/microsoft-extensions-ai
 - `Elbruno.LocalEmbeddings` (NuGet) — https://www.nuget.org/profiles/elbruno
 - `Elbruno.LocalEmbeddings` getting-started — https://github.com/elbruno/elbruno.localembeddings/blob/main/docs/getting-started.md

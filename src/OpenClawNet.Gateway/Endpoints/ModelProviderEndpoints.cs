@@ -121,6 +121,7 @@ public static class ModelProviderEndpoints
                     Name = $"test-{name}",
                     Provider = def.ProviderType,
                     Endpoint = def.Endpoint,
+                    Model = def.Model,   // Issue #120: pass model so Ollama provider doesn't fall back to its default
                     ApiKey = def.ApiKey,
                     DeploymentName = def.DeploymentName,
                     AuthMode = def.AuthMode,

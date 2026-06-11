@@ -198,7 +198,7 @@
 
 ---
 
-## 29:00–34:00 | 7) Deploy with .NET Aspire
+## 29:00–34:00 | 7) Deploy with Aspire
 
 **Speaker Notes:**
 - Reference Aspire deployment page: <https://aspire.dev/deployment/>

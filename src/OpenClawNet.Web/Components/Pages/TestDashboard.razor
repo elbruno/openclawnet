@@ -1,0 +1,247 @@
+@page "/test-dashboard"
+@using System.IO
+@using System.Text.Json
+@using System.Text.Json.Serialization
+@inject IWebHostEnvironment Env
+@rendermode InteractiveServer
+
+<PageTitle>Test Dashboard — OpenClawNet</PageTitle>
+
+<MudContainer MaxWidth="MaxWidth.ExtraLarge" Class="py-6" data-testid="test-dashboard">
+
+    <MudText Typo="Typo.h4" GutterBottom="true" Class="mb-1">
+        🧪 Test Dashboard
+    </MudText>
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-5">
+        Live status of all test suites — refreshed by <code>scripts\test-and-publish.ps1</code> after every test run.
+    </MudText>
+
+    @if (_loading)
+    {
+        <MudGrid>
+            @for (int i = 0; i < 4; i++)
+            {
+                <MudItem xs="12" md="6">
+                    <MudPaper Elevation="2" Class="pa-5">
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Height="28px" Width="60%" />
+                        <MudSkeleton SkeletonType="SkeletonType.Text" Height="20px" Class="mt-2" />
+                        <MudSkeleton SkeletonType="SkeletonType.Rectangle" Height="48px" Class="mt-3" />
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+    }
+    else if (_error is not null)
+    {
+        <MudAlert Severity="Severity.Warning" data-testid="dashboard-error">
+            <strong>Could not load test summary:</strong> @_error
+            <MudText Typo="Typo.body2" Class="mt-1">
+                Run <code>scripts\test-and-publish.ps1</code> to generate <code>docs\test-dashboard\summary.json</code>.
+            </MudText>
+        </MudAlert>
+    }
+    else if (_summary is not null)
+    {
+        @* Aggregate totals strip *@
+        <MudGrid Class="mb-5" data-testid="dashboard-totals">
+            <MudItem xs="6" sm="3">
+                <MudPaper Elevation="1" Class="pa-4 text-center">
+                    <MudText Typo="Typo.h4" Color="Color.Default">@_summary.Suites.Sum(s => s.Total)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Total Tests</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Elevation="1" Class="pa-4 text-center">
+                    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-success)">@_summary.Suites.Sum(s => s.Passed)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Passed</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Elevation="1" Class="pa-4 text-center">
+                    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-error)">@_summary.Suites.Sum(s => s.Failed)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Failed</MudText>
+                </MudPaper>
+            </MudItem>
+            <MudItem xs="6" sm="3">
+                <MudPaper Elevation="1" Class="pa-4 text-center">
+                    <MudText Typo="Typo.h4" Style="color: var(--mud-palette-warning)">@_summary.Suites.Sum(s => s.Skipped)</MudText>
+                    <MudText Typo="Typo.caption" Color="Color.Secondary">Skipped</MudText>
+                </MudPaper>
+            </MudItem>
+        </MudGrid>
+
+        @* Suite cards *@
+        <MudGrid data-testid="dashboard-suites">
+            @foreach (var suite in _summary.Suites)
+            {
+                var passRate = suite.Recorded > 0 ? (int)Math.Round((double)suite.Passed / suite.Recorded * 100) : 0;
+                var statusColor = suite.Failed > 0 ? Color.Error : (suite.Passed == suite.Recorded && suite.Recorded > 0 ? Color.Success : Color.Warning);
+
+                <MudItem xs="12" md="6" data-testid="suite-card-@suite.Id">
+                    <MudPaper Elevation="2" Class="pa-5" Style="height: 100%;">
+                        <div class="d-flex justify-space-between align-center mb-2">
+                            <MudText Typo="Typo.h6">@suite.Label</MudText>
+                            <MudChip T="string" Size="Size.Small" Color="@statusColor" data-testid="suite-status-@suite.Id">
+                                @(suite.Failed > 0 ? $"{suite.Failed} FAILED" : suite.Passed > 0 ? "PASSING" : "NO RUNS")
+                            </MudChip>
+                        </div>
+
+                        <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mb-3">
+                            @suite.Description
+                        </MudText>
+
+                        <div class="d-flex gap-4 mb-3">
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Total</MudText>
+                                <MudText Typo="Typo.subtitle1"><strong>@suite.Total</strong></MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Passed</MudText>
+                                <MudText Typo="Typo.subtitle1" Style="color: var(--mud-palette-success)"><strong>@suite.Passed</strong></MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Failed</MudText>
+                                <MudText Typo="Typo.subtitle1" Style="color: var(--mud-palette-error)"><strong>@suite.Failed</strong></MudText>
+                            </div>
+                            <div>
+                                <MudText Typo="Typo.caption" Color="Color.Secondary">Skipped</MudText>
+                                <MudText Typo="Typo.subtitle1" Style="color: var(--mud-palette-warning)"><strong>@suite.Skipped</strong></MudText>
+                            </div>
+                        </div>
+
+                        @if (suite.Recorded > 0)
+                        {
+                            <MudProgressLinear Value="@passRate" Color="@statusColor" Rounded="true" Size="Size.Small" Class="mb-1" data-testid="suite-progress-@suite.Id" />
+                            <MudText Typo="Typo.caption" Color="Color.Secondary">@passRate% pass rate (@suite.Passed/@suite.Recorded recorded)</MudText>
+                        }
+
+                        @if (!string.IsNullOrEmpty(suite.LatestRunDate))
+                        {
+                            <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-2">
+                                Latest run: @suite.LatestRunDate
+                                @if (!string.IsNullOrEmpty(suite.HistorySparkline))
+                                {
+                                    <span Class="ms-2" style="font-family: monospace; letter-spacing: 2px;">@suite.HistorySparkline</span>
+                                }
+                            </MudText>
+                        }
+
+                        @if (suite.FailedTests is { Count: > 0 })
+                        {
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.caption" Color="Color.Error" Class="mb-1"><strong>Failing tests:</strong></MudText>
+                            @foreach (var ft in suite.FailedTests)
+                            {
+                                <MudAlert Severity="Severity.Error" Dense="true" Class="mb-1" data-testid="failed-test">
+                                    <MudText Typo="Typo.caption">@ft.Name</MudText>
+                                    @if (!string.IsNullOrEmpty(ft.Notes))
+                                    {
+                                        <MudText Typo="Typo.caption" Color="Color.Secondary">@ft.Notes</MudText>
+                                    }
+                                </MudAlert>
+                            }
+                        }
+                    </MudPaper>
+                </MudItem>
+            }
+        </MudGrid>
+
+        <MudText Typo="Typo.caption" Color="Color.Secondary" Class="mt-5 d-block text-center" data-testid="dashboard-generated-at">
+            Generated at: @_summary.GeneratedAt.ToString("u")
+        </MudText>
+    }
+</MudContainer>
+
+@code {
+    private DashboardSummary? _summary;
+    private bool _loading = true;
+    private string? _error;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadSummaryAsync();
+    }
+
+    private Task LoadSummaryAsync()
+    {
+        try
+        {
+            // Walk up from the web project content root to the repo root,
+            // then resolve docs/test-dashboard/summary.json.
+            var contentRoot = Env.ContentRootPath;
+            var repoRoot = Path.GetFullPath(Path.Combine(contentRoot, "..", ".."));
+            var jsonPath = Path.Combine(repoRoot, "docs", "test-dashboard", "summary.json");
+
+            if (!File.Exists(jsonPath))
+            {
+                _error = $"summary.json not found at: {jsonPath}";
+                return Task.CompletedTask;
+            }
+
+            var json = File.ReadAllText(jsonPath);
+            _summary = JsonSerializer.Deserialize<DashboardSummary>(json, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (_summary is null)
+                _error = "summary.json parsed to null — file may be empty or malformed.";
+        }
+        catch (Exception ex)
+        {
+            _error = ex.Message;
+        }
+        finally
+        {
+            _loading = false;
+        }
+
+        return Task.CompletedTask;
+    }
+
+    private sealed class DashboardSummary
+    {
+        public DateTime GeneratedAt { get; set; }
+        public List<SuiteInfo> Suites { get; set; } = [];
+    }
+
+    private sealed class SuiteInfo
+    {
+        public string Id { get; set; } = string.Empty;
+        public string Label { get; set; } = string.Empty;
+        public string Description { get; set; } = string.Empty;
+        public string Project { get; set; } = string.Empty;
+        public int Total { get; set; }
+        public int Recorded { get; set; }
+        public int Passed { get; set; }
+        public int Failed { get; set; }
+        public int Skipped { get; set; }
+        public int NotRecorded { get; set; }
+        public string? LatestRunDate { get; set; }
+        public string? HistorySparkline { get; set; }
+        public string? HistorySummary { get; set; }
+        public List<RecentRun> RecentRuns { get; set; } = [];
+        public List<FailedTest> FailedTests { get; set; } = [];
+        public string? TrxFileName { get; set; }
+        public string? HtmlFileName { get; set; }
+    }
+
+    private sealed class RecentRun
+    {
+        public string RunId { get; set; } = string.Empty;
+        public string RunDate { get; set; } = string.Empty;
+        public int TotalRecorded { get; set; }
+        public int Passed { get; set; }
+        public int Failed { get; set; }
+        public int Skipped { get; set; }
+        public int PassRatePercent { get; set; }
+    }
+
+    private sealed class FailedTest
+    {
+        public string Name { get; set; } = string.Empty;
+        public string? File { get; set; }
+        public string? LastRunDate { get; set; }
+        public string? Notes { get; set; }
+    }
+}
