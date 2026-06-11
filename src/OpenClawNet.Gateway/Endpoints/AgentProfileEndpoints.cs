@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using OpenClawNet.Models.Abstractions;
+using OpenClawNet.Skills;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
 
@@ -182,6 +183,69 @@ public static class AgentProfileEndpoints
         .WithName("DeleteAgentProfilesBulk")
         .WithDescription("Bulk-deletes agent profiles. The default profile is never deleted and is returned under 'skipped'.")
         .Accepts<BulkDeleteAgentProfilesRequest>("application/json");
+
+        // ── Agent skill assignment endpoints ─────────────────────────────
+
+        group.MapGet("/{name}/skills", async (
+            string name,
+            IAgentProfileStore store,
+            IAgentSkillAssignmentService assignments,
+            CancellationToken ct) =>
+        {
+            var profile = await store.GetAsync(name, ct);
+            if (profile is null) return Results.NotFound();
+            var assigned = await assignments.GetAssignedAsync(name, ct);
+            return Results.Ok(new AgentSkillsResponse(name, assigned));
+        })
+        .WithName("GetAgentSkills")
+        .WithDescription("Returns the skills currently assigned to an agent profile.");
+
+        group.MapPut("/{name}/skills", async (
+            string name,
+            [FromBody] AgentSkillsRequest request,
+            IAgentProfileStore store,
+            IAgentSkillAssignmentService assignments,
+            CancellationToken ct) =>
+        {
+            var profile = await store.GetAsync(name, ct);
+            if (profile is null) return Results.NotFound();
+            var result = await assignments.SyncAssignmentsAsync(name, request.SkillNames ?? [], ct);
+            return Results.Ok(new AgentSkillsSyncResponse(name, result.Assigned, result.Unassigned, result.NotFound));
+        })
+        .WithName("SyncAgentSkills")
+        .WithDescription("Replaces the full skill assignment for an agent: assigns new, unassigns removed.");
+
+        group.MapPost("/{name}/skills/{skillName}", async (
+            string name,
+            string skillName,
+            IAgentProfileStore store,
+            IAgentSkillAssignmentService assignments,
+            CancellationToken ct) =>
+        {
+            var profile = await store.GetAsync(name, ct);
+            if (profile is null) return Results.NotFound();
+            var ok = await assignments.AssignAsync(skillName, name, ct);
+            return ok
+                ? Results.Ok(new { agentName = name, skillName, assigned = true })
+                : Results.NotFound(new { error = $"Skill '{skillName}' not found in system or installed layers." });
+        })
+        .WithName("AssignAgentSkill")
+        .WithDescription("Assigns a single skill to an agent profile.");
+
+        group.MapDelete("/{name}/skills/{skillName}", async (
+            string name,
+            string skillName,
+            IAgentProfileStore store,
+            IAgentSkillAssignmentService assignments,
+            CancellationToken ct) =>
+        {
+            var profile = await store.GetAsync(name, ct);
+            if (profile is null) return Results.NotFound();
+            await assignments.UnassignAsync(skillName, name, ct);
+            return Results.NoContent();
+        })
+        .WithName("UnassignAgentSkill")
+        .WithDescription("Removes a skill assignment from an agent profile.");
 
         group.MapPost("/{name}/test", async (
             string name,
@@ -448,3 +512,18 @@ public sealed record AgentProfileRequest(
     RetrievalLevel? RetrievalLevel = null,
     string? Kind = "Standard",
     string? Name = null);
+
+// ── Agent skill assignment DTOs ──────────────────────────────────────────────
+
+public sealed record AgentSkillsResponse(
+    string AgentName,
+    IReadOnlyList<string> AssignedSkills);
+
+public sealed record AgentSkillsRequest(
+    string[]? SkillNames);
+
+public sealed record AgentSkillsSyncResponse(
+    string AgentName,
+    IReadOnlyList<string> Assigned,
+    IReadOnlyList<string> Unassigned,
+    IReadOnlyList<string> NotFound);
