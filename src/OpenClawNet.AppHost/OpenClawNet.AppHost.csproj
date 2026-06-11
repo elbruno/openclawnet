@@ -1,4 +1,4 @@
-<Project Sdk="Aspire.AppHost.Sdk/13.3.5">
+<Project Sdk="Aspire.AppHost.Sdk/13.4.3">
 
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Gateway\OpenClawNet.Gateway.csproj" />
@@ -12,8 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Docker" Version="13.3.5" />
-    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.1.1" />
+    <PackageReference Include="Aspire.Hosting.Docker" Version="13.4.3" />
+    <PackageReference Include="CommunityToolkit.Aspire.Hosting.Sqlite" Version="13.3.0" />
   </ItemGroup>
 
   <PropertyGroup>
