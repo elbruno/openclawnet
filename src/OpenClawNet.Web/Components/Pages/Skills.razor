@@ -49,6 +49,34 @@
     </div>
 }
 
+@* ── Skills directory info banner ─────────────────────────────── *@
+@if (!_pathsLoading && _installedPath is not null)
+{
+    <div class="alert alert-secondary py-2 px-3 d-flex align-items-center gap-3 mb-3" role="note">
+        <span class="bi bi-folder2 fs-5 flex-shrink-0" aria-hidden="true"></span>
+        <div class="flex-grow-1 overflow-hidden">
+            <div class="small fw-semibold mb-0">Skills directory</div>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <code class="small text-break user-select-all">@_installedPath</code>
+                <button class="btn btn-link btn-sm p-0 text-secondary"
+                        title="Copy path"
+                        @onclick="CopyInstalledPath">
+                    <span class="bi bi-clipboard" aria-hidden="true"></span>
+                </button>
+            </div>
+            <div class="text-muted" style="font-size:0.75rem;">
+                Drop a folder with a <code>SKILL.md</code> file here — OpenClawNet will detect it automatically.
+            </div>
+        </div>
+        <button class="btn btn-outline-secondary btn-sm flex-shrink-0"
+                title="Open installed skills folder"
+                disabled="@_openingFolder"
+                @onclick='() => OpenFolderAsync("installed")'>
+            <span class="bi bi-folder-symlink me-1" aria-hidden="true"></span>Open folder
+        </button>
+    </div>
+}
+
 <SkillsSnapshotBanner PinnedSnapshotId="@_pinnedSnapshotId" OnRefresh="LoadAsync" />
 
 <ul class="nav nav-tabs mb-3">
@@ -230,7 +258,58 @@ else
     private HashSet<string> _selectedSkills = new();
     private bool _selectAll;
 
-    protected override async Task OnInitializedAsync() => await LoadAsync();
+    // Skills directory paths
+    private string? _installedPath;
+    private string? _systemPath;
+    private bool _pathsLoading;
+    private bool _openingFolder;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await Task.WhenAll(LoadAsync(), LoadStoragePathsAsync());
+    }
+
+    private async Task LoadStoragePathsAsync()
+    {
+        _pathsLoading = true;
+        try
+        {
+            var result = await SkillsClient.GetStoragePathsAsync();
+            _installedPath = result?.InstalledPath;
+            _systemPath = result?.SystemPath;
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Could not load skills storage paths");
+        }
+        finally
+        {
+            _pathsLoading = false;
+        }
+    }
+
+    private async Task OpenFolderAsync(string layer = "installed")
+    {
+        _openingFolder = true;
+        try
+        {
+            await SkillsClient.OpenFolderAsync(layer);
+        }
+        catch (Exception ex)
+        {
+            Logger.LogWarning(ex, "Could not open skills folder");
+        }
+        finally
+        {
+            _openingFolder = false;
+        }
+    }
+
+    private async Task CopyInstalledPath()
+    {
+        if (_installedPath is not null)
+            await JS.InvokeVoidAsync("navigator.clipboard.writeText", _installedPath);
+    }
 
     private async Task LoadAsync()
     {
