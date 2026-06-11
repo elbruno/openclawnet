@@ -1,0 +1,340 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OpenClaw .NET Test Dashboard</title>
+  <style>
+    :root {
+      --bg: #0c0a1a;
+      --surface: #1a1630;
+      --surface-2: #241f3e;
+      --text: #e8e6f0;
+      --muted: #a29bbd;
+      --primary: #7c5cfc;
+      --accent: #22d3ee;
+      --passed: #22c55e;
+      --failed: #ef4444;
+      --skipped: #f59e0b;
+      --border: rgba(124, 92, 252, 0.2);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(81, 43, 212, 0.35), transparent 45%),
+        var(--bg);
+    }
+
+    a { color: var(--accent); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1180px; margin: 0 auto; padding: 32px 20px 56px; }
+    .hero { padding: 24px 0 12px; }
+    .hero h1 { margin: 0 0 8px; font-size: 2.2rem; }
+    .hero p { margin: 0; color: var(--muted); }
+    .summary {
+      margin-top: 24px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+    }
+    .stat, .suite-card {
+      background: rgba(26, 22, 48, 0.88);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      backdrop-filter: blur(10px);
+    }
+    .stat { padding: 18px 20px; }
+    .stat span { display: block; color: var(--muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.06em; }
+    .stat strong { display: block; margin-top: 8px; font-size: 1.8rem; }
+    .stat .passed { color: var(--passed); }
+    .stat .failed { color: var(--failed); }
+    .stat .skipped { color: var(--skipped); }
+    .meta {
+      margin-top: 16px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      display: flex;
+      gap: 18px;
+      flex-wrap: wrap;
+    }
+    .suite-grid {
+      margin-top: 28px;
+      display: grid;
+      gap: 18px;
+    }
+    .suite-card { padding: 20px; }
+    .suite-header {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      align-items: start;
+    }
+    .suite-header h2 { margin: 0; font-size: 1.25rem; }
+    .suite-header p { margin: 6px 0 0; color: var(--muted); max-width: 760px; }
+    .artifact-links {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      white-space: nowrap;
+    }
+    .suite-stats {
+      margin-top: 16px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 12px;
+    }
+    .suite-stats div {
+      background: var(--surface-2);
+      border-radius: 12px;
+      padding: 12px;
+    }
+    .suite-stats span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .suite-stats strong { display: block; margin-top: 6px; font-size: 1.1rem; }
+    .suite-stats .passed { color: var(--passed); }
+    .suite-stats .failed { color: var(--failed); }
+    .suite-stats .skipped { color: var(--skipped); }
+    .suite-stats .muted-value { color: var(--muted); }
+    .sparkline {
+      font-family: Consolas, "Courier New", monospace;
+      letter-spacing: 0.12em;
+    }
+    .history, .failures, .ok {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 12px;
+      background: rgba(12, 10, 26, 0.7);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    .history-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+    .history-text {
+      display: block;
+      margin-top: 6px;
+      color: var(--text);
+    }
+    .failures h3 { margin: 0 0 12px; font-size: 0.95rem; color: #fca5a5; }
+    .failures ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+    .failures li { border-top: 1px solid rgba(255,255,255,0.06); padding-top: 10px; }
+    .failures li:first-child { border-top: 0; padding-top: 0; }
+    .run-date, .path, .muted {
+      display: block;
+      margin-top: 4px;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+    .error {
+      margin-top: 6px;
+      color: var(--muted);
+      white-space: pre-wrap;
+      font-size: 0.85rem;
+    }
+    .footer { margin-top: 28px; color: var(--muted); font-size: 0.88rem; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="hero">
+      <a href="../">Back to OpenClaw .NET</a>
+      <h1>OpenClaw .NET Test Dashboard</h1>
+      <p>Generated from the canonical test catalog and recorded run history in the private repo, then mirrored to the public site.</p>
+      <div class="summary">
+        <div class="stat"><span>Total tests</span><strong>246</strong></div>
+        <div class="stat"><span>Passed</span><strong class="passed">170</strong></div>
+        <div class="stat"><span>Failed</span><strong class="failed">6</strong></div>
+        <div class="stat"><span>Skipped</span><strong class="skipped">51</strong></div>
+        <div class="stat"><span>Not recorded</span><strong>19</strong></div>
+      </div>
+      <div class="meta">
+        <span>Generated: 2026-06-10 21:40:30 UTC</span>
+        <span>Suites: 5</span>
+        <span><a href="./summary.json">summary.json</a></span>
+      </div>
+    </div>
+    <div class="suite-grid">
+<section class="suite-card">
+  <div class="suite-header">
+    <div>
+      <h2>Playwright UI E2E</h2>
+      <p>Full-stack browser tests. Require the Aspire AppHost lifecycle (aspire stop -&gt; aspire start -&gt; aspire describe --format Json) and Azure OpenAI credentials.</p>
+    </div>
+    <div class="artifact-links"><a href="./playwright-test-results.trx">TRX</a><a href="./dotnet-report.html">HTML report</a></div>
+  </div>
+  <div class="suite-stats">
+    <div><span>Total</span><strong>41</strong></div>
+    <div><span>Recorded</span><strong>40</strong></div>
+    <div><span>Passed</span><strong class="passed">1</strong></div>
+    <div><span>Failed</span><strong class="failed">3</strong></div>
+    <div><span>Skipped</span><strong class="skipped">36</strong></div>
+    <div><span>Not recorded</span><strong class="muted-value">1</strong></div>
+    <div><span>Latest run</span><strong>2026-05-29</strong></div>
+    <div><span>Recent slices</span><strong class="sparkline">..#.#.#.##</strong></div>
+  </div>
+  <div class="history">
+    <span class="history-label">Recent history</span>
+    <span class="history-text">10 slice(s); latest 2026-05-29 -&gt; 100% pass (1/1)</span>
+  </div>
+  <div class="failures">
+  <h3>Latest failing tests</h3>
+  <ul>
+<li>
+  <strong>ToolMatrixE2ETests :: ToolsRequiringApproval_ShowCard(markdown_convert)</strong>
+  <span class="run-date">2026-05-12</span>
+  <div class="path"><a href="../tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs">tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs</a></div>
+  <div class="error">TaskCanceledException / Aspire resources not available</div>
+</li>
+<li>
+  <strong>ToolMatrixE2ETests :: ToolsRequiringApproval_ShowCard(shell)</strong>
+  <span class="run-date">2026-05-12</span>
+  <div class="path"><a href="../tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs">tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs</a></div>
+  <div class="error">TaskCanceledException / Aspire resources not available</div>
+</li>
+<li>
+  <strong>ToolMatrixE2ETests :: ToolsRequiringApproval_ShowCard(web_fetch)</strong>
+  <span class="run-date">2026-05-12</span>
+  <div class="path"><a href="../tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs">tests/OpenClawNet.PlaywrightTests/ToolMatrixE2ETests.cs</a></div>
+  <div class="error">TaskCanceledException / Aspire resources not available</div>
+</li>
+  </ul>
+</div>
+</section>
+<section class="suite-card">
+  <div class="suite-header">
+    <div>
+      <h2>Gateway E2E</h2>
+      <p>API-level end-to-end tests against a real gateway (in-process, no browser).</p>
+    </div>
+    <div class="artifact-links"><a href="./live-test-results.trx">TRX</a></div>
+  </div>
+  <div class="suite-stats">
+    <div><span>Total</span><strong>11</strong></div>
+    <div><span>Recorded</span><strong>10</strong></div>
+    <div><span>Passed</span><strong class="passed">9</strong></div>
+    <div><span>Failed</span><strong class="failed">0</strong></div>
+    <div><span>Skipped</span><strong class="skipped">1</strong></div>
+    <div><span>Not recorded</span><strong class="muted-value">1</strong></div>
+    <div><span>Latest run</span><strong>2026-05-25</strong></div>
+    <div><span>Recent slices</span><strong class="sparkline">+##</strong></div>
+  </div>
+  <div class="history">
+    <span class="history-label">Recent history</span>
+    <span class="history-text">3 slice(s); latest 2026-05-25 -&gt; 100% pass (4/4)</span>
+  </div>
+  <div class="ok">No failing tests in the latest recorded status.</div>
+</section>
+<section class="suite-card">
+  <div class="suite-header">
+    <div>
+      <h2>Integration Tests</h2>
+      <p>In-process gateway with a real HTTP test server. Most run without Azure OpenAI.</p>
+    </div>
+    <div class="artifact-links"><a href="./integration-test-results.trx">TRX</a></div>
+  </div>
+  <div class="suite-stats">
+    <div><span>Total</span><strong>59</strong></div>
+    <div><span>Recorded</span><strong>45</strong></div>
+    <div><span>Passed</span><strong class="passed">37</strong></div>
+    <div><span>Failed</span><strong class="failed">0</strong></div>
+    <div><span>Skipped</span><strong class="skipped">8</strong></div>
+    <div><span>Not recorded</span><strong class="muted-value">14</strong></div>
+    <div><span>Latest run</span><strong>2026-05-29</strong></div>
+    <div><span>Recent slices</span><strong class="sparkline">*##:###+##</strong></div>
+  </div>
+  <div class="history">
+    <span class="history-label">Recent history</span>
+    <span class="history-text">10 slice(s); latest 2026-05-29 -&gt; 100% pass (1/1)</span>
+  </div>
+  <div class="ok">No failing tests in the latest recorded status.</div>
+</section>
+<section class="suite-card">
+  <div class="suite-header">
+    <div>
+      <h2>Unit Tests</h2>
+      <p>Fast, fully isolated tests with no network or Azure dependencies.</p>
+    </div>
+    <div class="artifact-links"><a href="./unit-test-results.trx">TRX</a></div>
+  </div>
+  <div class="suite-stats">
+    <div><span>Total</span><strong>132</strong></div>
+    <div><span>Recorded</span><strong>129</strong></div>
+    <div><span>Passed</span><strong class="passed">120</strong></div>
+    <div><span>Failed</span><strong class="failed">3</strong></div>
+    <div><span>Skipped</span><strong class="skipped">6</strong></div>
+    <div><span>Not recorded</span><strong class="muted-value">3</strong></div>
+    <div><span>Latest run</span><strong>2026-05-29</strong></div>
+    <div><span>Recent slices</span><strong class="sparkline">*#*****</strong></div>
+  </div>
+  <div class="history">
+    <span class="history-label">Recent history</span>
+    <span class="history-text">7 slice(s); latest 2026-05-29 -&gt; 94% pass (132/141)</span>
+  </div>
+  <div class="failures">
+  <h3>Latest failing tests</h3>
+  <ul>
+<li>
+  <strong>AzureOpenAILiveTests</strong>
+  <span class="run-date">2026-05-29</span>
+  <div class="path"><a href="../tests/OpenClawNet.UnitTests/Models/AzureOpenAILiveTests.cs">tests/OpenClawNet.UnitTests/Models/AzureOpenAILiveTests.cs</a></div>
+  <div class="error">System.ClientModel.ClientResultException : HTTP 401 (: 401) Access denied due to invalid subscription key or wrong API endpoint. Make sure to provide a valid key for an active subscription and use a correct regional API endpoint for your re...</div>
+</li>
+<li>
+  <strong>LiveAgentLoopTests</strong>
+  <span class="run-date">2026-05-29</span>
+  <div class="path"><a href="../tests/OpenClawNet.UnitTests/Integration/LiveAgentLoopTests.cs">tests/OpenClawNet.UnitTests/Integration/LiveAgentLoopTests.cs</a></div>
+  <div class="error">System.ClientModel.ClientResultException : HTTP 401 (: 401) Access denied due to invalid subscription key or wrong API endpoint. Make sure to provide a valid key for an active subscription and use a correct regional API endpoint for your re...</div>
+</li>
+<li>
+  <strong>LiveLlmTests</strong>
+  <span class="run-date">2026-05-29</span>
+  <div class="path"><a href="../tests/OpenClawNet.UnitTests/Integration/LiveLlmTests.cs">tests/OpenClawNet.UnitTests/Integration/LiveLlmTests.cs</a></div>
+  <div class="error">Expected contentEvents not to be empty because at least one content token should stream through the pipeline.</div>
+</li>
+  </ul>
+</div>
+</section>
+<section class="suite-card">
+  <div class="suite-header">
+    <div>
+      <h2>Azure-specific Tests</h2>
+      <p>Require real Azure credentials.</p>
+    </div>
+    <div class="artifact-links"><span class="muted">No artifact</span></div>
+  </div>
+  <div class="suite-stats">
+    <div><span>Total</span><strong>3</strong></div>
+    <div><span>Recorded</span><strong>3</strong></div>
+    <div><span>Passed</span><strong class="passed">3</strong></div>
+    <div><span>Failed</span><strong class="failed">0</strong></div>
+    <div><span>Skipped</span><strong class="skipped">0</strong></div>
+    <div><span>Not recorded</span><strong class="muted-value">0</strong></div>
+    <div><span>Latest run</span><strong>2026-05-23</strong></div>
+    <div><span>Recent slices</span><strong class="sparkline">##</strong></div>
+  </div>
+  <div class="history">
+    <span class="history-label">Recent history</span>
+    <span class="history-text">2 slice(s); latest 2026-05-23 -&gt; 100% pass (1/1)</span>
+  </div>
+  <div class="ok">No failing tests in the latest recorded status.</div>
+</section>
+    </div>
+    <div class="footer">
+      Rebuild with <code>scripts\test-and-publish.ps1</code>. Do not hand-edit this page.
+    </div>
+  </div>
+</body>
+</html>

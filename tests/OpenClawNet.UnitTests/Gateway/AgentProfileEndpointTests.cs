@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.IO.Compression;
 using System.Text.Json;
 using FluentAssertions;
 using Microsoft.AspNetCore.Builder;
@@ -437,6 +438,71 @@ public sealed class AgentProfileEndpointTests
         }
     }
 
+    [Fact]
+    public async Task PostHostedAgentExport_ReturnsZipBundleWithSelectedProfiles()
+    {
+        await using var app = await CreateTestAppAsync();
+        using var client = app.GetTestClient();
+
+        await client.PutAsJsonAsync("/api/agent-profiles/alpha", new
+        {
+            displayName = "Alpha",
+            provider = "ollama",
+            instructions = "Alpha instructions.",
+            isDefault = false
+        });
+        await client.PutAsJsonAsync("/api/agent-profiles/beta", new
+        {
+            displayName = "Beta",
+            provider = "ollama",
+            instructions = "Beta instructions.",
+            isDefault = false
+        });
+
+        var response = await client.PostAsJsonAsync("/api/agent-profiles/export/hosted-agent", new
+        {
+            profileNames = new[] { "alpha", "beta" },
+            namePrefix = "openclaw-hosted",
+            location = "eastus",
+            containerImage = "ghcr.io/elbruno/openclawnet-hosted-agent:latest",
+            containerPort = 8080
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/zip");
+
+        await using var zipStream = new MemoryStream(await response.Content.ReadAsByteArrayAsync());
+        using var zip = new ZipArchive(zipStream, ZipArchiveMode.Read);
+
+        zip.GetEntry("main.bicep").Should().NotBeNull();
+        zip.GetEntry("main.parameters.json").Should().NotBeNull();
+        zip.GetEntry("profiles.json").Should().NotBeNull();
+        zip.GetEntry("README.md").Should().NotBeNull();
+
+        using var profilesEntryStream = zip.GetEntry("profiles.json")!.Open();
+        using var reader = new StreamReader(profilesEntryStream);
+        var profilesJson = await reader.ReadToEndAsync();
+        profilesJson.Should().Contain("alpha").And.Contain("beta");
+    }
+
+    [Fact]
+    public async Task PostHostedAgentExport_WhenProfileIsMissing_ReturnsNotFound()
+    {
+        await using var app = await CreateTestAppAsync();
+        using var client = app.GetTestClient();
+
+        var response = await client.PostAsJsonAsync("/api/agent-profiles/export/hosted-agent", new
+        {
+            profileNames = new[] { "missing" },
+            namePrefix = "openclaw-hosted",
+            location = "eastus",
+            containerImage = "ghcr.io/elbruno/openclawnet-hosted-agent:latest",
+            containerPort = 8080
+        });
+
+        response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static async Task<WebApplication> CreateTestAppAsync()
@@ -451,6 +517,7 @@ public sealed class AgentProfileEndpointTests
 
         var app = builder.Build();
         app.MapAgentProfileEndpoints();
+        app.MapHostedAgentExportEndpoints();
         await app.StartAsync();
         return app;
     }
@@ -475,6 +542,7 @@ public sealed class AgentProfileEndpointTests
 
         var app = builder.Build();
         app.MapAgentProfileEndpoints();
+        app.MapHostedAgentExportEndpoints();
         app.MapModelProviderEndpoints();
         await app.StartAsync();
         return (app, capturer);

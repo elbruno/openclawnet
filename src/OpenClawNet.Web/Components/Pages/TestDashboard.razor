@@ -77,11 +77,11 @@
                 var passRate = suite.Recorded > 0 ? (int)Math.Round((double)suite.Passed / suite.Recorded * 100) : 0;
                 var statusColor = suite.Failed > 0 ? Color.Error : (suite.Passed == suite.Recorded && suite.Recorded > 0 ? Color.Success : Color.Warning);
 
-                <MudItem xs="12" md="6" data-testid="suite-card-@suite.Id">
+                <MudItem xs="12" md="6" data-testid="@($"suite-card-{suite.Id}")">
                     <MudPaper Elevation="2" Class="pa-5" Style="height: 100%;">
                         <div class="d-flex justify-space-between align-center mb-2">
                             <MudText Typo="Typo.h6">@suite.Label</MudText>
-                            <MudChip T="string" Size="Size.Small" Color="@statusColor" data-testid="suite-status-@suite.Id">
+                            <MudChip T="string" Size="Size.Small" Color="@statusColor" data-testid="@($"suite-status-{suite.Id}")">
                                 @(suite.Failed > 0 ? $"{suite.Failed} FAILED" : suite.Passed > 0 ? "PASSING" : "NO RUNS")
                             </MudChip>
                         </div>
@@ -111,7 +111,7 @@
 
                         @if (suite.Recorded > 0)
                         {
-                            <MudProgressLinear Value="@passRate" Color="@statusColor" Rounded="true" Size="Size.Small" Class="mb-1" data-testid="suite-progress-@suite.Id" />
+                            <MudProgressLinear Value="@passRate" Color="@statusColor" Rounded="true" Size="Size.Small" Class="mb-1" data-testid="@($"suite-progress-{suite.Id}")" />
                             <MudText Typo="Typo.caption" Color="Color.Secondary">@passRate% pass rate (@suite.Passed/@suite.Recorded recorded)</MudText>
                         }
 

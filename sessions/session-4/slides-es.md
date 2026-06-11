@@ -151,6 +151,16 @@ Referencia: [aspire.dev/deployment](https://aspire.dev/deployment/)
 
 ---
 
+## Exportar como Hosted Agent
+
+- Selecciona uno o más perfiles de agente desde la página de definiciones
+- Completa el prefijo de despliegue, la región de Azure, la imagen del contenedor y el puerto
+- Genera un bundle zip con `main.bicep`, parámetros, manifiesto y notas de despliegue
+- Usa el paquete como punto de partida para hospedar el agente en Azure Container Apps
+- Trátalo como código: revisa, ajusta y luego despliega
+
+---
+
 ## Operar a escala
 
 - Planificación de capacidad y concurrencia para chat y jobs
@@ -183,4 +193,3 @@ Referencia: [aspire.dev/deployment](https://aspire.dev/deployment/)
 # Preguntas y respuestas
 
 **OpenClaw .NET — Sesión 4**
-

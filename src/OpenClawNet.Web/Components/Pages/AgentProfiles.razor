@@ -109,12 +109,61 @@ else
                                 <span>🗑 Delete @_selected.Count</span>
                             }
                         </button>
+                        <button class="btn btn-outline-primary btn-sm" @onclick="ShowExportForm">
+                            ⬇ Export as Hosted Agent
+                        </button>
                         <button class="btn btn-outline-secondary btn-sm" @onclick="ClearSelection">✕ Deselect all</button>
                     </div>
                 }
                 @if (!string.IsNullOrEmpty(_bulkSkipMessage))
                 {
                     <div class="alert alert-warning py-1 small">@_bulkSkipMessage</div>
+                }
+
+                @if (_showExport)
+                {
+                    <div class="card mb-3">
+                        <div class="card-header d-flex justify-content-between align-items-center">
+                            <span>Export Selected Profiles as Hosted Agent</span>
+                            <span class="text-muted small">@_selected.Count selected</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold">Deployment prefix</label>
+                                    <input class="form-control" @bind="_exportNamePrefix" placeholder="openclaw-hosted" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold">Azure region</label>
+                                    <input class="form-control" @bind="_exportLocation" placeholder="eastus" />
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-semibold">Container image</label>
+                                    <input class="form-control" @bind="_exportContainerImage" placeholder="ghcr.io/org/openclaw-agent:latest" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3 mb-3">
+                                    <label class="form-label fw-semibold">Container port</label>
+                                    <input type="number" class="form-control" @bind="_exportContainerPort" min="1" max="65535" />
+                                </div>
+                            </div>
+                            @if (!string.IsNullOrWhiteSpace(_exportMessage))
+                            {
+                                <div class="alert @(_exportSucceeded ? "alert-success" : "alert-danger") py-2 small">@_exportMessage</div>
+                            }
+                            <div class="d-flex gap-2">
+                                <button class="btn btn-primary" @onclick="ExportSelectedAgents" disabled="@_exporting">
+                                    @if (_exporting)
+                                    {
+                                        <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                                    }
+                                    Generate Azure bundle
+                                </button>
+                                <button class="btn btn-outline-secondary" @onclick="CancelExport">Cancel</button>
+                            </div>
+                        </div>
+                    </div>
                 }
 
                 <div style="overflow-x: auto; width: 100%;">
@@ -559,6 +608,14 @@ else
     private bool _showForm;
     private bool _isEditing;
     private ProfileFormModel _form = new();
+    private bool _showExport;
+    private bool _exporting;
+    private bool _exportSucceeded;
+    private string _exportMessage = string.Empty;
+    private string _exportNamePrefix = "openclaw-hosted";
+    private string _exportLocation = "eastus";
+    private string _exportContainerImage = "ghcr.io/elbruno/openclawnet-hosted-agent:latest";
+    private int _exportContainerPort = 8080;
 
     // ── Bulk selection ──────────────────────────────────────
     private readonly HashSet<string> _selected = new(StringComparer.Ordinal);
@@ -632,6 +689,7 @@ else
         _isEditing = false;
         _showForm = true;
         _showImport = false;
+        _showExport = false;
         _saveSuccess = null;
         _errorMessage = string.Empty;
     }
@@ -662,6 +720,7 @@ else
         _isEditing = false;
         _showForm = true;
         _showImport = false;
+        _showExport = false;
         _saveSuccess = null;
         _errorMessage = string.Empty;
     }
@@ -689,6 +748,7 @@ else
         _showForm = true;
         _saveSuccess = null;
         _errorMessage = string.Empty;
+        _showExport = false;
     }
 
     // ── Tool picker helpers ─────────────────────────────────
@@ -728,6 +788,7 @@ else
     {
         _showImport = true;
         _showForm = false;
+        _showExport = false;
         _importMarkdown = string.Empty;
         _saveSuccess = null;
         _errorMessage = string.Empty;
@@ -736,6 +797,83 @@ else
     private void CancelImport()
     {
         _showImport = false;
+    }
+
+    private void ShowExportForm()
+    {
+        if (_selected.Count == 0)
+        {
+            _exportSucceeded = false;
+            _exportMessage = "Select one or more profiles before exporting.";
+            return;
+        }
+
+        _showExport = true;
+        _showForm = false;
+        _showImport = false;
+        _exportSucceeded = false;
+        _exportMessage = string.Empty;
+    }
+
+    private void CancelExport()
+    {
+        _showExport = false;
+        _exportSucceeded = false;
+        _exportMessage = string.Empty;
+    }
+
+    private async Task ExportSelectedAgents()
+    {
+        if (_selected.Count == 0)
+        {
+            _exportSucceeded = false;
+            _exportMessage = "Select one or more profiles before exporting.";
+            return;
+        }
+
+        _exporting = true;
+        _exportSucceeded = false;
+        _exportMessage = string.Empty;
+        StateHasChanged();
+
+        try
+        {
+            var http = HttpClientFactory.CreateClient("gateway");
+            var request = new
+            {
+                profileNames = _selected.OrderBy(x => x, StringComparer.Ordinal).ToArray(),
+                namePrefix = _exportNamePrefix,
+                location = _exportLocation,
+                containerImage = _exportContainerImage,
+                containerPort = _exportContainerPort
+            };
+
+            using var response = await http.PostAsJsonAsync("/api/agent-profiles/export/hosted-agent", request);
+            if (!response.IsSuccessStatusCode)
+            {
+                var body = await response.Content.ReadAsStringAsync();
+                _exportMessage = $"Export failed — Gateway returned {(int)response.StatusCode}: {body}";
+                return;
+            }
+
+            var bytes = await response.Content.ReadAsByteArrayAsync();
+            var fileName = $"hosted-agent-export-{DateTime.UtcNow:yyyyMMdd-HHmmss}.zip";
+            await JS.InvokeVoidAsync("consoleExport.downloadBinary", fileName, Convert.ToBase64String(bytes), "application/zip");
+
+            _exportSucceeded = true;
+            _exportMessage = $"Export generated: {fileName}";
+        }
+        catch (Exception ex)
+        {
+            Logger.LogError(ex, "Hosted agent export failed");
+            _exportSucceeded = false;
+            _exportMessage = $"Could not reach the Gateway: {ex.Message}";
+        }
+        finally
+        {
+            _exporting = false;
+            StateHasChanged();
+        }
     }
 
     private async Task ImportProfile()
@@ -906,6 +1044,8 @@ else
     {
         _selected.Clear();
         _bulkSkipMessage = null;
+        _showExport = false;
+        _exportMessage = string.Empty;
     }
 
     private async Task DeleteSelected()

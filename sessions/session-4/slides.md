@@ -869,6 +869,16 @@ Skill file + version metadata tracked in deployment log.
 
 ---
 
+## Export to Hosted Agent
+
+- Select one or more agent profiles from the Agent Profiles page
+- Capture the Azure prefix, region, container image, and port
+- Generate a zip bundle with `main.bicep`, parameters, profile manifest, and deploy notes
+- Use the bundle as the starting point for Azure Container Apps hosting
+- Treat the generated files like code: review, adjust, then deploy
+
+---
+
 <!-- _class: lead -->
 
 # 12) Operate at scale

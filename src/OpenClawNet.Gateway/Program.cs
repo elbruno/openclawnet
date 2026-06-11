@@ -444,6 +444,7 @@ app.MapChannelAdapterEndpoints();
 app.MapChannelEventStreamEndpoints();
 app.MapDemoEndpoints();
 app.MapAgentProfileEndpoints();
+app.MapHostedAgentExportEndpoints();
 app.MapModelProviderEndpoints();
 app.MapToolApprovalEndpoints();
 app.MapAuditEndpoints();

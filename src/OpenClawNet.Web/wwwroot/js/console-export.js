@@ -18,5 +18,28 @@ window.consoleExport = window.consoleExport || {
             console.error('consoleExport.download failed:', err);
             return false;
         }
+    },
+    downloadBinary: function (filename, base64Content, mimeType) {
+        try {
+            const binary = atob(base64Content || '');
+            const bytes = new Uint8Array(binary.length);
+            for (let i = 0; i < binary.length; i++) {
+                bytes[i] = binary.charCodeAt(i);
+            }
+            const blob = new Blob([bytes], { type: mimeType || 'application/octet-stream' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename || 'export.bin';
+            a.style.display = 'none';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+            return true;
+        } catch (err) {
+            console.error('consoleExport.downloadBinary failed:', err);
+            return false;
+        }
     }
 };

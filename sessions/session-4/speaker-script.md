@@ -313,7 +313,22 @@
 
 ---
 
-## 51:00–55:00 | 12) Operate at scale
+## 51:00–53:00 | Hosted Agent export
+
+**Speaker Notes:**
+- Show the Agent Profiles page with bulk selection enabled
+- Explain that selected profiles can be exported as an Azure BICEP bundle
+- Call out the inputs: deployment prefix, region, image, and port
+- Emphasize that the bundle includes the manifest and parameter file for review
+
+**Talking Points:**
+- "This is the bridge from agent definition to hosted deployment"
+- "We are exporting the profile as code, not hand-building Azure resources"
+- "The generated bundle is a starting point — review it before you deploy"
+
+---
+
+## 53:00–57:00 | 12) Operate at scale
 
 **Speaker Notes:**
 - Capacity planning: concurrency limits, rate limits, quota management
@@ -329,7 +344,7 @@
 
 ---
 
-## 55:00–60:00 | 13) Q&A and wrap-up
+## 57:00–62:00 | 13) Q&A and wrap-up
 
 **Speaker Notes:**
 - Recap the full journey: features → demos → operational practices
