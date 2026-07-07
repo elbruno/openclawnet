@@ -7,7 +7,6 @@ on:
       - "index.html"
       - "docs/landing/**"
       - "docs/test-dashboard/**"
-      - "scripts/prepare-github-pages.ps1"
       - ".github/workflows/deploy-github-pages.yml"
   workflow_dispatch:
 
@@ -36,15 +35,10 @@ jobs:
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
-      - name: Stage GitHub Pages artifact
-        shell: pwsh
-        run: |
-          .\scripts\prepare-github-pages.ps1 -OutputDirectory _site
-
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: _site
+          path: .
 
       - name: Deploy to GitHub Pages
         id: deployment

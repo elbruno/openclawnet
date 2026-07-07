@@ -338,7 +338,7 @@ function Update-KeepingIndexSection {
         '',
         'After every test run, run `scripts\test-and-publish.ps1` so run recording, this generated index, and dashboard outputs stay aligned in one change.  ',
         'When adding or renaming an E2E/integration test, update `tests\catalog.yaml` so the generated suite tables stay in sync with the repository.  ',
-        'The sync workflow keeps `docs\test-dashboard\` as the source-of-truth, and the Pages deploy stages it to `/test-dashboard/` on the public site after updates.'
+        'The sync workflow mirrors `docs\test-dashboard\` from the plan repo to the public site after updates.'
     )
 
     $replacement = ($replacementLines -join [Environment]::NewLine).TrimEnd()
