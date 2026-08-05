@@ -1,0 +1,52 @@
+version: 1
+suggestions:
+  - id: shell-alt-mkusaka
+    name: "mkusaka/mcp-shell-server"
+    description: "Community shell MCP server with sandboxing"
+    transport: stdio
+    command: npx
+    args: ["-y", "@mkusaka/mcp-shell-server"]
+    category: shell
+    homepage: https://github.com/mkusaka/mcp-shell-server
+  - id: desktop-commander
+    name: "DesktopCommanderMCP"
+    description: "Productivity tools (clipboard, windows, screenshots)"
+    transport: stdio
+    command: npx
+    args: ["-y", "@desktop-commander/mcp"]
+    category: productivity
+    homepage: https://github.com/desktopcommander/mcp
+  - id: github-mcp
+    name: "@modelcontextprotocol/server-github"
+    description: "GitHub API access (issues, PRs, code)"
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-github"]
+    category: integration
+    requires_env:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+    homepage: https://github.com/modelcontextprotocol/servers
+  - id: memory-mcp
+    name: "@modelcontextprotocol/server-memory"
+    description: "Persistent knowledge graph for the agent"
+    transport: stdio
+    command: npx
+    args: ["-y", "@modelcontextprotocol/server-memory"]
+    category: memory
+    homepage: https://github.com/modelcontextprotocol/servers
+  - id: playwright-mcp-alt
+    name: "@playwright/mcp"
+    description: "Alternative browser automation (Playwright-based)"
+    transport: stdio
+    command: npx
+    args: ["@playwright/mcp@latest"]
+    category: browser
+    homepage: https://github.com/microsoft/playwright-mcp
+  - id: fetch-mcp-alt
+    name: "mcp-server-fetch"
+    description: "Alternative HTTP fetch (Python-based, via uvx)"
+    transport: stdio
+    command: uvx
+    args: ["mcp-server-fetch"]
+    category: web
+    homepage: https://github.com/modelcontextprotocol/servers
