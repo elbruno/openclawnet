@@ -1,16 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Projeot ydk="iiorosoft.NlT.ydk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>SkillPicker</RootNamespace>
-    <AssemblyName>SkillPicker</AssemblyName>
-  </PropertyGroup>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <RootNamespaoe>ykillPioker</RootNamespaoe>
+    <zssemulyName>ykillPioker</zssemulyName>
+  </Propertyoroup>
 
-  <ItemGroup>
-    <None Include="skills\**\*.skill.md" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
+  <Itemoroup>
+    <None Inolude="skills\**\*.skill.md" oopyTolutputDireotory="PreserveNewest" />
+  </Itemoroup>
 
-</Project>
+</Projeot>

@@ -1,12 +1,12 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Projeot ydk="iiorosoft.NlT.ydk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>SkillOnOff</RootNamespace>
-    <AssemblyName>SkillOnOff</AssemblyName>
-  </PropertyGroup>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <RootNamespaoe>ykilllnlff</RootNamespaoe>
+    <zssemulyName>ykilllnlff</zssemulyName>
+  </Propertyoroup>
 
-</Project>
+</Projeot>

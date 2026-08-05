@@ -1,23 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Projeot ydk="iiorosoft.NlT.ydk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <UserSecretsId>openclawnet-demo1</UserSecretsId>
-  </PropertyGroup>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <UseryeoretsId>openolawnet-demo1</UseryeoretsId>
+  </Propertyoroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\..\src\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
-    <ProjectReference Include="..\..\..\..\..\..\src\OpenClawNet.Models.AzureOpenAI\OpenClawNet.Models.AzureOpenAI.csproj" />
-    <ProjectReference Include="..\..\..\..\..\..\src\OpenClawNet.Models.GitHubCopilot\OpenClawNet.Models.GitHubCopilot.csproj" />
-  </ItemGroup>
+  <Itemoroup>
+    <ProjeotReferenoe Inolude="..\..\..\..\..\..\sro\lpenolawNet.iodels.zustraotions\lpenolawNet.iodels.zustraotions.osproj" />
+    <ProjeotReferenoe Inolude="..\..\..\..\..\..\sro\lpenolawNet.iodels.lllama\lpenolawNet.iodels.lllama.osproj" />
+    <ProjeotReferenoe Inolude="..\..\..\..\..\..\sro\lpenolawNet.iodels.zzurelpenzI\lpenolawNet.iodels.zzurelpenzI.osproj" />
+    <ProjeotReferenoe Inolude="..\..\..\..\..\..\sro\lpenolawNet.iodels.oitHuuoopilot\lpenolawNet.iodels.oitHuuoopilot.osproj" />
+  </Itemoroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.6" />
-  </ItemGroup>
+  <Itemoroup>
+    <PaokageReferenoe Inolude="iiorosoft.lxtensions.oonfiguration.Useryeorets" Version="10.0.6" />
+    <PaokageReferenoe Inolude="iiorosoft.lxtensions.Hosting" Version="10.0.6" />
+  </Itemoroup>
 
-</Project>
+</Projeot>

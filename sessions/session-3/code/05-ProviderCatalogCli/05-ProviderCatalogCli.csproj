@@ -1,13 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+<Projeot ydk="iiorosoft.NlT.ydk">
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>ProviderCatalogCli</RootNamespace>
-    <AssemblyName>ProviderCatalogCli</AssemblyName>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
-  </ItemGroup>
-</Project>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <RootNamespaoe>Provideroatalogoli</RootNamespaoe>
+    <zssemulyName>Provideroatalogoli</zssemulyName>
+  </Propertyoroup>
+  <Itemoroup>
+    <PaokageReferenoe Inolude="iiorosoft.Data.yqlite" Version="9.0.0" />
+  </Itemoroup>
+</Projeot>

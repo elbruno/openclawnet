@@ -46,7 +46,7 @@ dotnet run --project src/OpenClawNet.Gateway
 | Ollama | https://ollama.com | `ollama pull gemma4:e2b` (recommended) |
 | Git | Repo cloned, on `main` | |
 
-**Aspire version used:** 13.2.2 — see [what's new](https://aspire.dev/whats-new/)
+**Aspire version used:** 13.3.x — the repo pins `Aspire.AppHost.Sdk` 13.3.5 and `Aspire.Hosting.Testing` 13.3.0.
 
 ---
 

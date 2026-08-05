@@ -40,7 +40,9 @@ dotnet --version
 
 ### .NET Aspire CLI
 
-**Version Required:** Latest stable release (13.2+)
+**Version Required:** Latest stable release (13.3.x)
+
+**Repo metadata:** `Aspire.AppHost.Sdk` is pinned to `13.3.5`, and `Aspire.Hosting.Testing` is pinned to `13.3.0`.
 
 **Install:**
 ```bash

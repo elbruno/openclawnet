@@ -1,0 +1,65 @@
+name: Squad Insider Release
+
+on:
+  push:
+    branches: [insider]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore OpenClawNet.slnx
+
+      - name: Build
+        run: dotnet build OpenClawNet.slnx --no-restore --configuration Release
+
+      - name: Unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory ./test-results
+
+      - name: Azure unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests-azure.trx"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results/*.trx
+          retention-days: 14
+
+      - name: Create insider pre-release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Derive insider pre-release tag from most recent semver tag + build metadata
+          BASE_TAG=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -1)
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          INSIDER_TAG="${BASE_TAG:-v0.1.0}-insider.${SHORT_SHA}"
+
+          echo "Creating insider pre-release: $INSIDER_TAG"
+          gh release create "$INSIDER_TAG" \
+            --title "Insider $INSIDER_TAG" \
+            --generate-notes \
+            --prerelease
+          echo "✅ Insider release $INSIDER_TAG created"

@@ -1,0 +1,81 @@
+name: Squad Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      # Validate the restored solution on .NET 10 before publishing the GitHub Release.
+      - name: Restore
+        run: dotnet restore OpenClawNet.slnx
+
+      - name: Build
+        run: dotnet build OpenClawNet.slnx --no-restore --configuration Release
+
+      - name: Unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory ./test-results
+
+      - name: Azure unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests-azure.trx"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results/*.trx
+          retention-days: 14
+
+      - name: Resolve semver tag
+        id: semver
+        run: |
+          LATEST_TAG=$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-version:refname | head -1)
+          HEAD_SHA=$(git rev-parse HEAD)
+          IS_RELEASE="false"
+          if [ -n "$LATEST_TAG" ]; then
+            TAGGED_SHA=$(git rev-list -n1 "$LATEST_TAG")
+            if [ "$TAGGED_SHA" = "$HEAD_SHA" ]; then
+              IS_RELEASE="true"
+            fi
+          fi
+          echo "tag=${LATEST_TAG}" >> "$GITHUB_OUTPUT"
+          echo "is_release=${IS_RELEASE}" >> "$GITHUB_OUTPUT"
+          echo "Latest tag: ${LATEST_TAG:-<none>}  is_release: $IS_RELEASE"
+
+      - name: Create release
+        if: steps.semver.outputs.is_release == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "${{ steps.semver.outputs.tag }}" \
+            --title "Release ${{ steps.semver.outputs.tag }}" \
+            --generate-notes \
+            --latest
+          echo "✅ Release ${{ steps.semver.outputs.tag }} created"
+
+      - name: No release this run
+        if: steps.semver.outputs.is_release != 'true'
+        run: echo "ℹ️ HEAD is not tagged with a semver tag — no GitHub Release created."

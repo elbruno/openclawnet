@@ -4,7 +4,7 @@
 
 The **agent runtime** (`OpenClawNet.Agent` project) orchestrates the complete AI interaction loop. It is the execution engine that takes user messages, orchestrates model invocation, executes tools, and returns responses.
 
-**Key principle:** The public boundary is `IAgentOrchestrator` (stable, user-facing). The internal implementation uses `IAgentRuntime` (abstraction point for future frameworks like Microsoft Agent Framework, which is already integrated).
+**Key principle:** The public boundary is `IAgentOrchestrator` (stable, user-facing). The internal implementation uses `IAgentRuntime` (abstraction point for future frameworks like Microsoft Agent Framework, which is already integrated). The Harness API mentioned in the blog is not present in the published packages yet, so this doc stays aligned to the currently shipped `Microsoft.Agents.AI` surface.
 
 ---
 
@@ -44,7 +44,7 @@ public interface IAgentRuntime
 
 ## Default Implementation: `DefaultAgentRuntime`
 
-The current implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI` v1.1.0) as its execution engine.
+The current implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI` v1.17.0) as its execution engine.
 
 ### Architecture Diagram
 

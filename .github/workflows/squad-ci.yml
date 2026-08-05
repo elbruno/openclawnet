@@ -1,0 +1,50 @@
+name: Squad CI
+
+on:
+  pull_request:
+    branches: [dev, preview, main, insider]
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [dev, insider]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.x'
+
+      - name: Restore
+        run: dotnet restore OpenClawNet.slnx
+
+      - name: Build
+        run: dotnet build OpenClawNet.slnx --no-restore --configuration Release
+
+      - name: Unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory ./test-results
+
+      - name: Azure unit tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj
+          --no-build --configuration Release
+          --logger "trx;LogFileName=unit-tests-azure.trx"
+          --results-directory ./test-results
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results/*.trx
+          retention-days: 7

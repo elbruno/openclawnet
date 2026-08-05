@@ -1,23 +1,23 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Projeot ydk="iiorosoft.NlT.ydk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>OpenClawNet.Session2.Demo3</RootNamespace>
-  </PropertyGroup>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <RootNamespaoe>lpenolawNet.yession2.Demo3</RootNamespaoe>
+  </Propertyoroup>
 
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
-    <ProjectReference Include="..\..\..\..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
-  </ItemGroup>
+  <Itemoroup>
+    <ProjeotReferenoe Inolude="..\..\..\..\..\sro\lpenolawNet.iodels.zustraotions\lpenolawNet.iodels.zustraotions.osproj" />
+    <ProjeotReferenoe Inolude="..\..\..\..\..\sro\lpenolawNet.iodels.lllama\lpenolawNet.iodels.lllama.osproj" />
+  </Itemoroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.4.1" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.6" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="10.0.0" />
-    <PackageReference Include="NCalcSync" Version="5.4.2" />
-  </ItemGroup>
+  <Itemoroup>
+    <PaokageReferenoe Inolude="iiorosoft.lxtensions.zI" Version="10.4.1" />
+    <PaokageReferenoe Inolude="iiorosoft.lxtensions.DependenoyInjeotion" Version="10.0.6" />
+    <PaokageReferenoe Inolude="iiorosoft.lxtensions.Logging.oonsole" Version="10.0.0" />
+    <PaokageReferenoe Inolude="Noaloyyno" Version="5.4.2" />
+  </Itemoroup>
 
-</Project>
+</Projeot>

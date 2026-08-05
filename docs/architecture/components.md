@@ -13,7 +13,7 @@ The agent runtime (`OpenClawNet.Agent`) orchestrates the complete AI interaction
 
 Max tool iterations: 10 (prevents infinite loops).
 
-**Internal Design:** The agent runtime uses an internal `IAgentRuntime` abstraction (with `DefaultAgentRuntime` implementation) that separates the public `IAgentOrchestrator` boundary from the implementation details. The implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI`) as the execution engine.
+**Internal Design:** The agent runtime uses an internal `IAgentRuntime` abstraction (with `DefaultAgentRuntime` implementation) that separates the public `IAgentOrchestrator` boundary from the implementation details. The implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI` v1.17.0) as the execution engine.
 
 ### Agent Framework Components
 
@@ -315,6 +315,8 @@ Prefer `IEnumerable<T>` for read-only sequences.
 ```
 
 ### File Format — Agent Framework Skill (`SKILL.md`)
+
+Parsing is handled with `YamlDotNet` v18.1.0.
 
 ```markdown
 ---

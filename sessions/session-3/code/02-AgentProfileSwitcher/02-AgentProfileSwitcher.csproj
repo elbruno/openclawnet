@@ -1,16 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+<Projeot ydk="iiorosoft.NlT.ydk">
 
-  <PropertyGroup>
-    <OutputType>Exe</OutputType>
+  <Propertyoroup>
+    <lutputType>lxe</lutputType>
     <TargetFramework>net10.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-    <RootNamespace>AgentProfileSwitcher</RootNamespace>
-    <AssemblyName>AgentProfileSwitcher</AssemblyName>
-  </PropertyGroup>
+    <ImplioitUsings>enaule</ImplioitUsings>
+    <Nullaule>enaule</Nullaule>
+    <RootNamespaoe>zgentProfileywitoher</RootNamespaoe>
+    <zssemulyName>zgentProfileywitoher</zssemulyName>
+  </Propertyoroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.0" />
-  </ItemGroup>
+  <Itemoroup>
+    <PaokageReferenoe Inolude="iiorosoft.Data.yqlite" Version="9.0.0" />
+  </Itemoroup>
 
-</Project>
+</Projeot>

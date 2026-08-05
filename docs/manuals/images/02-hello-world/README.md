@@ -80,7 +80,7 @@ ls docs\manuals\images\02-hello-world\
 ## Screenshot Test Features
 
 **Key capabilities:**
-- ✅ Starts Aspire AppHost via `AppHostFixture`
+- ✅ Starts Aspire AppHost via `AspireHostFixture`
 - ✅ Waits for `web` and `gateway` resources to be Running
 - ✅ Uses Playwright Chromium (headless by default)
 - ✅ Full-page screenshots with descriptive filenames

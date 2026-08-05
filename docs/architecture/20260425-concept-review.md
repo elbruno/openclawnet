@@ -209,7 +209,7 @@ erDiagram
 
 ### 2.3 MCP Tools (External)
 
-**What it is:** Tools exposed via the Model Context Protocol (MCP) from external servers. An MCP server can be a local command-line process (Stdio transport), an HTTP endpoint, or an in-process server. Each server publishes a manifest of available tools with schemas.
+**What it is:** Tools exposed via the Model Context Protocol (MCP) from external servers. OpenClawNet uses `ModelContextProtocol` v1.3.0 here, matching the project packages. An MCP server can be a local command-line process (Stdio transport), an HTTP endpoint, or an in-process server. Each server publishes a manifest of available tools with schemas.
 
 **What it owns / references:**  
 - `McpServerDefinitionEntity` — server configuration (transport, command, URL, env vars)

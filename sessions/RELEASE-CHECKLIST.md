@@ -33,6 +33,7 @@ Tick every item before signing off. Anything not applicable → mark `n/a` with 
 - [ ] README in each demo project explains how to run it
 - [ ] Target framework is `.NET 10` (per project rule)
 - [ ] Ollama model references use bare `llama3.2` — no tagged variants (`:3b`, `:1b`, etc.)
+- [ ] `.NET` validation matches the release workflow: `dotnet restore OpenClawNet.slnx`, `dotnet build OpenClawNet.slnx --configuration Release`, then the release-test projects with `--no-build`
 
 ### 3. Docs
 - [ ] Session README (`docs/sessions/session-N/README.md`) is accurate
@@ -101,8 +102,9 @@ Tick every item before signing off. Anything not applicable → mark `n/a` with 
 1. Walk the checklist top-to-bottom. Fix anything that fails before signing off.
 2. Write `RELEASE.md` for the session.
 3. Update `metadata.json` with `releasedAt`.
-4. Single commit (or commit-per-fix if multiple things needed correcting): `release(session-N): publish + sign-off`.
-5. After the release, only edit-in-place is needed for small fixes — no new release required for typos or link patches.
+4. The plan repo release workflow validates the restored solution on .NET 10 with restore/build/test steps, then `squad-release.yml` creates a GitHub Release from the existing semver tag.
+5. Single commit (or commit-per-fix if multiple things needed correcting): `release(session-N): publish + sign-off`.
+6. After the release, only edit-in-place is needed for small fixes — no new release required for typos or link patches.
 
 ---
 

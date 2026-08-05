@@ -277,7 +277,7 @@ This applies to cross-service calls (Web → Gateway, Web → Scheduler) and to 
 - **Entity Framework Core** — SQLite persistence
 - **Playwright** — Headless browser automation (Tools.Browser)
 - **xUnit** — Testing
-- **Microsoft.Agents.AI** (`1.1.0`) — Agent Framework execution engine
+- **Microsoft.Agents.AI** (`1.17.0`) — Agent Framework execution engine
   - `ChatClientAgent` orchestrates model interaction (wraps `IChatClient`)
   - `AgentSkillsProvider` implements Agent Skills spec (agentskills.io) for progressive skill loading
   - `ModelClientChatClientAdapter : IChatClient` bridges local providers (Ollama, Foundry Local) to the Agent Framework

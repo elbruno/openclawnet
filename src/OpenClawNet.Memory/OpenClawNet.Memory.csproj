@@ -6,12 +6,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Elbruno.LocalEmbeddings" Version="1.4.6" />
+    <PackageReference Include="Elbruno.LocalEmbeddings" Version="1.5.9" />
     <PackageReference Include="MemPalace.Ai" Version="0.15.2" />
     <PackageReference Include="MemPalace.Backends.Sqlite" Version="0.15.2" />
     <PackageReference Include="MemPalace.Core" Version="0.15.2" />
-    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+    <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.8.3" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
   </ItemGroup>
 
   <PropertyGroup>
