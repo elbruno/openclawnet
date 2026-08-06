@@ -1,6 +1,7 @@
 ## Summary Index
 
 **Latest entries:**
+- ## 2026-08-06: Package Stabilization — PR #208 (wildcard pins + YamlDotNet alignment)
 - ## 2026-06-09: Issues #120 & #122 — Ollama Provider Model Fix Verification
 - ## 2026-04-26 — W-3 ship
 - ## 2026-05-01: Issue #99 — IAgentMemoryStore Abstraction
@@ -23,6 +24,45 @@
 ## Core Context
 
 Irving drives backend infrastructure and storage layer design. **Key contributions:** Skills import pipeline backend, MempalaceNet integration (Phase 2B), S3 scheduled jobs architecture (Scenario 3, PR #34), HttpClient routing fixes for distributed calls, circular dependency resolution via shared layers, **source-of-truth reconciliation execution (PR #133)**, **AspireHostFixture technical contract (2026-05-25)** — detailed state machine and ownership boundaries that transform architectural vision into executable fixture implementation. **Patterns:** Identifies architectural bottlenecks early (e.g., circular dependencies); favors deferring v2 complexity over shipping blocked features; documents technical contracts precisely; translates architect visions into implementation safeguards. **Current focus:** Source-of-truth flip complete (plan repo now canonical); Playwright E2E fixture unification contract definition; backend infrastructure enabling feature development. **Team impact:** Irving's storage/API designs and infrastructure contracts enable other team members to build features on solid foundations; precise contracts prevent implementation rework.
+
+---
+
+## 2026-08-06: Package Stabilization — PR #208
+
+**Status:** ✅ COMPLETE — `MERGEABLE / CLEAN`  
+**PR:** [#208](https://github.com/elbruno/openclawnet/pull/208)  
+**Branch:** `pkg/stabilize-wildcards-2026-08-06`
+
+### Task
+Post-merge package stabilization from `674dbbd`. Inventory and pin all remaining `Version="*"` wildcard PackageReference entries using NuGet registry data. No major-version or speculative upgrades.
+
+### Changes (7 files, 28 package references)
+
+**Wildcard → explicit (all safe same-family pins):**
+- `Microsoft.Extensions.*` family → `10.0.10` across Agent, Skills, Cli.Vault, Storage
+- `Microsoft.AspNetCore.DataProtection.*` → `10.0.10` (Cli.Vault, Storage)
+- `Microsoft.EntityFrameworkCore.Design/Sqlite` → `10.0.10` (Cli.Vault, Storage)
+- `Microsoft.ApplicationInsights` → `3.1.2` (Storage.Azure, UnitTests.Azure)
+- Azure SDK: `Azure.Identity 1.21.0`, `Azure.Security.KeyVault.Secrets 4.11.0`, `Azure.Extensions.AspNetCore.DataProtection.Blobs 1.5.3`, `.Keys 1.6.3` (Storage.Azure)
+- `Spectre.Console` → `0.57.2` (PlaywrightDemoLauncher)
+
+**Alignment (not a wildcard but inconsistent):**
+- `YamlDotNet 17.1.0` → `18.1.0` in PlaywrightDemoLauncher (rest of solution at 18.1.0)
+
+### Explicitly deferred
+- `Azure.AI.OpenAI 2.9.0-beta.1` — intentional; GA `2.1.0` would be a feature downgrade
+- `GitHub.Copilot.SDK 0.3.0` → `1.0.9` — major version jump, API review needed
+- `ModelContextProtocol 1.3.0` → `2.1.0` — major version, central infra, dedicated PR
+- `SixLabors.ImageSharp 3.1.12` → `4.0.0` — major version, known breaking changes
+- `AngleSharp 1.7.0` → `1.7.1` — not available on `azure-default` feed (NU1103)
+
+### Validation
+- Restore (win-x64): clean
+- Build UnitTests: 0 errors | UnitTests.Azure: 0 errors
+- PackageVersionRegressionTests: 5/5 ✅ | UnitTests.Azure full: 12/12 ✅
+
+### Key Learning
+NuGet packages visible on `nuget.org` (v3 flat API) may not be available on the project's `azure-default` feed. Always validate restore after adding a version bump, not just checking the public registry. `AngleSharp 1.7.1` is a concrete example.
 
 ---
 
