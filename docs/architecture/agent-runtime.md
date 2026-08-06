@@ -51,7 +51,7 @@ The current implementation uses **Microsoft Agent Framework** (`Microsoft.Agents
 The full Harness API surface (`LoopAgent`, `ToolApprovalAgent`, `AIAgentBuilder`, `CompactionProvider`,
 `SummarizationCompactionStrategy`, `ChatHistoryMemoryProvider`, `BackgroundAgentsProvider`) is published in v1.17.0.
 
-**Current Status:** 🟡 **NOT fully migrated**. The existing `DefaultAgentRuntime` + `ModelClientChatClientAdapter` pattern is production-stable and battle-tested. Phased Harness adoption is tracked separately. For migration timeline and rationale, see [Release Guidance](../release/RELEASE-GUIDANCE.md#harness--aspirehostrfixture-terminology).
+**Current Status:** 🟡 **NOT fully migrated**. The existing `DefaultAgentRuntime` + `ModelClientChatClientAdapter` pattern is production-stable and battle-tested. Phased Harness adoption is tracked separately. For migration timeline and rationale, see [Release Guidance](../release/RELEASE-GUIDANCE.md#harness--aspirehostrfixture-terminology) and the Phase 1 migration plan at [`.squad/decisions/inbox/petey-harness-migration.md`](../../.squad/decisions/inbox/petey-harness-migration.md).
 
 ### Architecture Diagram
 

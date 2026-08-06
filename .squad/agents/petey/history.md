@@ -1,6 +1,7 @@
 ## Summary Index
 
 **Latest entries:**
+- ## 2026-08-06 — Harness Phase 1: MAF 1.17.0 probe tests, doc fix, decision proposal
 - ## 2026-05-02 — PR #8 Rebase (not split) — ShareSession already on main
 - ## 2026-05-05 01:43 — ToolApproval tests failing — ROOT CAUSE IDENTIFIED & FIXED
 - ## 2026-05-06 — Skill Contamination in E2E Tests (fix commit 499fba9)
@@ -1406,3 +1407,41 @@ Google Workspace integrations should follow the existing DI-factory + tool facad
 
 **Status:** ✅ Delivered. Ready for Ricken to extract code examples into slides.
 
+
+---
+
+## 2026-08-06 — Harness Phase 1: MAF 1.17.0 probe tests, doc fix, decision proposal
+
+**Branch:** feat/harness-phase1
+**Requested by:** Bruno Capuano
+
+### Task
+Implement Harness Phase 1 on a fresh branch: fix stale docs, add API probe/contract tests for
+Microsoft.Agents.AI 1.17.0 AIAgentBuilder/LoopAgent/ToolApprovalAgent, and document a phased
+migration plan. Behavior-preserving only — no changes to HTTP approval flow or NDJSON protocol.
+
+### Work completed
+- Fixed docs/architecture/agent-runtime.md: 1.1.0 → 1.17.0; added Harness API note and
+  pointer to migration plan
+- Created 	ests/OpenClawNet.UnitTests/Agent/MafHarnessApiProbeTests.cs — 7 probe tests covering
+  API-U-1 through API-U-5 plus an AIAgentBuilder pipeline prototype (all 7 pass)
+- Created .squad/decisions/inbox/petey-harness-migration.md — full migration proposal with 14
+  behavior inventory, 5 API uncertainty findings, 5-phase plan, D1/D2 decision options
+
+### API probe findings
+- **API-U-1**: LoopAgent.DefaultMaxIterations = 10 (must set MaxIterations = 25 explicitly)
+- **API-U-2**: Agent name flows correctly via ChatClientAgentOptions.Name → InvokingContext.Agent.Name
+- **API-U-3**: FunctionCallContent IS surfaced in LoopAgent streaming — existing tool-collection code works
+- **API-U-4**: CompactionTriggers.MessagesExceed(n) is correct API (not MessageCount); in-memory only
+- **API-U-5**: ToolApprovalRule is process-scoped; per-session isolation needs per-request options wrapper
+
+### API compat notes discovered during implementation
+- ChatClientAgentSession constructors do NOT exist as documented in XML — use loopAgent.CreateSessionAsync() to obtain sessions
+- AgentSession is abstract — test code needs TestAgentSession : AgentSession subclass
+- CompactionTriggers.MessageCount → renamed to MessagesExceed(n)
+- CompactionProvider param is stateKey not storageKey
+- FunctionResultContent ctor is 2-arg (callId, result) not 3-arg
+
+### Blocking decisions (Phase 4/5)
+- D1: HTTP-pause approval model vs MAF multi-turn ToolApprovalAgent — owner: Mark/Bruno
+- D2: Compaction persistence wrapper vs in-memory only — owner: Mark/Bruno
