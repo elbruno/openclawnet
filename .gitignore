@@ -11,6 +11,7 @@ model-settings.json
 
 # Test Results
 TestResults/
+test_output.txt
 
 # IDE
 .vs/
@@ -44,3 +45,8 @@ Thumbs.db
 
 # Node
 node_modules/
+.squad/orchestration-log/
+.squad/log/
+.squad/decisions/inbox/
+.squad/sessions/
+.squad-workstream

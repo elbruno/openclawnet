@@ -15,8 +15,8 @@ namespace OpenClawNet.Skills;
 ///   per-agent enabled.json overlay (Q1 opt-in).</item>
 ///   <item>Materializes filtered <see cref="LayeredSkill"/> records into
 ///   MAF <see cref="AgentInlineSkill"/> instances and builds a fresh
-///   <see cref="AgentSkillsProvider"/> with
-///   <see cref="AgentSkillsProviderOptions.DisableCaching"/> = <c>true</c>
+///   <see cref="AgentSkillsProvider"/> with default
+///   <see cref="AgentSkillsProviderOptions"/>
 ///   (per K-D-1: no MAF-side caching — we own the cache via snapshots).</item>
 ///   <item>Delegates to the fresh provider's <see cref="AIContextProvider.InvokingAsync"/>
 ///   to produce the final <see cref="AIContext"/>.</item>
@@ -93,14 +93,14 @@ public sealed class OpenClawNetSkillsProvider : AIContextProvider
     /// <summary>
     /// K-1b — Test-only accessor returning the MAF provider options that
     /// <see cref="BuildAgentSkillsProviderAsync"/> would apply. Confirms
-    /// K-D-1 contract: <c>DisableCaching = true</c>.
+    /// K-D-1 contract: default <see cref="AgentSkillsProviderOptions"/>.
     /// </summary>
     public AgentSkillsProviderOptions GetMafProviderOptions()
-        => new() { DisableCaching = true };
+        => new();
 
     /// <summary>
     /// K-1b — Builds a fresh MAF <see cref="AgentSkillsProvider"/> with
-    /// <c>DisableCaching=true</c> for the baked-in test agent. Production
+    /// default <see cref="AgentSkillsProviderOptions"/> for the baked-in test agent. Production
     /// callers go through <see cref="ProvideAIContextAsync"/> which builds
     /// equivalently per invocation.
     /// </summary>
