@@ -49,8 +49,21 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
     // Bumped from 10 → 25 (April 2026): real-world jobs (e.g. "fetch URL → hash → write log")
     // can easily chain 6+ tool calls; 10 was hitting the ceiling and producing the
     // "I've reached the maximum number of tool iterations" fallback prematurely.
+    //
+    // Phase 2 (Harness): MaxToolIterations is the SINGLE canonical value shared by both
+    // execution paths. _loopAgentOptions below pins it into LoopAgent for the non-streaming
+    // path. ⚠️ API-U-1 finding: LoopAgent.DefaultMaxIterations = 10, NOT 25 — always set
+    // MaxIterations explicitly; never rely on the default.
     private const int MaxToolIterations = 25;
     private const int KeepRecentMessagesAfterCompaction = 10;
+
+    // Phase 2 — LoopAgent options with explicit MaxIterations=25.
+    // Shared by ExecuteWithLoopAgentAsync. The streaming path (ExecuteStreamAsync)
+    // cannot use LoopAgent.RunStreamingAsync directly because the HTTP-pause approval
+    // gate requires yielding NDJSON events mid-iteration, which the LoopEvaluator cannot
+    // do. Phase 3 will add an approval-bridge for the streaming path.
+    private static readonly LoopAgentOptions _loopAgentOptions =
+        new() { MaxIterations = MaxToolIterations };
 
     /// <summary>
     /// Bundled MCP server prefixes whose tools require user approval before execution.
@@ -354,102 +367,49 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
             context.AvailableTools = toolDefs;
 
             var allToolResults = new List<ToolResult>();
-            var totalTokens = 0;
-            var iterations = 0;
-            var currentMessages = messages.ToList();
             var executedToolCalls = new List<ToolCall>();
-            // AC-WIRE-1/2 — build a per-turn ChatClientAgent with Name set from
-            // the resolved AgentProfile so OpenClawNetSkillsProvider can resolve
-            // the per-agent enabled.json overlay via InvokingContext.Agent.Name.
-            // The shared _chatClientAgent (no name) stays as a fallback for
-            // test harnesses that don't set a profile.
-            var turnAgent = BuildAgentForTurn(context.AgentProfileName);
-            var agentSession = await turnAgent.CreateSessionAsync(cancellationToken);
             var effectiveTools = FilterToolsForProfile(context);
             var chatOptions = new ChatOptions { Tools = effectiveTools };
 
-            while (iterations < MaxToolIterations)
+            // AC-WIRE-1/2 — build a per-turn ChatClientAgent with Name set from the resolved
+            // AgentProfile so OpenClawNetSkillsProvider can resolve the per-agent enabled.json
+            // overlay via InvokingContext.Agent.Name.
+            var turnAgent = BuildAgentForTurn(context.AgentProfileName);
+
+            // Phase 2 — delegate iteration control to LoopAgent (MaxIterations=25 explicit).
+            // The LoopEvaluator executes tool calls and injects results via ContinueWithMessages,
+            // matching the previous manual while-loop semantics but using MAF's iteration contract.
+            // Skills are injected by OpenClawNetSkillsProvider on each iteration via AIContextProviders;
+            // SkillsTurnPin ensures the snapshot is read from disk only once per chat turn.
+            var (finalContent, totalTokens, hitMaxIterations) = await ExecuteWithLoopAgentAsync(
+                messages.ToList(), turnAgent, chatOptions, allToolResults, executedToolCalls,
+                context, cancellationToken);
+
+            string persistedContent;
+            if (hitMaxIterations)
             {
-                _logger.LogDebug("Invoking model: model={Model}, iterations={Iteration}", context.ModelName, iterations);
-
-                OpenClawChatResponse response;
-                if (iterations == 0)
-                    response = await InvokeAgentFirstCallAsync(currentMessages, turnAgent, agentSession, chatOptions, cancellationToken);
-                else
-                    response = await InvokeAdapterCallAsync(currentMessages, chatOptions, cancellationToken);
-
-                totalTokens += response.Usage?.TotalTokens ?? 0;
-
-                if (response.ToolCalls is { Count: > 0 })
-                {
-                    currentMessages.Add(new OpenClawChatMessage
-                    {
-                        Role = ChatMessageRole.Assistant,
-                        Content = response.Content ?? string.Empty,
-                        ToolCalls = response.ToolCalls
-                    });
-
-                    foreach (var toolCall in response.ToolCalls)
-                    {
-                        _logger.LogDebug("Executing tool: {ToolName}", toolCall.Name);
-                        var result = await _toolExecutor.ExecuteAsync(toolCall.Name, toolCall.Arguments, cancellationToken);
-                        allToolResults.Add(result);
-                        executedToolCalls.Add(new ToolCall { Id = toolCall.Id, Name = toolCall.Name, Arguments = toolCall.Arguments });
-
-                        _logger.LogInformation("🔧 Tool result for {ToolName}: Success={Success}, OutputLength={OutputLength}, ErrorMessage={ErrorMessage}", 
-                            toolCall.Name, result.Success, result.Output?.Length ?? 0, result.Error ?? "none");
-
-                        var toolContent = result.Success ? result.Output : $"Error: {result.Error}";
-                        _logger.LogInformation("🔧 Tool content BEFORE sanitizer: Length={ContentLength}, IsEmpty={IsEmpty}", 
-                            toolContent?.Length ?? 0, string.IsNullOrEmpty(toolContent));
-
-                        var sanitizedContent = _sanitizer is not null
-                            ? _sanitizer.Sanitize(toolContent, toolCall.Name)
-                            : toolContent;
-
-                        _logger.LogInformation("🔧 Tool content AFTER sanitizer: Length={ContentLength}, IsEmpty={IsEmpty}, SanitizerUsed={SanitizerUsed}", 
-                            sanitizedContent?.Length ?? 0, string.IsNullOrEmpty(sanitizedContent), _sanitizer is not null);
-
-                        currentMessages.Add(new OpenClawChatMessage
-                        {
-                            Role = ChatMessageRole.Tool,
-                            Content = sanitizedContent,
-                            ToolCallId = toolCall.Id
-                        });
-                    }
-
-                    iterations++;
-                }
-                else
-                {
-                    var content = response.Content ?? string.Empty;
-                    await _conversationStore.AddMessageAsync(context.SessionId, "assistant", content, cancellationToken: cancellationToken);
-
-                    context.FinalResponse = content;
-                    context.ToolResults = allToolResults;
-                    context.ExecutedToolCalls = executedToolCalls;
-                    context.TotalTokens = totalTokens;
-                    context.IsComplete = true;
-                    context.CompletedAt = DateTime.UtcNow;
-
-                    _logger.LogDebug("Agent execution completed: InteractionId={InteractionId}, ToolCount={ToolCount}, Tokens={Tokens}",
-                        context.InteractionId, executedToolCalls.Count, totalTokens);
-
-                    return context;
-                }
+                persistedContent = "I've reached the maximum number of tool iterations. Here's what I've done so far.";
+                _logger.LogWarning(
+                    "Agent execution reached max iterations ({Max}): InteractionId={InteractionId}",
+                    MaxToolIterations, context.InteractionId);
+            }
+            else
+            {
+                persistedContent = finalContent;
+                _logger.LogDebug(
+                    "Agent execution completed: InteractionId={InteractionId}, ToolCount={ToolCount}, Tokens={Tokens}",
+                    context.InteractionId, executedToolCalls.Count, totalTokens);
             }
 
-            var fallback = "I've reached the maximum number of tool iterations. Here's what I've done so far.";
-            await _conversationStore.AddMessageAsync(context.SessionId, "assistant", fallback, cancellationToken: cancellationToken);
+            await _conversationStore.AddMessageAsync(
+                context.SessionId, "assistant", persistedContent, cancellationToken: cancellationToken);
 
-            context.FinalResponse = fallback;
+            context.FinalResponse = persistedContent;
             context.ToolResults = allToolResults;
             context.ExecutedToolCalls = executedToolCalls;
             context.TotalTokens = totalTokens;
             context.IsComplete = true;
             context.CompletedAt = DateTime.UtcNow;
-
-            _logger.LogWarning("Agent execution reached max iterations: InteractionId={InteractionId}", context.InteractionId);
 
             return context;
         }
@@ -537,7 +497,12 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         var totalTokens = 0;
         var iterations = 0;
 
-        while (iterations < MaxToolIterations)
+        // Phase 2 (Harness) — MaxIterations is governed by _loopAgentOptions (same constant
+        // as the LoopAgent-backed non-streaming path).  This manual loop is RETAINED for the
+        // streaming path because the HTTP-pause approval gate must yield NDJSON events
+        // mid-iteration, which LoopEvaluator cannot do.  Phase 3 will bridge this by
+        // introducing an event-channel between the evaluator and the NDJSON yield loop.
+        while (iterations < _loopAgentOptions.MaxIterations)
         {
             var shouldBreak = false;
             var contentBuffer = string.Empty;
@@ -918,6 +883,105 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         context.TotalTokens = totalTokens;
         context.IsComplete = true;
         context.CompletedAt = DateTime.UtcNow;
+    }
+
+    /// <summary>
+    /// Phase 2 (Harness) — drives the non-streaming execution loop via
+    /// <see cref="LoopAgent"/> with <c>MaxIterations = 25</c>.
+    ///
+    /// <para>The <see cref="DelegateLoopEvaluator"/> inspects each iteration's
+    /// <see cref="LoopContext.LastResponse"/> for <see cref="FunctionCallContent"/>
+    /// items; when present it executes them via <see cref="IToolExecutor"/>, applies
+    /// the optional <see cref="IToolResultSanitizer"/>, and returns
+    /// <see cref="LoopEvaluation.ContinueWithMessages"/> so MAF feeds the results
+    /// back into the next iteration.  When there are no function calls the evaluator
+    /// returns <see cref="LoopEvaluation.Stop()"/>.</para>
+    ///
+    /// <para>The streaming path (<see cref="ExecuteStreamAsync"/>) keeps its own
+    /// <c>while</c> loop because the HTTP-pause approval gate must yield NDJSON
+    /// events mid-iteration — something the <see cref="LoopEvaluator"/> cannot do.
+    /// Phase 3 will add an approval-bridge for the streaming path.</para>
+    /// </summary>
+    private async Task<(string content, int totalTokens, bool hitMaxIterations)>
+        ExecuteWithLoopAgentAsync(
+            List<OpenClawChatMessage> currentMessages,
+            ChatClientAgent turnAgent,
+            ChatOptions chatOptions,
+            List<ToolResult> allToolResults,
+            List<ToolCall> executedToolCalls,
+            AgentContext context,
+            CancellationToken cancellationToken)
+    {
+        // Track whether the last evaluator invocation stopped naturally (no more tool calls)
+        // or was cut off because MaxIterations was reached.  This flag is set inside the
+        // evaluator closure and read after RunAsync returns.
+        var lastEvaluatorStopped = false;
+
+        var evaluator = new DelegateLoopEvaluator(async (ctx, ct) =>
+        {
+            var functionCalls = ctx.LastResponse.Messages
+                .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
+                .ToList();
+
+            if (functionCalls.Count == 0)
+            {
+                lastEvaluatorStopped = true;
+                return LoopEvaluation.Stop();
+            }
+
+            lastEvaluatorStopped = false;
+            var toolResultMessages = new List<MEAIChatMessage>(functionCalls.Count);
+
+            foreach (var fcc in functionCalls)
+            {
+                var callId = fcc.CallId ?? Guid.NewGuid().ToString("N");
+                var argsJson = fcc.Arguments is not null
+                    ? JsonSerializer.Serialize(fcc.Arguments)
+                    : "{}";
+
+                _logger.LogDebug("Executing tool (non-streaming): {ToolName}", fcc.Name);
+                ToolResult result;
+                try
+                {
+                    result = await _toolExecutor.ExecuteAsync(fcc.Name, argsJson, ct);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex,
+                        "Tool execution failed in non-streaming loop: {ToolName}", fcc.Name);
+                    result = ToolResult.Fail(fcc.Name, ex.Message, TimeSpan.Zero);
+                }
+
+                allToolResults.Add(result);
+                executedToolCalls.Add(new ToolCall { Id = callId, Name = fcc.Name, Arguments = argsJson });
+
+                var rawOutput = result.Success ? result.Output : $"Error: {result.Error}";
+                var sanitized = _sanitizer?.Sanitize(rawOutput, fcc.Name) ?? rawOutput;
+
+                toolResultMessages.Add(new MEAIChatMessage(
+                    ChatRole.Tool,
+                    [new FunctionResultContent(callId, sanitized)]));
+            }
+
+            return LoopEvaluation.ContinueWithMessages(toolResultMessages);
+        });
+
+        var loopAgent = new LoopAgent(turnAgent, evaluator, _loopAgentOptions, _loggerFactory);
+        var agentSession = await loopAgent.CreateSessionAsync(cancellationToken);
+        var runOptions = new ChatClientAgentRunOptions(chatOptions);
+        var aiMessages = currentMessages.Select(ModelClientChatClientAdapter.ToMEAIMessage).ToList();
+
+        var agentResponse = await loopAgent.RunAsync(aiMessages, agentSession, runOptions, cancellationToken);
+
+        var totalTokens = (int)(agentResponse.Usage?.TotalTokenCount ?? 0);
+        var finalText = agentResponse.Text ?? string.Empty;
+
+        // hitMaxIterations is true when the loop ran out of iterations while the model
+        // was still requesting tool calls (evaluator returned Continue but MaxIterations
+        // was already reached, so lastEvaluatorStopped stayed false).
+        var hitMaxIterations = !lastEvaluatorStopped && string.IsNullOrEmpty(finalText);
+
+        return (finalText, totalTokens, hitMaxIterations);
     }
 
     /// <summary>
