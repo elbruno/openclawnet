@@ -31,20 +31,32 @@ jobs:
 
       # ─── Restore ────────────────────────────────────────────────────────
       - name: Restore packages
-        run: dotnet restore OpenClawNet.slnx
+        run: dotnet restore OpenClawNet.slnx --runtime win-x64
 
       # ─── Build ──────────────────────────────────────────────────────────
+      # Build the two test projects directly (not the solution) so -r win-x64
+      # can be passed. NETSDK1134 prevents passing a RID to a solution build;
+      # direct project builds pull all transitive dependencies automatically.
       - name: Build (Release)
-        run: dotnet build OpenClawNet.slnx --no-restore --configuration Release
+        run: |
+          dotnet build tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj `
+            --no-restore --configuration Release -r win-x64 -p:CopilotSkipCliDownload=true
+          dotnet build tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj `
+            --no-restore --configuration Release -r win-x64 -p:CopilotSkipCliDownload=true
 
       # ─── Unit Tests (offline, no live services) ─────────────────────────
       # Runs only the UnitTests project — no integration, E2E, Playwright,
       # or Azure tests which require Ollama, Docker, browsers, or credentials.
+      # Category!=Live excludes AzureOpenAILiveTests, LiveLlmTests, and
+      # LiveAgentLoopTests which require real Azure credentials.
       - name: Unit Tests
         run: >
           dotnet test tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj
           --no-build
           --configuration Release
+          -r win-x64
+          -p:CopilotSkipCliDownload=true
+          --filter "Category!=Live"
           --logger "trx;LogFileName=unit-tests.trx"
           --results-directory ./test-results
 
@@ -55,6 +67,8 @@ jobs:
           dotnet test tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj
           --no-build
           --configuration Release
+          -r win-x64
+          -p:CopilotSkipCliDownload=true
           --logger "trx;LogFileName=unit-tests-azure.trx"
           --results-directory ./test-results
 
