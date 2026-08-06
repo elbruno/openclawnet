@@ -11,8 +11,6 @@
          and the future MCP wrappers both speak. Kept on Microsoft.Extensions.AI only
          so this assembly stays free of MCP SDK + storage dependencies. -->
     <PackageReference Include="Microsoft.Extensions.AI.Abstractions" Version="10.5.2" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
   </ItemGroup>
 
 </Project>
