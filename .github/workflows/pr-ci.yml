@@ -1,0 +1,85 @@
+name: PR CI — Build & Unit Tests
+
+# Triggers on pull requests targeting main (and common dev branches).
+# Does NOT use pull_request_target — safe against fork injection.
+on:
+  pull_request:
+    branches: [main, dev, preview, insider]
+    types: [opened, synchronize, reopened]
+
+# Least-privilege: read-only access to repo contents.
+# No secrets, no write permissions, no NuGet publishing.
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    name: Build & Unit Tests (win-x64)
+    runs-on: windows-latest
+
+    steps:
+      # ─── Checkout ───────────────────────────────────────────────────────
+      # Pinned to actions/checkout v4.2.2 (2024-10-23)
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+
+      # ─── .NET SDK Setup ─────────────────────────────────────────────────
+      # Pinned to actions/setup-dotnet v4.3.1 (2025-01-15)
+      - name: Setup .NET 10
+        uses: actions/setup-dotnet@67a3573c9a986a3f9c594539f4ab511d57bb3ce9 # v4.3.1
+        with:
+          dotnet-version: '10.x'
+
+      # ─── Restore ────────────────────────────────────────────────────────
+      - name: Restore packages
+        run: dotnet restore OpenClawNet.slnx
+
+      # ─── Build ──────────────────────────────────────────────────────────
+      - name: Build (Release)
+        run: dotnet build OpenClawNet.slnx --no-restore --configuration Release
+
+      # ─── Unit Tests (offline, no live services) ─────────────────────────
+      # Runs only the UnitTests project — no integration, E2E, Playwright,
+      # or Azure tests which require Ollama, Docker, browsers, or credentials.
+      - name: Unit Tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests/OpenClawNet.UnitTests.csproj
+          --no-build
+          --configuration Release
+          --logger "trx;LogFileName=unit-tests.trx"
+          --results-directory ./test-results
+
+      # ─── Azure Unit Tests (offline mocks only) ──────────────────────────
+      # These tests use mocked Azure clients; no real Azure credentials needed.
+      - name: Azure Unit Tests
+        run: >
+          dotnet test tests/OpenClawNet.UnitTests.Azure/OpenClawNet.UnitTests.Azure.csproj
+          --no-build
+          --configuration Release
+          --logger "trx;LogFileName=unit-tests-azure.trx"
+          --results-directory ./test-results
+
+      # ─── Upload Test Results ────────────────────────────────────────────
+      # Pinned to actions/upload-artifact v4.6.0 (2025-01-08)
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.0
+        with:
+          name: test-results-${{ github.run_id }}
+          path: ./test-results/*.trx
+          retention-days: 7
+
+  # ─── Environment-Dependent Tests (informational) ──────────────────────
+  # The following test suites are EXCLUDED from PR CI because they require
+  # live services or credentials that are not available in the CI environment:
+  #
+  #   - OpenClawNet.IntegrationTests — requires Docker + Aspire AppHost
+  #   - OpenClawNet.E2ETests — requires running application stack
+  #   - OpenClawNet.PlaywrightTests — requires Playwright browsers + running app
+  #   - OpenClawNet.DeploymentTests — requires cloud infrastructure
+  #
+  # These tests use [SkippableFact] or environment checks to self-skip when
+  # prerequisites are missing. Run them locally with:
+  #   dotnet test tests/OpenClawNet.IntegrationTests --configuration Release
+  #   dotnet test tests/OpenClawNet.PlaywrightTests --configuration Release
+  #
+  # See docs/architecture/TEST-ENVIRONMENT.md for full setup instructions.
