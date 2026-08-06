@@ -3,6 +3,9 @@
 **Date:** 2026-08-06
 **Status:** PENDING — awaiting D1 / D2 owner decisions
 
+**Phase 1:** ✅ MERGED (#210) — MAF 1.17.0 doc fix, API probe tests, migration proposal
+**Phase 2:** ✅ IMPLEMENTED (feat/harness-phase2, PR pending) — LoopAgent non-streaming integration, regression tests
+
 ---
 
 ## Background

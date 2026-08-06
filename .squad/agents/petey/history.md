@@ -1,6 +1,7 @@
 ## Summary Index
 
 **Latest entries:**
+- ## 2026-08-06 — Harness Phase 2: LoopAgent non-streaming integration + regression tests
 - ## 2026-08-06 — Harness Phase 1: MAF 1.17.0 probe tests, doc fix, decision proposal
 - ## 2026-05-02 — PR #8 Rebase (not split) — ShareSession already on main
 - ## 2026-05-05 01:43 — ToolApproval tests failing — ROOT CAUSE IDENTIFIED & FIXED
@@ -1445,3 +1446,54 @@ migration plan. Behavior-preserving only — no changes to HTTP approval flow or
 ### Blocking decisions (Phase 4/5)
 - D1: HTTP-pause approval model vs MAF multi-turn ToolApprovalAgent — owner: Mark/Bruno
 - D2: Compaction persistence wrapper vs in-memory only — owner: Mark/Bruno
+
+---
+
+## 2026-08-06 — Harness Phase 2: LoopAgent non-streaming integration + regression tests
+
+**Branch:** feat/harness-phase2
+**Requested by:** Bruno Capuano
+**Base commit:** 53437a9 (Phase 1 merge)
+
+### Task
+Implement behavior-preserving LoopAgent integration for the non-streaming ExecuteAsync path.
+Preserve HTTP-pause approval gate, NDJSON streaming contract, all other behaviors.
+Add focused regression tests: iteration cap (25), tool result pass-through, approval
+pause/resume, clean stop.
+
+### Work completed
+
+**DefaultAgentRuntime.cs changes:**
+- Added _loopAgentOptions = new LoopAgentOptions { MaxIterations = 25 } static field —
+  single canonical source of truth for iteration limits on BOTH paths
+- Non-streaming ExecuteAsync: replaced manual while (iterations < 25) loop with
+  ExecuteWithLoopAgentAsync() which wraps the inner ChatClientAgent in LoopAgent
+- New private ExecuteWithLoopAgentAsync() method: DelegateLoopEvaluator executes tool
+  calls and injects FunctionResultContent messages via LoopEvaluation.ContinueWithMessages
+- Streaming ExecuteStreamAsync: unchanged approval-gate loop, but while guard now
+  references _loopAgentOptions.MaxIterations with explicit Phase 3 comment
+
+**AgentRuntimeLoopAgentPhase2Tests.cs** — 8 new regression tests:
+- ExecuteAsync_CleanStop_ReturnsFinalText — no tool calls, direct text response
+- ExecuteAsync_OneToolCall_ExecutesToolAndReturnsAnswer — single tool chain
+- ExecuteAsync_ToolResultPassesThroughSanitizer — sanitizer called on tool output
+- ExecuteAsync_AlwaysToolCalling_StopsAt25IterationsWithFallback — MaxIterations=25
+  regression guard (key API-U-1 test: proves 25 not 10)
+- ExecuteStreamAsync_ToolApprovalDeny_PreservesHttpPauseFlow — HTTP-pause preserved
+- ExecuteStreamAsync_ToolApprovalApprove_ExecutesToolAndContinues — approval + exec
+- ExecuteStreamAsync_NoToolCalls_StreamsTextAndCompletes — streaming clean stop
+- ExecuteStreamAsync_AlwaysToolCalling_StopsAt25Iterations — streaming cap=25 guard
+
+**Test results: 46/46 pass** (8 new + 38 existing)
+
+### Why streaming uses manual loop (Phase 3 blocker)
+LoopAgent.RunStreamingAsync evaluator cannot yield return NDJSON events mid-iteration.
+The HTTP-pause approval gate MUST yield ToolApprovalRequest event to the NDJSON stream
+BEFORE blocking on the TCS. This requires an event-channel bridge (Phase 3).
+
+### Non-streaming skills injection change (behavior improvement)
+Previously: skills (AIContextProviders) only fired on iteration 0; iterations 1+ called
+_adapter directly (no skills).
+Now: skills fire on every LoopAgent iteration via ChatClientAgent. SkillsTurnPin ensures
+the snapshot is read from disk only once per chat turn. This aligns the non-streaming path
+with the streaming path (which already fired providers each iteration).
