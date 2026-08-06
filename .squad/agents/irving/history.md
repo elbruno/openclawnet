@@ -1,6 +1,7 @@
 ## Summary Index
 
 **Latest entries:**
+- ## 2026-08-06: Package Compat Upgrades — PR #212 (MudBlazor 9.8.0, AngleSharp 1.7.1)
 - ## 2026-08-06: Package Stabilization — PR #208 (wildcard pins + YamlDotNet alignment)
 - ## 2026-06-09: Issues #120 & #122 — Ollama Provider Model Fix Verification
 - ## 2026-04-26 — W-3 ship
@@ -13,6 +14,38 @@
 - ## 2026-05-08 — Vault Phase 4 E2E Support Assessment (PR #141 Review)
 - ## 2026-05-08 — Vault Phase 5 CLI Implementation
 - ## 2026-05-12: Issue #151 — Vault Secret Reference Integration
+
+---
+
+## 2026-08-06: Package Compat Upgrades — PR #212
+
+**Status:** ✅ COMPLETE — `MERGEABLE / CLEAN`
+**PR:** [#212](https://github.com/elbruno/openclawnet/pull/212)
+**Branch:** `pkg/compat-upgrades-2026-08-06`
+
+### Task
+Phase 2 stabilization from `53437a9` (main after PR #210). Upgrade all compatible patch/minor packages from PR #208's deferred list. No major-version or pre-1.0 changes.
+
+### Inventory scan
+- `Microsoft.Agents.Core` — already at `1.7.129` (latest stable); no change needed
+- `OllamaSharp 5.4.30` — already at latest stable; no change needed
+- `MudBlazor 9.7.0 → 9.8.0` — minor UI, eligible ✅
+- `AngleSharp 1.7.0 → 1.7.1` — patch, NU1103 at PR #208 time; **feed now serves it** ✅
+
+### Changes (4 files)
+- `MudBlazor 9.7.0 → 9.8.0`: Channels.csproj, Web.csproj, UnitTests.csproj
+- `AngleSharp 1.7.0 → 1.7.1`: Tools.HtmlQuery.csproj
+
+### Deferred (carried forward)
+- `Azure.AI.OpenAI` beta → GA: feature downgrade, intentional
+- `GitHub.Copilot.SDK` 0.x → 1.x: major version
+- `ModelContextProtocol` 1.x → 2.x: major version
+- `SixLabors.ImageSharp` 3.x → 4.x: major version
+- `ElBruno.MarkItDotNet` pre-1.0 bump: verify changelog first
+
+### Validation
+- Restore: clean | Build: 0 errors | PackageVersionRegressionTests: 5/5 ✅
+- AppRazorMudBlazorRegressionTests: 2/2 ✅ | HtmlQueryToolTests: 3/3 ✅
 
 ---
 
