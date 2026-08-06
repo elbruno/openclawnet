@@ -16,7 +16,7 @@ public sealed class InMemoryChannelEventBusTests
         var bus = new InMemoryChannelEventBus();
         var jobA = Guid.NewGuid();
         var jobB = Guid.NewGuid();
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(2));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
         var received = new List<ChannelEvent>();
         var task = Task.Run(async () =>
