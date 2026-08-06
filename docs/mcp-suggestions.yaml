@@ -1,0 +1,63 @@
+version: 1
+suggestions:
+  - id: shell-alt-mkusaka
+    name: Shell (mkusaka fork)
+    description: Execute shell commands via stdio MCP. Alternative fork with improved quoting.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@mkusaka/mcp-shell"
+    category: productivity
+
+  - id: desktop-commander
+    name: Desktop Commander
+    description: Control desktop applications and windows via MCP.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@wonderwhy-er/desktop-commander"
+    category: productivity
+
+  - id: github-mcp
+    name: GitHub MCP
+    description: Interact with GitHub repositories, issues, and pull requests.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-github"
+    category: development
+    requires_env:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+
+  - id: memory-mcp
+    name: Memory MCP
+    description: Persistent key-value memory store for agents.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-memory"
+    category: memory
+
+  - id: playwright-mcp-alt
+    name: Playwright MCP (alternative)
+    description: Browser automation via Playwright with headless Chrome.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@executeautomation/playwright-mcp-server"
+    category: browser
+
+  - id: fetch-mcp-alt
+    name: Fetch MCP (alternative)
+    description: Retrieve web content as markdown or raw HTML.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-fetch"
+    category: web
