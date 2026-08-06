@@ -85,6 +85,21 @@ See the **What's Where** section in [SETUP.md](./SETUP.md#11-whats-where) for a 
 
 ---
 
+## 📦 Versioning & Release
+
+**⚠️ Important:** OpenClaw .NET packages are **not published to NuGet.org**. This is a reference platform for learning Aspire + AI agents + .NET 10.
+
+- **Source:** Clone locally or fork for your own projects
+- **Releases:** Tag-based on GitHub (git tag → GitHub Release workflow)
+- **Package References:** All dependencies pinned in `Directory.Build.props`
+  - Microsoft.Agents.AI 1.17.0 (Harness available; gradual adoption planned)
+  - Aspire.Hosting.Testing 13.4.6 (AspireHostFixture integration)
+  - .NET 10.0+
+
+For detailed release process, environment-dependent test blockers, and Harness adoption timeline, see [**Release Guidance**](./docs/release/RELEASE-GUIDANCE.md).
+
+---
+
 ## 💬 Community
 
 - **Discord:** [Microsoft Foundry Community](https://aka.ms/ai-discord/dotnet) (.NET channel)

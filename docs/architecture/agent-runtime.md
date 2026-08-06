@@ -44,7 +44,14 @@ public interface IAgentRuntime
 
 ## Default Implementation: `DefaultAgentRuntime`
 
-The current implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI` v1.1.0) as its execution engine.
+The current implementation uses **Microsoft Agent Framework** (`Microsoft.Agents.AI` v1.17.0) as its execution engine.
+
+### Harness API Surface Availability
+
+The full Harness API surface (`LoopAgent`, `ToolApprovalAgent`, `AIAgentBuilder`, `CompactionProvider`,
+`SummarizationCompactionStrategy`, `ChatHistoryMemoryProvider`, `BackgroundAgentsProvider`) is published in v1.17.0.
+
+**Current Status:** 🟡 **NOT fully migrated**. The existing `DefaultAgentRuntime` + `ModelClientChatClientAdapter` pattern is production-stable and battle-tested. Phased Harness adoption is tracked separately. For migration timeline and rationale, see [Release Guidance](../release/RELEASE-GUIDANCE.md#harness--aspirehostrfixture-terminology).
 
 ### Architecture Diagram
 
