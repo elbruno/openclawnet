@@ -9,18 +9,18 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Aspire.Hosting.Testing" Version="13.4.3" />
-    <PackageReference Include="coverlet.collector" Version="10.0.0">
+    <PackageReference Include="Aspire.Hosting.Testing" Version="13.4.6" />
+    <PackageReference Include="coverlet.collector" Version="10.0.1">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="8.10.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.9" />
-    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.9" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.5.1" />
-    <PackageReference Include="Microsoft.Playwright" Version="1.59.0" />
-    <PackageReference Include="WireMock.Net" Version="2.6.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.10" />
+    <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="10.0.10" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="10.0.10" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageReference Include="Microsoft.Playwright" Version="1.61.0" />
+    <PackageReference Include="WireMock.Net" Version="2.13.0" />
     <PackageReference Include="xunit" Version="2.9.3" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.5.61" />
     <PackageReference Include="xunit.runner.visualstudio" Version="3.1.5">
@@ -43,7 +43,6 @@
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Core\OpenClawNet.Mcp.Core.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Mcp.Web\OpenClawNet.Mcp.Web.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
-    <ProjectReference Include="..\..\src\OpenClawNet.ServiceDefaults\OpenClawNet.ServiceDefaults.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.Dashboard\OpenClawNet.Tools.Dashboard.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Tools.GoogleWorkspace\OpenClawNet.Tools.GoogleWorkspace.csproj" />
     <ProjectReference Include="..\..\src\OpenClawNet.Storage.Azure\OpenClawNet.Storage.Azure.csproj" />

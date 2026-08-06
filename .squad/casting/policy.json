@@ -1,0 +1,10 @@
+{
+  "version": 1,
+  "assignment_universe": "Severance",
+  "allow_legacy_names": true,
+  "reserved_names": [
+    "Scribe",
+    "Ralph",
+    "@copilot"
+  ]
+}
