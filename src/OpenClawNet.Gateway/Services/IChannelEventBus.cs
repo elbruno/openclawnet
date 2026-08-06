@@ -81,5 +81,15 @@ public sealed class InMemoryChannelEventBus : IChannelEventBus
         }
     }
 
+    /// <summary>
+    /// Number of active subscriptions. Exposed for test synchronisation only
+    /// (callers can poll until &gt; 0 to confirm a subscriber is registered before
+    /// publishing events). Not part of the public <see cref="IChannelEventBus"/> contract.
+    /// </summary>
+    internal int SubscriberCount
+    {
+        get { lock (_gate) return _subs.Count; }
+    }
+
     private sealed record Subscriber(Guid JobId, Channel<ChannelEvent> Channel);
 }
