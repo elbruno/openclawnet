@@ -1,5 +1,5 @@
 {
-  "GeneratedAt": "2026-08-06T11:32:40Z",
+  "GeneratedAt": "2026-08-06T11:58:59Z",
   "Suites": [
     {
       "Id": "playwright",
@@ -290,11 +290,11 @@
     {
       "Id": "unit",
       "Label": "Unit Tests",
-      "Description": "Non-live unit tests (live credential tests excluded). Run: dotnet test tests/OpenClawNet.UnitTests -r win-x64 --filter \"Category!=Live&FullyQualifiedName!~LiveTests&FullyQualifiedName!~LiveLlm\"",
+      "Description": "Non-live unit tests (live credential tests excluded). Includes 7 MafHarnessApiProbeTests (Phase 1). Run: dotnet test tests/OpenClawNet.UnitTests -r win-x64 --filter \"Category!=Live&FullyQualifiedName!~LiveTests&FullyQualifiedName!~LiveLlm\"",
       "Project": "tests/OpenClawNet.UnitTests",
-      "Total": 1128,
+      "Total": 1135,
       "Recorded": 129,
-      "Passed": 1082,
+      "Passed": 1089,
       "Failed": 0,
       "Skipped": 46,
       "NotRecorded": 3,
