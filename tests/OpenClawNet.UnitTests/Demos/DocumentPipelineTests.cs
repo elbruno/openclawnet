@@ -100,7 +100,7 @@ public sealed class DocumentPipelineTests : IDisposable
 
     // ── 2. FileSystemTool – list sampleDocs ─────────────────────────────────
 
-    [SkippableFact]
+    [Fact]
     [Trait("Category", "Unit")]
     public async Task FileSystemTool_ListDirectory_ReturnsSampleDocs()
     {

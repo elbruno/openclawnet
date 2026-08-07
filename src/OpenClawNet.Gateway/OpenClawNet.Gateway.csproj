@@ -16,14 +16,14 @@
     <!-- K-1b #1: legacy gateway-content skill glob retired. System skills now ship
          with OpenClawNet.Skills (SystemSkills/**) and seed into
          {StorageRoot}/skills/system/ at boot via SystemSkillsSeeder. -->
-    <!-- docs/mcp-suggestions.yaml removed in sync cca2147 — Content reference dropped -->
+    <Content Include="..\..\docs\mcp-suggestions.yaml" Link="docs\mcp-suggestions.yaml" CopyToOutputDirectory="PreserveNewest" />
     <EmbeddedResource Include="Resources\JobTemplates\*.json" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="CommunityToolkit.Aspire.Microsoft.Data.Sqlite" Version="13.4.0" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.10" />
-    <PackageReference Include="YamlDotNet" Version="18.1.0" />
+    <PackageReference Include="CommunityToolkit.Aspire.Microsoft.Data.Sqlite" Version="13.1.1" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.8" />
+    <PackageReference Include="YamlDotNet" Version="17.1.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +36,6 @@
     <ProjectReference Include="..\OpenClawNet.Models.Foundry\OpenClawNet.Models.Foundry.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Abstractions\OpenClawNet.Tools.Abstractions.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Core\OpenClawNet.Tools.Core.csproj" />
-    <ProjectReference Include="..\OpenClawNet.Tools.FileSystem\OpenClawNet.Tools.FileSystem.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Shell\OpenClawNet.Tools.Shell.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Web\OpenClawNet.Tools.Web.csproj" />
     <ProjectReference Include="..\OpenClawNet.Tools.Scheduler\OpenClawNet.Tools.Scheduler.csproj" />
