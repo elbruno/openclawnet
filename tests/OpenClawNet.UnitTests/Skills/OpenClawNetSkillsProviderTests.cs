@@ -6,7 +6,7 @@
 // Spec contract (K-D-1):
 //   - Single AgentSkillsProvider per request, built via
 //     AgentSkillsProviderBuilder.UseSkill(AgentInlineSkill.Create(...))
-//   - MAF 1.17+ removed DisableCaching; fresh provider per request satisfies K-D-1 instead
+//   - DisableCaching = true (MAF cache defeats hot-reload)
 //   - Provider includes only skills enabled for the active agent
 //
 // Spec sources:
@@ -130,12 +130,8 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
     }
 
     [Fact]
-    public async Task Build_MafProviderOptions_ReturnsDefaultOptions()
+    public async Task Build_DisableCachingTrue_OnEveryBuild()
     {
-        // K-D-1: MAF 1.17+ removed AgentSkillsProviderOptions.DisableCaching; the framework
-        // no longer caches at the provider level. OpenClawNetSkillsProvider builds a fresh
-        // AgentSkillsProvider on every invocation (ProvideAIContextAsync) so hot-reload
-        // still propagates next-turn without relying on any DisableCaching flag.
         WriteInstalledSkill("memory");
         EnableForAgent("alice", "memory");
 
@@ -144,7 +140,8 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
         var provider = CreateProvider(registry, "alice");
 
         var options = provider.GetMafProviderOptions();
-        options.Should().NotBeNull("K-D-1: GetMafProviderOptions must always return a valid options instance");
+        options.DisableCaching.Should().BeTrue(
+            "K-D-1: MAF cache must be disabled so hot-reload propagates next-turn");
     }
 
     [Fact]
