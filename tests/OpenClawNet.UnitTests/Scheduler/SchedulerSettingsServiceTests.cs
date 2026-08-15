@@ -97,14 +97,14 @@ public sealed class SchedulerSettingsServiceTests : IDisposable
     }
 
     [Fact]
-    public void Update_IsThreadSafe_UnderConcurrentWrites()
+    public async Task Update_IsThreadSafe_UnderConcurrentWrites()
     {
         var svc = Create();
         var tasks = Enumerable.Range(1, 20).Select(i =>
             Task.Run(() => svc.Update(new SchedulerSettings { MaxConcurrentJobs = i % 10 + 1 }))
         ).ToArray();
         Func<Task> act = () => Task.WhenAll(tasks);
-        act.Should().NotThrowAsync();
+        await act.Should().NotThrowAsync();
         svc.GetSettings().MaxConcurrentJobs.Should().BeInRange(1, 20);
     }
 
