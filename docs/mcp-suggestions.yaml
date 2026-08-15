@@ -1,7 +1,7 @@
 # Curated MCP server suggestions surfaced in the OpenClawNet Settings UI.
 # Each entry can be installed with one click from the MCP Servers panel.
 # Schema matches McpSuggestion.cs: id, name, description, transport (stdio|http),
-# command, args, url, category, homepage, requires_env.
+# command, args, url, category, homepage, requires_env, verified_on, source_registry.
 #
 # Verification: all entries confirmed against authoritative registries/repositories
 # as of 2026-08-15. Excluded entries and rationale:
@@ -13,6 +13,14 @@
 #   (deprecated)       — @modelcontextprotocol/server-github archived April 2025.
 #                        Replaced below with the official Docker image (github-mcp).
 #
+#   fetch (npm)        — @modelcontextprotocol/server-fetch does not exist on npm
+#                        (registry returns 404). Replaced with uvx mcp-server-fetch
+#                        from PyPI (mcp-server-fetch 2026.7.10, same reference impl).
+#
+#   executeautomation  — @executeautomation/playwright-mcp-server is a third-party
+#                        fork. Replaced with @playwright/mcp, the officially maintained
+#                        package by Microsoft (Apache-2.0, v0.0.79, 2026-08-15).
+#
 version: 1
 suggestions:
   - id: github-mcp
@@ -20,8 +28,9 @@ suggestions:
     description: >
       Interact with GitHub repositories, issues, pull requests, and actions.
       Official server maintained by GitHub; requires Docker on the host.
-      Source: https://github.com/github/github-mcp-server (MIT, v1.8.0, 2026-07-30).
+      Source: https://github.com/github/github-mcp-server (MIT, v1.9.0, 2026-08-10).
       Replaces deprecated @modelcontextprotocol/server-github (archived Apr 2025).
+      Image is pinned to v1.9.0 (not :latest) because this entry passes credentials.
     transport: stdio
     command: docker
     args:
@@ -30,16 +39,22 @@ suggestions:
       - --rm
       - -e
       - GITHUB_PERSONAL_ACCESS_TOKEN
-      - ghcr.io/github/github-mcp-server:latest
+      - ghcr.io/github/github-mcp-server:v1.9.0
     category: development
     requires_env:
       - GITHUB_PERSONAL_ACCESS_TOKEN
     homepage: https://github.com/github/github-mcp-server
+    verified_on: "2026-08-15"
+    source_registry: ghcr.io
 
   - id: desktop-commander
     name: Desktop Commander
     description: >
       Control desktop applications and windows via MCP.
+      ⚠ SECURITY: This server grants the LLM terminal execution access and
+      filesystem read/write access on the host machine. Only enable for trusted
+      local-development workflows; do not expose to untrusted agents or
+      multi-user environments.
       Source: https://github.com/wonderwhy-er/DesktopCommanderMCP (MIT).
       npm: @wonderwhy-er/desktop-commander — actively maintained, latest Aug 2026.
     transport: stdio
@@ -49,6 +64,8 @@ suggestions:
       - "@wonderwhy-er/desktop-commander"
     category: productivity
     homepage: https://github.com/wonderwhy-er/DesktopCommanderMCP
+    verified_on: "2026-08-15"
+    source_registry: npm
 
   - id: memory-mcp
     name: Memory MCP
@@ -63,31 +80,39 @@ suggestions:
       - "@modelcontextprotocol/server-memory"
     category: memory
     homepage: https://github.com/modelcontextprotocol/servers/tree/main/src/memory
+    verified_on: "2026-08-15"
+    source_registry: npm
 
   - id: playwright-mcp
-    name: Playwright MCP
+    name: Playwright MCP (Microsoft)
     description: >
       Browser automation via Playwright with headless Chromium.
-      Source: https://github.com/executeautomation/mcp-playwright (MIT).
-      npm: @executeautomation/playwright-mcp-server — latest 1.0.12, no deprecation flag.
+      Official package maintained by Microsoft (Playwright team).
+      Source: https://github.com/microsoft/playwright-mcp (Apache-2.0, v0.0.79).
+      Replaces @executeautomation/playwright-mcp-server (third-party fork).
     transport: stdio
     command: npx
     args:
       - -y
-      - "@executeautomation/playwright-mcp-server"
+      - "@playwright/mcp"
     category: browser
-    homepage: https://github.com/executeautomation/mcp-playwright
+    homepage: https://github.com/microsoft/playwright-mcp
+    verified_on: "2026-08-15"
+    source_registry: npm
 
   - id: fetch-mcp
     name: Fetch MCP
     description: >
       Retrieve web content as markdown or raw HTML for LLM context.
+      Reference implementation from the MCP project. Requires uv/uvx on the host.
       Source: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch (MIT).
-      npm: @modelcontextprotocol/server-fetch — latest 2026.7.10, actively maintained.
+      PyPI: mcp-server-fetch 2026.7.10. (@modelcontextprotocol/server-fetch does not
+      exist on npm; PyPI is the authoritative distribution for this server.)
     transport: stdio
-    command: npx
+    command: uvx
     args:
-      - -y
-      - "@modelcontextprotocol/server-fetch"
+      - mcp-server-fetch
     category: web
     homepage: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
+    verified_on: "2026-08-15"
+    source_registry: pypi
