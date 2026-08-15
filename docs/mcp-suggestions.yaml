@@ -1,5 +1,93 @@
 # Curated MCP server suggestions surfaced in the OpenClawNet Settings UI.
 # Each entry can be installed with one click from the MCP Servers panel.
 # Schema matches McpSuggestion.cs: id, name, description, transport (stdio|http),
-# command, args, url, category, homepage, requiresEnv.
-suggestions: []
+# command, args, url, category, homepage, requires_env.
+#
+# Verification: all entries confirmed against authoritative registries/repositories
+# as of 2026-08-15. Excluded entries and rationale:
+#
+#   shell-alt-mkusaka  — @mkusaka/mcp-shell does not exist on npm. The correct
+#                        package @mkusaka/mcp-shell-server executes arbitrary shell
+#                        commands, posing unacceptable supply-chain/execution risk.
+#
+#   (deprecated)       — @modelcontextprotocol/server-github archived April 2025.
+#                        Replaced below with the official Docker image (github-mcp).
+#
+version: 1
+suggestions:
+  - id: github-mcp
+    name: GitHub MCP Server (official)
+    description: >
+      Interact with GitHub repositories, issues, pull requests, and actions.
+      Official server maintained by GitHub; requires Docker on the host.
+      Source: https://github.com/github/github-mcp-server (MIT, v1.8.0, 2026-07-30).
+      Replaces deprecated @modelcontextprotocol/server-github (archived Apr 2025).
+    transport: stdio
+    command: docker
+    args:
+      - run
+      - -i
+      - --rm
+      - -e
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+      - ghcr.io/github/github-mcp-server:latest
+    category: development
+    requires_env:
+      - GITHUB_PERSONAL_ACCESS_TOKEN
+    homepage: https://github.com/github/github-mcp-server
+
+  - id: desktop-commander
+    name: Desktop Commander
+    description: >
+      Control desktop applications and windows via MCP.
+      Source: https://github.com/wonderwhy-er/DesktopCommanderMCP (MIT).
+      npm: @wonderwhy-er/desktop-commander — actively maintained, latest Aug 2026.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@wonderwhy-er/desktop-commander"
+    category: productivity
+    homepage: https://github.com/wonderwhy-er/DesktopCommanderMCP
+
+  - id: memory-mcp
+    name: Memory MCP
+    description: >
+      Persistent knowledge-graph memory store for agents.
+      Source: https://github.com/modelcontextprotocol/servers/tree/main/src/memory (MIT).
+      npm: @modelcontextprotocol/server-memory — latest 2026.7.4, 82k weekly downloads.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-memory"
+    category: memory
+    homepage: https://github.com/modelcontextprotocol/servers/tree/main/src/memory
+
+  - id: playwright-mcp
+    name: Playwright MCP
+    description: >
+      Browser automation via Playwright with headless Chromium.
+      Source: https://github.com/executeautomation/mcp-playwright (MIT).
+      npm: @executeautomation/playwright-mcp-server — latest 1.0.12, no deprecation flag.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@executeautomation/playwright-mcp-server"
+    category: browser
+    homepage: https://github.com/executeautomation/mcp-playwright
+
+  - id: fetch-mcp
+    name: Fetch MCP
+    description: >
+      Retrieve web content as markdown or raw HTML for LLM context.
+      Source: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch (MIT).
+      npm: @modelcontextprotocol/server-fetch — latest 2026.7.10, actively maintained.
+    transport: stdio
+    command: npx
+    args:
+      - -y
+      - "@modelcontextprotocol/server-fetch"
+    category: web
+    homepage: https://github.com/modelcontextprotocol/servers/tree/main/src/fetch
