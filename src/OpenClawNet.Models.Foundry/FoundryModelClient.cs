@@ -33,7 +33,10 @@ public sealed class FoundryModelClient : IModelClient
 
         if (!string.IsNullOrEmpty(_options.Endpoint))
         {
-            _httpClient.BaseAddress = new Uri(_options.Endpoint.TrimEnd('/'));
+            // Trailing slash is required so that relative paths such as "chat/completions"
+            // are resolved relative to the full endpoint path. Without it, HttpClient strips
+            // any path segment from BaseAddress when resolving absolute-path relatives.
+            _httpClient.BaseAddress = new Uri(_options.Endpoint.TrimEnd('/') + "/");
         }
         if (!string.IsNullOrEmpty(_options.ApiKey))
         {
@@ -50,7 +53,7 @@ public sealed class FoundryModelClient : IModelClient
         var payload = BuildPayload(request, stream: false);
         _logger.LogDebug("Sending chat to Foundry: model={Model}", request.Model ?? _options.Model);
 
-        var response = await _httpClient.PostAsJsonAsync("/chat/completions", payload, JsonOptions, cancellationToken);
+        var response = await _httpClient.PostAsJsonAsync("chat/completions", payload, JsonOptions, cancellationToken);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync<FoundryChatResponse>(JsonOptions, cancellationToken)
@@ -78,7 +81,7 @@ public sealed class FoundryModelClient : IModelClient
         EnsureConfigured();
 
         var payload = BuildPayload(request, stream: true);
-        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "/chat/completions")
+        var requestMessage = new HttpRequestMessage(HttpMethod.Post, "chat/completions")
         {
             Content = new StringContent(JsonSerializer.Serialize(payload, JsonOptions), Encoding.UTF8, "application/json")
         };
@@ -122,7 +125,7 @@ public sealed class FoundryModelClient : IModelClient
 
         try
         {
-            var response = await _httpClient.GetAsync("/models", cancellationToken);
+            var response = await _httpClient.GetAsync("models", cancellationToken);
             return response.IsSuccessStatusCode;
         }
         catch

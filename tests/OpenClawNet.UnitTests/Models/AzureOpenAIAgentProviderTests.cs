@@ -67,6 +67,28 @@ public class AzureOpenAIAgentProviderTests
         result.Should().BeTrue();
     }
 
+    // ── NormalizeAzureEndpoint (Issue #223) ──────────────────────────────────
+
+    [Theory]
+    [InlineData("https://resource.openai.azure.com/openai/v1",
+                "https://resource.openai.azure.com/")]
+    [InlineData("https://resource.openai.azure.com/openai/v1/",
+                "https://resource.openai.azure.com/")]
+    [InlineData("https://resource.openai.azure.com/openai/deployments/phi4",
+                "https://resource.openai.azure.com/")]
+    [InlineData("https://resource.openai.azure.com/",
+                "https://resource.openai.azure.com/")]
+    [InlineData("https://resource.openai.azure.com",
+                "https://resource.openai.azure.com/")]
+    public void NormalizeAzureEndpoint_StripsOpenAiPath(string input, string expected)
+    {
+        // Issue #223: endpoints with /openai/v1 suffix cause the Azure SDK to build
+        // a doubled path (…/openai/v1/openai/deployments/…) → 404.
+        var result = AzureOpenAIAgentProvider.NormalizeAzureEndpoint(input);
+
+        result.Should().Be(expected);
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
 
     private static AzureOpenAIAgentProvider CreateProvider(AzureOpenAIOptions? options = null)

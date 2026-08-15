@@ -1,63 +1,53 @@
-version: 1
+# Curated MCP server suggestions surfaced in the OpenClawNet Settings UI.
+# Each entry can be installed with one click from the MCP Servers panel.
+# Schema matches McpSuggestion.cs: id, name, description, transport (stdio|http),
+# command, args, url, category, homepage, requiresEnv.
 suggestions:
   - id: shell-alt-mkusaka
-    name: Shell (mkusaka fork)
-    description: Execute shell commands via stdio MCP. Alternative fork with improved quoting.
+    name: Shell (mkusaka)
+    description: Execute shell commands via MCP (mkusaka fork).
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@mkusaka/mcp-shell"
-    category: productivity
+    args: ["-y", "@mkusaka/mcp-server-shell"]
+    category: utilities
 
   - id: desktop-commander
     name: Desktop Commander
-    description: Control desktop applications and windows via MCP.
+    description: Control desktop applications and run terminal commands via MCP.
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@wonderwhy-er/desktop-commander"
-    category: productivity
+    args: ["-y", "@wonderwhy-er/desktop-commander"]
+    category: utilities
 
   - id: github-mcp
     name: GitHub MCP
     description: Interact with GitHub repositories, issues, and pull requests.
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@modelcontextprotocol/server-github"
+    args: ["-y", "@modelcontextprotocol/server-github"]
     category: development
-    requires_env:
-      - GITHUB_PERSONAL_ACCESS_TOKEN
+    requiresEnv: [GITHUB_PERSONAL_ACCESS_TOKEN]
 
   - id: memory-mcp
     name: Memory MCP
-    description: Persistent key-value memory store for agents.
+    description: Persistent key-value memory for agents across sessions.
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@modelcontextprotocol/server-memory"
+    args: ["-y", "@modelcontextprotocol/server-memory"]
     category: memory
 
   - id: playwright-mcp-alt
-    name: Playwright MCP (alternative)
-    description: Browser automation via Playwright with headless Chrome.
+    name: Playwright MCP (alt)
+    description: Browser automation and web scraping via Playwright.
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@executeautomation/playwright-mcp-server"
+    args: ["-y", "@executeautomation/playwright-mcp-server"]
     category: browser
 
   - id: fetch-mcp-alt
-    name: Fetch MCP (alternative)
-    description: Retrieve web content as markdown or raw HTML.
+    name: Fetch MCP (alt)
+    description: Fetch web content and convert to markdown for LLM consumption.
     transport: stdio
     command: npx
-    args:
-      - -y
-      - "@modelcontextprotocol/server-fetch"
-    category: web
+    args: ["-y", "@modelcontextprotocol/server-fetch"]
+    category: utilities

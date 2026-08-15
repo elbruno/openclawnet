@@ -5,14 +5,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Agents.AI" Version="1.17.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.8.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.10" />
-    <PackageReference Include="OllamaSharp" Version="5.4.30" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.5.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Http" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.11" />
+    <PackageReference Include="OllamaSharp" Version="5.4.25" />
   </ItemGroup>
 
   <PropertyGroup>

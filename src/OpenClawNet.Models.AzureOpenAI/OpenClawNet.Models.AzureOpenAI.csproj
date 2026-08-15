@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <InternalsVisibleTo Include="OpenClawNet.UnitTests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
     <ProjectReference Include="..\OpenClawNet.Storage\OpenClawNet.Storage.csproj" />
   </ItemGroup>
@@ -8,13 +12,13 @@
   <ItemGroup>
     <PackageReference Include="Azure.AI.OpenAI" Version="2.9.0-beta.1" />
     <PackageReference Include="Azure.Identity" Version="1.21.0" />
-    <PackageReference Include="Microsoft.Agents.AI" Version="1.17.0" />
-    <PackageReference Include="Microsoft.Extensions.AI" Version="10.8.3" />
-    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.8.3" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.10" />
+    <PackageReference Include="Microsoft.Agents.AI" Version="1.5.0" />
+    <PackageReference Include="Microsoft.Extensions.AI" Version="10.5.2" />
+    <PackageReference Include="Microsoft.Extensions.AI.OpenAI" Version="10.5.2" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="10.0.11" />
   </ItemGroup>
 
   <PropertyGroup>

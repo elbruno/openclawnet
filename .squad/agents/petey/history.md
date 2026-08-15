@@ -1,4 +1,4 @@
-## Summary Index
+# Petey — Agent Platform Specialist History
 
 **Latest entries:**
 - ## 2026-08-06 — Harness Phase 2: LoopAgent non-streaming integration + regression tests
@@ -13,20 +13,37 @@
 - ## 2026-05-12 — Issue #157: Tool Execution Log Visibility for All Approval Modes
 - ## 2026-05-22 — Runtime 401 Diagnosis: Invalid Azure OpenAI User-Secrets, Not Repo Wiring
 - ## 2026-05-27 — Session 4 Resource Guide Delivered
+## 2026-08-15 — Issue #223: Provider Test Connection 404
 
----
+### Problem
+Test Connection returned 404 for Phi-4-reasoning at two endpoint shapes:
+- Foundry project endpoint: `https://<resource>.services.ai.azure.com/api/projects/proj-default`
+- Azure OpenAI v1 endpoint: `https://<resource>.openai.azure.com/openai/v1`
 
-# Petey — OpenClaw Domain Specialist
+### Root Causes
 
-⚠️ **SOURCE-OF-TRUTH FLIP INCOMING:** All future code/test/script work targets plan repo (`C:\src\openclawnet-plan`), not public. See decisions.md → "2026-05-06: Source-of-Truth Flip".
+1. **FoundryModelClient** — Classic HttpClient `BaseAddress` + relative-path pitfall.
+   `BaseAddress` was set to the endpoint without a trailing slash; relative paths used a
+   leading slash (`/chat/completions`). A leading-slash relative URI resolves from the
+   authority root, discarding the BaseAddress path. The actual POST went to
+   `https://host/chat/completions` instead of `https://host/api/projects/proj/chat/completions`.
+   **Fix**: append `"/"` to BaseAddress; drop leading slashes from relative paths.
 
-**Project:** OpenClawNet — the **.NET 10 implementation of OpenClaw**.
+2. **FoundryAgentProvider** — Same leading-slash bug in `IsAvailableAsync`'s `/models` call.
 
-## Core Context
+3. **FoundryAgentProvider** — `profile.Model` not forwarded: `opts.Model` (global DI default)
+   was used instead of `profile.Model ?? opts.Model`.
 
-Petey owns the domain model and AI integration surface. **Key contributions:** GitHub tool factory pattern (E2E test enablement, PR #33), E2E test skill contamination fix (AppHostFixture cleanup), tool approval flow infrastructure, skills import design reviews. **Patterns:** Unblocks team members by establishing design seams early (factory pattern for external SDKs, injectable GitHub client); identifies test-to-test hidden dependencies; advocates for test isolation cleanup. **Current focus:** Supporting E2E test framework stabilization; pending GitHub tool integration validation. **Team impact:** Petey's design decisions enable Dylan's E2E hermetic testing; unblocks scenario implementations by establishing injectable seams.
+4. **AzureOpenAIAgentProvider** — Azure SDK builds its own `/openai/deployments/…` path.
+   When endpoint contains `/openai/v1`, the final URL doubles the prefix → 404.
+   **Fix**: `NormalizeAzureEndpoint()` strips any `/openai/…` path from the resource URI.
 
-## Project Context
+### What Worked
+- Direct `System.Uri` resolution verified bug and fix in PowerShell before commit.
+- Unit tests added for `NormalizeAzureEndpoint` (5 shapes) and `FoundryModelClient` URL
+  construction (5 endpoint shapes × chat/completions + models routes).
+- OpenClawNet.Models.Foundry builds clean; pre-existing NU1605 restore errors in the test
+  project/AzureOpenAI project are unrelated to this change (confirmed on main branch).
 
 **Project:** OpenClawNet — the **.NET 10 implementation of OpenClaw**.
 **Stack:** .NET 10, Blazor Server, Aspire, EF Core (SQLite), Microsoft Agent Framework (MAF), Model Context Protocol (MCP SDK 1.2.0).
@@ -1497,3 +1514,6 @@ _adapter directly (no skills).
 Now: skills fire on every LoopAgent iteration via ChatClientAgent. SkillsTurnPin ensures
 the snapshot is read from disk only once per chat turn. This aligns the non-streaming path
 with the streaming path (which already fired providers each iteration).
+### Limitations
+- Live Azure credentials unavailable; fix validated through deterministic URL-construction
+  tests and in-process Uri resolution.
