@@ -21,4 +21,15 @@ public sealed class McpSuggestion
 
     /// <summary>Names of env vars the user must populate to make this server work.</summary>
     public List<string> RequiresEnv { get; set; } = new();
+
+    /// <summary>
+    /// ISO-8601 date (YYYY-MM-DD) this entry was last verified against its authoritative registry.
+    /// Populated in the YAML; used by offline provenance tests to confirm the field ships.
+    /// </summary>
+    public string? VerifiedOn { get; set; }
+
+    /// <summary>
+    /// Authoritative registry/source used for verification, e.g. "pypi", "npm", "ghcr.io", "github".
+    /// </summary>
+    public string? SourceRegistry { get; set; }
 }
