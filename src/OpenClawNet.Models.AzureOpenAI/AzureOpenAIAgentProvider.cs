@@ -89,7 +89,7 @@ public sealed class AzureOpenAIAgentProvider : IAgentProvider
     /// /openai/... (e.g. https://resource.openai.azure.com/openai/v1), strip that suffix so the
     /// SDK builds the correct path instead of doubling it.
     /// </summary>
-    public static string NormalizeAzureEndpoint(string endpoint)
+    internal static string NormalizeAzureEndpoint(string endpoint)
     {
         if (string.IsNullOrEmpty(endpoint)) return endpoint;
         var uri = new Uri(endpoint.TrimEnd('/'));
