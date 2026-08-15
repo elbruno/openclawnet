@@ -40,7 +40,8 @@ public sealed class SkillsHotReloadTests : IDisposable
     private readonly string? _originalEnv;
 
     // Generous wait window — debounce is 500ms, leave headroom for FS notification latency.
-    private static readonly TimeSpan PostDebounceWait = TimeSpan.FromMilliseconds(1500);
+    // 10s to tolerate slow windows-latest CI runners where FS events can lag 2-5s.
+    private static readonly TimeSpan PostDebounceWait = TimeSpan.FromSeconds(10);
 
     public SkillsHotReloadTests()
     {
@@ -168,7 +169,12 @@ public sealed class SkillsHotReloadTests : IDisposable
         }
 
         // After debounce, snapshot reflects the FINAL state.
-        await Task.Delay(PostDebounceWait);
+        var ok = await WaitForAsync(async () =>
+        {
+            var s = await registry.GetSnapshotAsync();
+            var burst = s.Skills.SingleOrDefault(x => x.Name == "burst");
+            return burst?.Body?.Contains("v9") == true;
+        }, PostDebounceWait);
         var snap = await registry.GetSnapshotAsync();
 
         var burst = snap.Skills.SingleOrDefault(s => s.Name == "burst");
@@ -193,9 +199,13 @@ public sealed class SkillsHotReloadTests : IDisposable
         var pinnedNames = pinned.Skills.Select(s => s.Name).ToList();
         var pinnedId = pinned.SnapshotId;
 
-        // Change disk state
+        // Change disk state; wait until registry reflects it (new snapshot available)
         WriteInstalledSkill("design-rules");
-        await Task.Delay(PostDebounceWait);
+        await WaitForAsync(async () =>
+        {
+            var s = await registry.GetSnapshotAsync();
+            return s.SnapshotId != pinnedId;
+        }, PostDebounceWait);
 
         // Pinned snapshot reference is immutable — even though watcher fired and
         // a new snapshot is now available, the captured value is unchanged.
@@ -211,7 +221,12 @@ public sealed class SkillsHotReloadTests : IDisposable
         var s1 = await registry.GetSnapshotAsync();
 
         WriteInstalledSkill("design-rules");
-        await Task.Delay(PostDebounceWait);
+        var ok = await WaitForAsync(async () =>
+        {
+            var s = await registry.GetSnapshotAsync();
+            return s.SnapshotId != s1.SnapshotId;
+        }, PostDebounceWait);
+        ok.Should().BeTrue("new file write must alter SnapshotId after debounce window");
 
         var s2 = await registry.GetSnapshotAsync();
         s2.SnapshotId.Should().NotBe(s1.SnapshotId);
@@ -231,7 +246,7 @@ public sealed class SkillsHotReloadTests : IDisposable
 
         // Subsequent disk changes must not throw / log AggregateException etc.
         WriteInstalledSkill("post-dispose");
-        await Task.Delay(PostDebounceWait);
+        await Task.Delay(TimeSpan.FromSeconds(2)); // Wait for any background exceptions to surface
 
         // Test passes if no background exception bubbles up to the test runner.
     }
@@ -254,7 +269,11 @@ public sealed class SkillsHotReloadTests : IDisposable
         {
             // While locked, trigger a sibling change to force a rebuild.
             WriteInstalledSkill("trigger");
-            await Task.Delay(PostDebounceWait);
+            await WaitForAsync(async () =>
+            {
+                var s = await registry.GetSnapshotAsync();
+                return s.Skills.Any(x => x.Name == "trigger");
+            }, PostDebounceWait);
 
             // Should not throw — Petey's spec calls for retry/backoff (250ms x 4) then soft error.
             var snap = await registry.GetSnapshotAsync();
