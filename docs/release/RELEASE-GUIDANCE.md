@@ -1,7 +1,7 @@
 # Release Guidance
 
-**Last Updated:** 2026-08-06  
-**Current Stable:** 674dbbd (feat: replacement for PR #205)  
+**Last Updated:** 2026-08-15  
+**Current Stable:** feat/harness-phase2 (PR #213 — LoopAgent non-streaming integration)  
 **API Status:** Stable (IAgentOrchestrator, streaming, tools, skills)
 
 ## Scope
@@ -10,7 +10,8 @@
 - **Source code:** Maintained on GitHub at https://github.com/elbruno/openclawnet
 - **GitHub Releases:** Tag-gated (git tag → GitHub Release created automatically via workflow)
 - **Package versions:** Pinned in `Directory.Build.props` and per-project `.csproj` files
-  - **Microsoft.Agents.AI:** 1.17.0 (with Harness availability)
+  - **Microsoft.Agents.AI:** 1.17.0 (required — Phase 2 uses `LoopAgent`, `DelegateLoopEvaluator`)
+  - **Microsoft.Agents.Core:** 1.5.181 (unchanged; MAF 1.17 does not depend on Agents.Core)
   - **Aspire.Hosting.Testing:** 13.4.6 (for AspireHostFixture integration)
   - **.NET:** 10.0+
 - **Testing:** Unit, Integration, Playwright E2E with environment-dependent blockers documented

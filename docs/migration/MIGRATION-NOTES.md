@@ -1,63 +1,61 @@
 # Migration Notes
 
-**Last Updated:** 2026-08-06  
-**Status:** Planning phase (Harness adoption not yet started)
+**Last Updated:** 2026-08-15  
+**Status:** Phase 2 complete — non-streaming `ExecuteAsync` migrated to `LoopAgent`
 
 ---
 
-## Current State
+## Current State (After PR #213)
 
 **Stable Runtime:** `DefaultAgentRuntime` + `ModelClientChatClientAdapter`  
-**Framework Version:** Microsoft.Agents.AI 1.17.0  
+**Framework Version:** Microsoft.Agents.AI 1.17.0 (required — Phase 2 uses `LoopAgent`)  
 **Test Fixture:** AspireHostFixture (Aspire.Hosting.Testing 13.4.6)
 
-All features working as expected:
-- ✅ Chat streaming via HTTP NDJSON
-- ✅ Tool approval flow
+### Phase 2 changes (PR #213)
+
+- **Non-streaming `ExecuteAsync`**: replaced manual `while (iterations < 25)` loop with
+  `ExecuteWithLoopAgentAsync()` backed by `LoopAgent` + `DelegateLoopEvaluator`.
+  `MaxIterations = 25` is set explicitly (API-U-1 finding: `LoopAgent.DefaultMaxIterations = 10`).
+  Token usage is accumulated across all iterations in the evaluator closure.
+- **Streaming `ExecuteStreamAsync`**: manual loop **retained** — the HTTP-pause approval gate
+  must `yield` NDJSON events mid-iteration, which `LoopEvaluator` cannot do.  Phase 3 will
+  bridge this via an event-channel pattern.
+- **`AgentSkillsProviderOptions`**: `DisableCaching` removed in MAF 1.17; fresh provider per
+  request now satisfies K-D-1 instead.
+- **`Microsoft.Agents.Core`**: remains at 1.5.181 — MAF 1.17 does not declare a dependency
+  on Agents.Core; no Agents.Core APIs are used in Phase 2 source.
+
+All features continue to work as expected:
+- ✅ Chat streaming via HTTP NDJSON (manual loop, Phase 3 blocker documented)
+- ✅ Tool approval flow (preserved in streaming path)
 - ✅ Skill injection (ChatClientAgent + IAIContextProvider)
 - ✅ Context compaction & session persistence
 - ✅ Multi-provider support (Ollama, Azure OpenAI, Foundry, GitHub Copilot, FoundryLocal)
 
 ---
 
-## Why No Harness Migration Yet
+## Phase 3 Blocker (Streaming + Approval Bridge)
 
-1. **Stability over Features:** Current pattern is production-proven. Harness is available but adds complexity without immediate benefit.
-2. **Refactoring Scope:** Would require changes to:
-   - `IAgentRuntime` interface
-   - `ExecuteAsync()` / `ExecuteStreamAsync()` implementations
-   - Tool approval flow (model-driven vs. explicit approval chain)
-   - Streaming event model (AgentStreamEvent vs. Harness events)
-3. **Testing Burden:** Would require new integration tests for Harness patterns + existing tests for compatibility.
-4. **Historical Records:** Keeping `DefaultAgentRuntime` stable preserves learn path for Reactor attendees and future contributors.
+`LoopAgent.RunStreamingAsync` cannot be used for the streaming path because:
+- The HTTP-pause approval gate requires **yielding `ToolApprovalRequest` events mid-iteration**
+- A `LoopEvaluator` returns `ValueTask<LoopEvaluation>` — it cannot `yield return` to the outer `IAsyncEnumerable`
+
+**Phase 3 design (planned):** event-channel bridge (`Channel<AgentStreamEvent>`) that lets the
+evaluator post events to the outer NDJSON stream without `yield break` violations.
+
+**D1 decision still required:**
+- Option A: Preserve HTTP-pause via `FunctionInvocationDelegatingAgent` bridge (recommended)
+- Option B: Adopt MAF multi-turn `ToolApprovalAgent` (requires client redesign)
 
 ---
 
-## Future Harness Adoption (Planned)
+## Future Roadmap
 
-### Phase 1: Evaluation (Q3 2026)
-- [ ] Document Harness patterns (LoopAgent, ToolApprovalAgent, etc.)
-- [ ] Create spike branch for proof-of-concept
-- [ ] Benchmark: Harness vs. DefaultAgentRuntime (latency, throughput, memory)
-- [ ] Decision: Adopt or stay current
-
-### Phase 2: Migration (if approved)
-- [ ] Update `IAgentRuntime` to use LoopAgent
-- [ ] Refactor approval flow (if needed)
-- [ ] Refactor streaming (if needed)
-- [ ] New integration tests for Harness patterns
-- [ ] Dual-mode: DefaultAgentRuntime (legacy) + HarnessAgentRuntime (new)
-
-### Phase 3: Rollout
-- [ ] Release: v2.0.0-harness-preview
-- [ ] Gather feedback (Discord, issues, Reactor attendees)
-- [ ] Fix bugs, document breaking changes
-- [ ] Release: v2.0.0 (Harness as default, DefaultAgentRuntime deprecated but supported)
-
-### Phase 4: Cleanup (v3.0.0 or later)
-- [ ] Remove DefaultAgentRuntime (breaking change)
-- [ ] Update all examples and session materials
-- [ ] Publish updated Reactor materials
+### Phase 3: Streaming LoopAgent Bridge (Planned)
+- [ ] Design event-channel bridge for streaming path
+- [ ] D1 decision (Option A vs B above)
+- [ ] Migrate `ExecuteStreamAsync` to use `LoopAgent.RunStreamingAsync`
+- [ ] Update integration tests for streaming approval flow
 
 ---
 

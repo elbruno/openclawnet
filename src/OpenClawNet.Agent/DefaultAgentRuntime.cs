@@ -917,8 +917,16 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
         // evaluator closure and read after RunAsync returns.
         var lastEvaluatorStopped = false;
 
+        // B3: accumulate token usage across all iterations.
+        // LoopAgent.RunAsync returns only the final iteration's usage in agentResponse.Usage;
+        // we must sum here so context.TotalTokens reflects the full conversation cost.
+        var totalTokensAccumulated = 0;
+
         var evaluator = new DelegateLoopEvaluator(async (ctx, ct) =>
         {
+            // Accumulate every iteration's usage regardless of stop/continue path.
+            totalTokensAccumulated += (int)(ctx.LastResponse.Usage?.TotalTokenCount ?? 0);
+
             var functionCalls = ctx.LastResponse.Messages
                 .SelectMany(m => m.Contents.OfType<FunctionCallContent>())
                 .ToList();
@@ -973,13 +981,17 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
 
         var agentResponse = await loopAgent.RunAsync(aiMessages, agentSession, runOptions, cancellationToken);
 
-        var totalTokens = (int)(agentResponse.Usage?.TotalTokenCount ?? 0);
+        // B3: use cumulative token count accumulated in the evaluator across all iterations,
+        // not just the final call's agentResponse.Usage which captures only the last round.
+        var totalTokens = totalTokensAccumulated;
         var finalText = agentResponse.Text ?? string.Empty;
 
-        // hitMaxIterations is true when the loop ran out of iterations while the model
-        // was still requesting tool calls (evaluator returned Continue but MaxIterations
-        // was already reached, so lastEvaluatorStopped stayed false).
-        var hitMaxIterations = !lastEvaluatorStopped && string.IsNullOrEmpty(finalText);
+        // B2: hitMaxIterations is true whenever the loop was cut by the iteration cap —
+        // i.e. the evaluator never saw a response with no tool calls (lastEvaluatorStopped=false).
+        // The old check also required string.IsNullOrEmpty(finalText), which incorrectly
+        // suppressed the fallback when the model returned both text AND tool calls in the
+        // last iteration before MaxIterations was reached.
+        var hitMaxIterations = !lastEvaluatorStopped;
 
         return (finalText, totalTokens, hitMaxIterations);
     }

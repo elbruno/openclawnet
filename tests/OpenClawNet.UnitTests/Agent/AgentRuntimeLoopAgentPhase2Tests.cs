@@ -193,6 +193,105 @@ public sealed class AgentRuntimeLoopAgentPhase2Tests
 
     // ── Streaming (ExecuteStreamAsync) — manual loop preserved ────────────
 
+    /// <summary>
+    /// B2 regression: fallback must fire even when the last model response contains
+    /// BOTH non-empty text AND tool calls.  The old code checked
+    /// <c>string.IsNullOrEmpty(finalText)</c> which would suppress the fallback for
+    /// this edge case, silently returning partial/stale model chatter instead of the
+    /// "maximum iterations" message.
+    /// </summary>
+    [Fact]
+    public async Task ExecuteAsync_AlwaysToolAndTextCalling_StopsWithFallbackDespiteNonEmptyText()
+    {
+        // Arrange: model ALWAYS returns BOTH text AND a tool call — non-empty Content
+        // means the old hitMaxIterations check (which also required IsNullOrEmpty(text))
+        // would wrongly use the model's partial text instead of the fallback.
+        var store = new ConversationStore(_dbFactory);
+
+        var registry = new Mock<IToolRegistry>();
+        var tool = new FakeNoApprovalTool("side_effect_tool");
+        registry.Setup(r => r.GetTool("side_effect_tool")).Returns(tool);
+        registry.Setup(r => r.GetToolManifest()).Returns([tool.Metadata]);
+        registry.Setup(r => r.GetAllTools()).Returns([tool]);
+
+        var executor = new Mock<IToolExecutor>();
+        executor.Setup(e => e.ExecuteAsync("side_effect_tool", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ToolResult.Ok("side_effect_tool", "done", TimeSpan.Zero));
+
+        // Model always returns "partial answer" text PLUS a tool call — simulates an LLM
+        // that emits incremental commentary while still requesting the next tool.
+        var modelClient = new FakeNonStreamingAlwaysToolAndTextClient("side_effect_tool", "{}", "partial answer");
+        var runtime = BuildRuntime(store, modelClient,
+            toolExecutor: executor.Object, toolRegistry: registry.Object);
+
+        // Act
+        var ctx = await runtime.ExecuteAsync(new AgentContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Do something that never finishes"
+        });
+
+        // Assert: fallback must be used, NOT the model's partial text
+        ctx.FinalResponse.Should().Contain("maximum number of tool iterations",
+            "B2: fallback must be emitted when MaxIterations is exhausted, " +
+            "even when the last model response contained non-empty text");
+        ctx.FinalResponse.Should().NotContain("partial answer",
+            "the model's partial text must not leak into the final response when MaxIterations is hit");
+        ctx.IsComplete.Should().BeTrue();
+    }
+
+    /// <summary>
+    /// B3 strong test: context.TotalTokens must sum usage across ALL loop iterations,
+    /// not just the final model call.  Uses a fake client that reports 100 tokens per
+    /// tool-call response and 40 tokens for the final text response.  The test verifies
+    /// the runtime accumulates them (3 tool rounds × 100 + 1 final × 40 = 340 tokens).
+    /// </summary>
+    [Fact]
+    public async Task ExecuteAsync_MultipleToolRounds_AccumulatesTokensAcrossAllIterations()
+    {
+        // Arrange: model does 3 tool rounds then returns plain text
+        const int tokensPerToolRound = 100;
+        const int tokensForFinalRound = 40;
+        const int expectedTotal = 3 * tokensPerToolRound + tokensForFinalRound; // 340
+
+        var store = new ConversationStore(_dbFactory);
+
+        var registry = new Mock<IToolRegistry>();
+        var tool = new FakeNoApprovalTool("count_tool");
+        registry.Setup(r => r.GetTool("count_tool")).Returns(tool);
+        registry.Setup(r => r.GetToolManifest()).Returns([tool.Metadata]);
+        registry.Setup(r => r.GetAllTools()).Returns([tool]);
+
+        var executor = new Mock<IToolExecutor>();
+        executor.Setup(e => e.ExecuteAsync("count_tool", It.IsAny<string>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(ToolResult.Ok("count_tool", "counted", TimeSpan.Zero));
+
+        var modelClient = new FakeNonStreamingCountedToolClient(
+            toolName: "count_tool",
+            toolCallRounds: 3,
+            tokensPerToolRound: tokensPerToolRound,
+            tokensForFinalRound: tokensForFinalRound);
+
+        var runtime = BuildRuntime(store, modelClient,
+            toolExecutor: executor.Object, toolRegistry: registry.Object);
+
+        // Act
+        var ctx = await runtime.ExecuteAsync(new AgentContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Count three things"
+        });
+
+        // Assert
+        ctx.IsComplete.Should().BeTrue();
+        ctx.FinalResponse.Should().Be("all done");
+        ctx.TotalTokens.Should().Be(expectedTotal,
+            $"B3: TotalTokens must be the sum of all {3 + 1} iteration token counts " +
+            $"({3} × {tokensPerToolRound} + 1 × {tokensForFinalRound} = {expectedTotal}), " +
+            "not just the final call's usage");
+    }
+
+
     [Fact]
     public async Task ExecuteStreamAsync_ToolApprovalDeny_PreservesHttpPauseFlow()
     {
@@ -504,6 +603,88 @@ public sealed class AgentRuntimeLoopAgentPhase2Tests
         {
             await Task.Yield();
             yield return new ChatResponseChunk { Content = "never", FinishReason = "stop" };
+        }
+
+        public Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Non-streaming: ALWAYS returns BOTH non-empty text AND a tool call — tests B2 regression
+    /// where hitMaxIterations must fire even when Content is non-empty.
+    /// </summary>
+    private sealed class FakeNonStreamingAlwaysToolAndTextClient(
+        string toolName, string toolArgs, string partialText) : IModelClient
+    {
+        private int _callId;
+
+        public string ProviderName => "fake-ns-infinite-text";
+
+        public Task<ChatResponse> CompleteAsync(ChatRequest request, CancellationToken ct = default)
+            => Task.FromResult(new ChatResponse
+            {
+                Content = partialText,           // non-empty — the B2 edge case
+                Role = ChatMessageRole.Assistant,
+                Model = "test",
+                ToolCalls = [new ModelToolCall { Id = $"tc{++_callId}", Name = toolName, Arguments = toolArgs }]
+            });
+
+        public async IAsyncEnumerable<ChatResponseChunk> StreamAsync(
+            ChatRequest request,
+            [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.Yield();
+            yield return new ChatResponseChunk { Content = partialText, FinishReason = "stop" };
+        }
+
+        public Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Non-streaming: performs <paramref name="toolCallRounds"/> tool-call iterations each
+    /// reporting <paramref name="tokensPerToolRound"/> tokens, then returns final text with
+    /// <paramref name="tokensForFinalRound"/> tokens.  Used by the B3 token-accumulation test.
+    /// </summary>
+    private sealed class FakeNonStreamingCountedToolClient(
+        string toolName,
+        int toolCallRounds,
+        int tokensPerToolRound,
+        int tokensForFinalRound) : IModelClient
+    {
+        private int _callCount;
+        private int _callId;
+
+        public string ProviderName => "fake-ns-counted";
+
+        public Task<ChatResponse> CompleteAsync(ChatRequest request, CancellationToken ct = default)
+        {
+            var round = ++_callCount;
+            if (round <= toolCallRounds)
+            {
+                return Task.FromResult(new ChatResponse
+                {
+                    Content = string.Empty,
+                    Role = ChatMessageRole.Assistant,
+                    Model = "test",
+                    ToolCalls = [new ModelToolCall { Id = $"tc{++_callId}", Name = toolName, Arguments = "{}" }],
+                    Usage = new UsageInfo { TotalTokens = tokensPerToolRound }
+                });
+            }
+            // Final round: plain text, known token count
+            return Task.FromResult(new ChatResponse
+            {
+                Content = "all done",
+                Role = ChatMessageRole.Assistant,
+                Model = "test",
+                Usage = new UsageInfo { TotalTokens = tokensForFinalRound }
+            });
+        }
+
+        public async IAsyncEnumerable<ChatResponseChunk> StreamAsync(
+            ChatRequest request,
+            [EnumeratorCancellation] CancellationToken ct = default)
+        {
+            await Task.Yield();
+            yield return new ChatResponseChunk { Content = "all done", FinishReason = "stop" };
         }
 
         public Task<bool> IsAvailableAsync(CancellationToken ct = default) => Task.FromResult(true);

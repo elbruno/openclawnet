@@ -130,12 +130,17 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
     }
 
     [Fact]
-    public async Task Build_MafProviderOptions_ReturnsDefaultOptions()
+    public async Task Build_MafProviderOptions_HasExpectedSecureDefaults()
     {
         // K-D-1: MAF 1.17+ removed AgentSkillsProviderOptions.DisableCaching; the framework
-        // no longer caches at the provider level. OpenClawNetSkillsProvider builds a fresh
-        // AgentSkillsProvider on every invocation (ProvideAIContextAsync) so hot-reload
-        // still propagates next-turn without relying on any DisableCaching flag.
+        // no longer caches at the provider level. OpenClawNetSkillsProvider creates a fresh
+        // AgentSkillsProvider on every ProvideAIContextAsync invocation instead.
+        //
+        // Verify the default options returned by GetMafProviderOptions() have appropriate
+        // values: all skill-approval gates remain enabled (DisableXxx = false) and no
+        // custom instruction prompt is injected by the runtime.  These are security-relevant
+        // defaults — callers must explicitly opt out rather than getting insecure behaviour
+        // by accident.
         WriteInstalledSkill("memory");
         EnableForAgent("alice", "memory");
 
@@ -144,7 +149,17 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
         var provider = CreateProvider(registry, "alice");
 
         var options = provider.GetMafProviderOptions();
-        options.Should().NotBeNull("K-D-1: GetMafProviderOptions must always return a valid options instance");
+        options.Should().NotBeNull();
+        options.DisableLoadSkillApproval.Should().BeFalse(
+            "K-D-1: skill-load approval must remain enabled by default");
+        options.DisableReadSkillResourceApproval.Should().BeFalse(
+            "K-D-1: read-resource approval must remain enabled by default");
+        options.DisableRunSkillScriptApproval.Should().BeFalse(
+            "K-D-1: run-script approval must remain enabled by default");
+        options.IncludeDetailedErrors.Should().BeFalse(
+            "detailed errors must not be exposed to callers by default");
+        options.SkillsInstructionPrompt.Should().BeNull(
+            "no custom instruction prompt should be injected by the runtime");
     }
 
     [Fact]
