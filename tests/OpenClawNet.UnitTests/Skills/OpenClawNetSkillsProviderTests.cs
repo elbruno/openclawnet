@@ -6,7 +6,7 @@
 // Spec contract (K-D-1):
 //   - Single AgentSkillsProvider per request, built via
 //     AgentSkillsProviderBuilder.UseSkill(AgentInlineSkill.Create(...))
-//   - DisableCaching = true (MAF cache defeats hot-reload)
+//   - MAF 1.17+ removed DisableCaching; fresh provider per request satisfies K-D-1 instead
 //   - Provider includes only skills enabled for the active agent
 //
 // Spec sources:
@@ -130,8 +130,17 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
     }
 
     [Fact]
-    public async Task Build_DisableCachingTrue_OnEveryBuild()
+    public async Task Build_MafProviderOptions_HasExpectedSecureDefaults()
     {
+        // K-D-1: MAF 1.17+ removed AgentSkillsProviderOptions.DisableCaching; the framework
+        // no longer caches at the provider level. OpenClawNetSkillsProvider creates a fresh
+        // AgentSkillsProvider on every ProvideAIContextAsync invocation instead.
+        //
+        // Verify the default options returned by GetMafProviderOptions() have appropriate
+        // values: all skill-approval gates remain enabled (DisableXxx = false) and no
+        // custom instruction prompt is injected by the runtime.  These are security-relevant
+        // defaults — callers must explicitly opt out rather than getting insecure behaviour
+        // by accident.
         WriteInstalledSkill("memory");
         EnableForAgent("alice", "memory");
 
@@ -140,8 +149,17 @@ public sealed class OpenClawNetSkillsProviderTests : IDisposable
         var provider = CreateProvider(registry, "alice");
 
         var options = provider.GetMafProviderOptions();
-        options.DisableCaching.Should().BeTrue(
-            "K-D-1: MAF cache must be disabled so hot-reload propagates next-turn");
+        options.Should().NotBeNull();
+        options.DisableLoadSkillApproval.Should().BeFalse(
+            "K-D-1: skill-load approval must remain enabled by default");
+        options.DisableReadSkillResourceApproval.Should().BeFalse(
+            "K-D-1: read-resource approval must remain enabled by default");
+        options.DisableRunSkillScriptApproval.Should().BeFalse(
+            "K-D-1: run-script approval must remain enabled by default");
+        options.IncludeDetailedErrors.Should().BeFalse(
+            "detailed errors must not be exposed to callers by default");
+        options.SkillsInstructionPrompt.Should().BeNull(
+            "no custom instruction prompt should be injected by the runtime");
     }
 
     [Fact]

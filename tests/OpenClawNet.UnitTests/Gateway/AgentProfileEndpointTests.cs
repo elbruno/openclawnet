@@ -11,6 +11,7 @@ using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
 using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Models.Abstractions;
+using OpenClawNet.Skills;
 using OpenClawNet.Storage;
 
 namespace OpenClawNet.UnitTests.Gateway;
@@ -514,6 +515,7 @@ public sealed class AgentProfileEndpointTests
         builder.Services.AddDbContextFactory<OpenClawDbContext>(o =>
             o.UseInMemoryDatabase("test-" + Guid.NewGuid()));
         builder.Services.AddScoped<IAgentProfileStore, AgentProfileStore>();
+        builder.Services.AddSingleton<IAgentSkillAssignmentService, NullAgentSkillAssignmentService>();
 
         var app = builder.Build();
         app.MapAgentProfileEndpoints();
@@ -539,6 +541,7 @@ public sealed class AgentProfileEndpointTests
 
         var capturer = new CapturingAgentProvider("ollama");
         builder.Services.AddSingleton<IAgentProvider>(capturer);
+        builder.Services.AddSingleton<IAgentSkillAssignmentService, NullAgentSkillAssignmentService>();
 
         var app = builder.Build();
         app.MapAgentProfileEndpoints();
@@ -567,5 +570,23 @@ public sealed class AgentProfileEndpointTests
 
         public Task<bool> IsAvailableAsync(CancellationToken ct = default)
             => Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Null-object stub so the skill-assignment endpoints registered by
+    /// <see cref="AgentProfileEndpoints.MapAgentProfileEndpoints"/> have a
+    /// resolvable service in the test app. Profile CRUD tests don't exercise
+    /// skill assignment, so a no-op is sufficient.
+    /// </summary>
+    private sealed class NullAgentSkillAssignmentService : IAgentSkillAssignmentService
+    {
+        public Task<bool> AssignAsync(string skillName, string agentName, CancellationToken ct = default)
+            => Task.FromResult(false);
+        public Task UnassignAsync(string skillName, string agentName, CancellationToken ct = default)
+            => Task.CompletedTask;
+        public Task<IReadOnlyList<string>> GetAssignedAsync(string agentName, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<string>>([]);
+        public Task<SkillSyncResult> SyncAssignmentsAsync(string agentName, IEnumerable<string> skillNames, CancellationToken ct = default)
+            => Task.FromResult(new SkillSyncResult([], [], []));
     }
 }
