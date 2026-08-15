@@ -54,11 +54,16 @@ public sealed class AzureOpenAIAgentProvider : IAgentProvider
         if (string.IsNullOrEmpty(endpoint))
             throw new InvalidOperationException("Azure OpenAI endpoint not configured.");
 
+        // The Azure.AI.OpenAI SDK constructs its own /openai/deployments/... path.
+        // Strip any /openai/... suffix that callers may copy from Foundry/v1 URLs
+        // (e.g. https://resource.openai.azure.com/openai/v1 → https://resource.openai.azure.com/).
+        var normalizedEndpoint = NormalizeAzureEndpoint(endpoint);
+
         AzureOpenAIClient azureClient;
         if (authMode?.Equals("integrated", StringComparison.OrdinalIgnoreCase) == true)
-            azureClient = new AzureOpenAIClient(new Uri(endpoint), new DefaultAzureCredential());
+            azureClient = new AzureOpenAIClient(new Uri(normalizedEndpoint), new DefaultAzureCredential());
         else if (!string.IsNullOrEmpty(apiKey))
-            azureClient = new AzureOpenAIClient(new Uri(endpoint), new AzureKeyCredential(apiKey));
+            azureClient = new AzureOpenAIClient(new Uri(normalizedEndpoint), new AzureKeyCredential(apiKey));
         else
             throw new InvalidOperationException("Azure OpenAI: no API key configured and not using integrated auth.");
 
@@ -76,5 +81,20 @@ public sealed class AzureOpenAIAgentProvider : IAgentProvider
         return Task.FromResult(!string.IsNullOrEmpty(opts.Endpoint) &&
             (!string.IsNullOrEmpty(opts.ApiKey) ||
              opts.AuthMode?.Equals("integrated", StringComparison.OrdinalIgnoreCase) == true));
+    }
+
+    /// <summary>
+    /// The Azure.AI.OpenAI SDK constructs its own /openai/deployments/... path from the resource
+    /// endpoint. If the caller supplies a Foundry-style or v1-style URL that already includes
+    /// /openai/... (e.g. https://resource.openai.azure.com/openai/v1), strip that suffix so the
+    /// SDK builds the correct path instead of doubling it.
+    /// </summary>
+    internal static string NormalizeAzureEndpoint(string endpoint)
+    {
+        if (string.IsNullOrEmpty(endpoint)) return endpoint;
+        var uri = new Uri(endpoint.TrimEnd('/'));
+        if (uri.AbsolutePath.StartsWith("/openai", StringComparison.OrdinalIgnoreCase))
+            return uri.GetLeftPart(UriPartial.Authority) + "/";
+        return endpoint.TrimEnd('/') + "/";
     }
 }

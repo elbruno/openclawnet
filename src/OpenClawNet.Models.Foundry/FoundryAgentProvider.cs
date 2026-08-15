@@ -47,7 +47,7 @@ public sealed class FoundryAgentProvider : IAgentProvider
         {
             Endpoint = endpoint,
             ApiKey = apiKey,
-            Model = opts.Model,
+            Model = profile.Model ?? opts.Model,
             Temperature = profile.Temperature ?? opts.Temperature,
             MaxTokens = profile.MaxTokens ?? opts.MaxTokens,
         });
@@ -68,9 +68,10 @@ public sealed class FoundryAgentProvider : IAgentProvider
         try
         {
             using var http = _httpClientFactory.CreateClient();
-            http.BaseAddress = new Uri(opts.Endpoint.TrimEnd('/'));
+            // Trailing slash is required — relative "models" resolves against full path.
+            http.BaseAddress = new Uri(opts.Endpoint.TrimEnd('/') + "/");
             http.DefaultRequestHeaders.Add("api-key", opts.ApiKey);
-            var response = await http.GetAsync("/models", ct);
+            var response = await http.GetAsync("models", ct);
             return response.IsSuccessStatusCode;
         }
         catch
