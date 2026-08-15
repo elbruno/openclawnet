@@ -1,0 +1,5 @@
+# Curated MCP server suggestions surfaced in the OpenClawNet Settings UI.
+# Each entry can be installed with one click from the MCP Servers panel.
+# Schema matches McpSuggestion.cs: id, name, description, transport (stdio|http),
+# command, args, url, category, homepage, requiresEnv.
+suggestions: []
