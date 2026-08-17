@@ -6,7 +6,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="ElBruno.Text2Image.Cpu" Version="1.2.11" />
+    <PackageReference Include="ElBruno.Text2Image.Cpu" Version="1.5.1" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.11" />
   </ItemGroup>
 
