@@ -78,9 +78,12 @@ public static class ModelProviderEndpoints
         .WithDescription("Bulk-deletes model providers")
         .Accepts<BulkDeleteModelProvidersRequest>("application/json");
 
-        // POST /api/model-providers/{name}/test — sends a real chat completion
+        // POST /api/model-providers/{name}/test — sends a real chat completion.
+        // Accepts an optional JSON body of override values so the UI can test with
+        // current (unsaved) form values without requiring a save-first workflow.
         group.MapPost("/{name}/test", async (
             string name,
+            ModelProviderTestOverrides? overrides,
             IModelProviderDefinitionStore store,
             IEnumerable<IAgentProvider> providers,
             ILogger<GatewayProgramMarker> logger,
@@ -89,10 +92,25 @@ public static class ModelProviderEndpoints
             var def = await store.GetAsync(name, ct);
             if (def is null) return Results.NotFound();
 
-            logger.LogInformation("Testing model provider '{Name}' (type={Type}, endpoint={Endpoint}, model={Model})",
-                name, def.ProviderType, def.Endpoint, def.Model);
+            // Resolve transient values: non-null, non-sentinel overrides win over stored values.
+            // "[vault-backed]" is a UI display sentinel — fall back to the stored vault ref.
+            // def is NEVER mutated with override values so vault refs and config fields stay intact.
+            var testEndpoint = (!string.IsNullOrWhiteSpace(overrides?.Endpoint))
+                ? overrides.Endpoint : def.Endpoint;
+            var testModel = (!string.IsNullOrWhiteSpace(overrides?.Model))
+                ? overrides.Model : def.Model;
+            var testApiKey = (!string.IsNullOrWhiteSpace(overrides?.ApiKey) &&
+                              overrides.ApiKey != VaultReferenceSanitizer.RedactedReferenceDisplay)
+                ? overrides.ApiKey : def.ApiKey;
+            var testDeploymentName = (!string.IsNullOrWhiteSpace(overrides?.DeploymentName))
+                ? overrides.DeploymentName : def.DeploymentName;
+            var testAuthMode = (!string.IsNullOrWhiteSpace(overrides?.AuthMode))
+                ? overrides.AuthMode : def.AuthMode;
 
-            def.LastTestedAt = DateTime.UtcNow;
+            logger.LogInformation("Testing model provider '{Name}' (type={Type}, endpoint={Endpoint}, model={Model})",
+                name, def.ProviderType, testEndpoint, testModel);
+
+            var testedAt = DateTime.UtcNow;
 
             try
             {
@@ -102,14 +120,16 @@ public static class ModelProviderEndpoints
 
                 if (provider is null)
                 {
+                    var noProviderError = $"No provider registered for type '{def.ProviderType}'";
+                    def.LastTestedAt = testedAt;
                     def.LastTestSucceeded = false;
-                    def.LastTestError = $"No provider registered for type '{def.ProviderType}'";
+                    def.LastTestError = noProviderError;
                     def.IsSupported = false;
-                    def.UpdatedAt = DateTime.UtcNow;
+                    def.UpdatedAt = testedAt;
                     await store.SaveAsync(def, ct);
                     return Results.Ok(new { 
                         success = false, 
-                        message = def.LastTestError,
+                        message = noProviderError,
                         lastTestedAt = def.LastTestedAt,
                         lastTestSucceeded = def.LastTestSucceeded,
                         lastTestError = def.LastTestError
@@ -120,15 +140,15 @@ public static class ModelProviderEndpoints
                 {
                     Name = $"test-{name}",
                     Provider = def.ProviderType,
-                    Endpoint = def.Endpoint,
-                    Model = def.Model,   // Issue #120: pass model so Ollama provider doesn't fall back to its default
-                    ApiKey = def.ApiKey,
-                    DeploymentName = def.DeploymentName,
-                    AuthMode = def.AuthMode,
+                    Endpoint = testEndpoint,
+                    Model = testModel,   // Issue #120: pass model so Ollama provider doesn't fall back to its default
+                    ApiKey = testApiKey,
+                    DeploymentName = testDeploymentName,
+                    AuthMode = testAuthMode,
                 };
 
                 logger.LogInformation("Creating chat client for test: provider={Provider}, model={Model}",
-                    def.ProviderType, def.Model ?? "(provider default)");
+                    def.ProviderType, testModel ?? "(provider default)");
 
                 var chatClient = provider.CreateChatClient(testProfile);
 
@@ -149,9 +169,10 @@ public static class ModelProviderEndpoints
                 logger.LogInformation("Provider '{Name}' responded: {Response}", name, truncated);
 
                 def.IsSupported = true;
+                def.LastTestedAt = testedAt;
                 def.LastTestSucceeded = true;
                 def.LastTestError = null;
-                def.UpdatedAt = DateTime.UtcNow;
+                def.UpdatedAt = testedAt;
                 await store.SaveAsync(def, ct);
 
                 return Results.Ok(new { 
@@ -165,10 +186,11 @@ public static class ModelProviderEndpoints
             catch (TaskCanceledException)
             {
                 var errorMsg = "Test timed out (30s). The model may need to be downloaded first.";
+                def.LastTestedAt = testedAt;
                 def.IsSupported = false;
                 def.LastTestSucceeded = false;
                 def.LastTestError = errorMsg.Length > 1000 ? errorMsg[..1000] : errorMsg;
-                def.UpdatedAt = DateTime.UtcNow;
+                def.UpdatedAt = testedAt;
                 await store.SaveAsync(def, ct);
                 return Results.Ok(new { 
                     success = false, 
@@ -182,10 +204,11 @@ public static class ModelProviderEndpoints
             {
                 var sanitized = VaultReferenceSanitizer.SanitizeFailureMessage(ex.Message) ?? ex.Message;
                 var errorMsg = $"Test failed: {sanitized}";
+                def.LastTestedAt = testedAt;
                 def.IsSupported = false;
                 def.LastTestSucceeded = false;
                 def.LastTestError = errorMsg.Length > 1000 ? errorMsg[..1000] : errorMsg;
-                def.UpdatedAt = DateTime.UtcNow;
+                def.UpdatedAt = testedAt;
                 await store.SaveAsync(def, ct);
                 return Results.Ok(new { 
                     success = false, 
@@ -262,3 +285,16 @@ public sealed record BulkDeleteModelProvidersRequest
 
 public sealed record SkippedProvider(string Name, string Reason);
 public sealed record BulkDeleteModelProvidersResponse(List<string> Deleted, List<SkippedProvider> Skipped);
+
+/// <summary>
+/// Optional override values supplied by the UI when testing from the edit form
+/// before saving. Non-null values replace the stored definition for the duration
+/// of the test; null values or the "[vault-backed]" sentinel fall back to the
+/// stored value so vault references are resolved correctly.
+/// </summary>
+public sealed record ModelProviderTestOverrides(
+    string? Endpoint,
+    string? Model,
+    string? ApiKey,
+    string? DeploymentName,
+    string? AuthMode);
