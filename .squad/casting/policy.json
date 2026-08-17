@@ -1,0 +1,41 @@
+{
+  "version": "1.0",
+  "defaultPolicy": {
+    "priorityRoutingEnabled": true,
+    "autoAssignmentEnabled": true,
+    "fallbackToCoreEnabled": true,
+    "maxConcurrentAssignments": 3,
+    "assignmentTimeout": 3600,
+    "retryPolicy": {
+      "maxAttempts": 3,
+      "backoffMultiplier": 2.0,
+      "initialDelaySeconds": 60
+    }
+  },
+  "routingRules": {
+    "architectureDecisions": {
+      "priority": "high",
+      "fallbackToExempt": true
+    },
+    "codeReview": {
+      "priority": "high",
+      "requiresLeadApproval": false
+    },
+    "testing": {
+      "priority": "normal",
+      "fallbackToExempt": false
+    },
+    "documentation": {
+      "priority": "normal",
+      "fallbackToExempt": false
+    },
+    "security": {
+      "priority": "critical",
+      "fallbackToExempt": true
+    }
+  },
+  "exemptRoles": [
+    "scribe",
+    "ralph"
+  ]
+}

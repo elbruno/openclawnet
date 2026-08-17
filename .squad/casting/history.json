@@ -1,0 +1,11 @@
+{
+  "version": "1.0",
+  "migrationTimestamp": "2026-08-17T08:44:13.122-04:00",
+  "assignments": [],
+  "history": [],
+  "metadata": {
+    "repositoryName": "openclawnet",
+    "legacyCastingMigration": true,
+    "initializedFrom": "team.md"
+  }
+}

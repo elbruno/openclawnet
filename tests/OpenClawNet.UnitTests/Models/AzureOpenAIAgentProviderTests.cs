@@ -67,6 +67,74 @@ public class AzureOpenAIAgentProviderTests
         result.Should().BeTrue();
     }
 
+    // ── CreateChatClient with profile overrides (Issue #230) ─────────────────
+
+    [Fact]
+    public void CreateChatClient_UsesProfileApiKey_WhenOptsApiKeyEmpty()
+    {
+        // Issue #230: profile.ApiKey must be used when DI opts ApiKey is empty.
+        // Users configure API keys via the Model Providers UI (stored in DB),
+        // not in appsettings, so opts.ApiKey is always empty in that flow.
+        var provider = CreateProvider(new AzureOpenAIOptions
+        {
+            Endpoint = "https://my-resource.openai.azure.com/"
+            // No ApiKey in opts
+        });
+        var profile = new AgentProfile
+        {
+            Name = "issue-230-azure-apikey",
+            ApiKey = "profile-api-key-synthetic-123"
+        };
+
+        // Must NOT throw "Azure OpenAI: no API key configured and not using integrated auth."
+        var act = () => provider.CreateChatClient(profile);
+
+        act.Should().NotThrow<InvalidOperationException>(
+            "profile.ApiKey must override empty opts.ApiKey (Issue #230)");
+    }
+
+    [Fact]
+    public void CreateChatClient_UsesProfileEndpoint_WhenOptsEndpointEmpty()
+    {
+        // Issue #230: profile.Endpoint must be used when DI opts Endpoint is empty.
+        var provider = CreateProvider(new AzureOpenAIOptions
+        {
+            ApiKey = "opts-key"
+            // No Endpoint in opts
+        });
+        var profile = new AgentProfile
+        {
+            Name = "issue-230-azure-endpoint",
+            Endpoint = "https://my-resource.openai.azure.com/"
+        };
+
+        // Must NOT throw "Azure OpenAI endpoint not configured."
+        var act = () => provider.CreateChatClient(profile);
+
+        act.Should().NotThrow<InvalidOperationException>(
+            "profile.Endpoint must override empty opts.Endpoint (Issue #230)");
+    }
+
+    [Fact]
+    public void CreateChatClient_UsesProfileEndpointAndApiKey_WhenBothOptsAreEmpty()
+    {
+        // Issue #230: both profile fields must be honoured when DI opts are completely empty.
+        // This is the exact scenario: provider configured via UI (DB) with no appsettings entries.
+        var provider = CreateProvider(new AzureOpenAIOptions()); // completely empty opts
+        var profile = new AgentProfile
+        {
+            Name = "issue-230-azure-both",
+            Endpoint = "https://my-resource.openai.azure.com/",
+            ApiKey = "synthetic-key-abc456",
+            AuthMode = "api-key"
+        };
+
+        var act = () => provider.CreateChatClient(profile);
+
+        act.Should().NotThrow<InvalidOperationException>(
+            "profile.Endpoint and profile.ApiKey must override completely empty DI opts (Issue #230)");
+    }
+
     // ── NormalizeAzureEndpoint (Issue #223) ──────────────────────────────────
 
     [Theory]

@@ -666,7 +666,26 @@ else
         try
         {
             var http = HttpClientFactory.CreateClient("gateway");
-            var response = await http.PostAsync($"/api/model-providers/{name}/test", null);
+            // When testing from the edit form, pass current (potentially unsaved) form values
+            // so the user can test without having to save first. The gateway merges these
+            // overrides with the stored definition; null values fall back to the stored data.
+            HttpResponseMessage response;
+            if (_isEditing && _form.Name == name)
+            {
+                var overrides = new
+                {
+                    Endpoint       = NullIfEmpty(_form.Endpoint),
+                    Model          = NullIfEmpty(_form.Model),
+                    ApiKey         = NullIfEmpty(_form.ApiKey),
+                    DeploymentName = NullIfEmpty(_form.DeploymentName),
+                    AuthMode       = NullIfEmpty(_form.AuthMode)
+                };
+                response = await http.PostAsJsonAsync($"/api/model-providers/{name}/test", overrides);
+            }
+            else
+            {
+                response = await http.PostAsync($"/api/model-providers/{name}/test", null);
+            }
             var body = await response.Content.ReadAsStringAsync();
 
             if (response.IsSuccessStatusCode)
