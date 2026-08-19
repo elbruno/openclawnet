@@ -1,5 +1,40 @@
 # Petey — Agent Platform Specialist History
 
+## 2026-08-19 — Issue #233: GitHub.Copilot.SDK 1.0.9 Security Upgrade
+
+### Problem
+`OpenClawNet.Models.GitHubCopilot` was pinned to `GitHub.Copilot.SDK` 0.3.0, carrying old
+namespace usage and previously flagged transitive advisory risk (`MessagePack`/`Nerdbank.MessagePack`).
+
+### Migration
+- Upgraded package: `GitHub.Copilot.SDK` **0.3.0 → 1.0.9**.
+- Namespace migration: `using GitHub.Copilot.SDK;` → `using GitHub.Copilot;`.
+- API migration:
+  - `CopilotSession.On(...)` now called as `On<SessionEvent>(...)`.
+  - `CopilotClientOptions.CliPath` replacement:
+    `Connection = RuntimeConnection.ForStdio(path: options.CliPath)`.
+- Session compatibility hardening for 1.0.9:
+  - `EnableManagedSettings = false` when using `PermissionHandler.ApproveAll`.
+  - `InfiniteSessions.Enabled = false` preserved to keep request-scoped session behavior.
+
+### Tests Added
+- Added focused tests for migration seams:
+  - `BuildClientOptions` CLI path/token mapping
+  - `CreateSessionConfig` managed settings, streaming, and infinite-session defaults
+
+### Validation
+- `OpenClawNet.UnitTests` non-live suite: **Passed** (`Passed: 1151, Skipped: 46, Failed: 0`).
+- `OpenClawNet.UnitTests.Azure`: **Passed** (`Passed: 12, Failed: 0`).
+- `scripts/ImageGenerator`: build + prompt list + `--dry-run all` smoke checks passed.
+
+### Advisory Outcome
+- `OpenClawNet.Models.GitHubCopilot` now shows **no** `MessagePack`/`Nerdbank.MessagePack`
+  transitive dependencies and no vulnerable packages from configured feeds.
+- Solution-wide transitive versions resolved to `MessagePack 2.5.302` and
+  `Nerdbank.MessagePack 1.2.4`, with no vulnerable-package findings.
+
+---
+
 ## 2026-08-17 — Issue #230: "Foundry/Azure OpenAI not configured" on Test Connection
 
 ### Problem

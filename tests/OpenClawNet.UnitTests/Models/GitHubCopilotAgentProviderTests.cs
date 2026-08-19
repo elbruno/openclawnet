@@ -1,4 +1,5 @@
 using FluentAssertions;
+using GitHub.Copilot;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Models.Abstractions;
@@ -72,5 +73,76 @@ public class GitHubCopilotAgentProviderTests
         // Should not throw on multiple dispose calls
         await provider.DisposeAsync();
         await provider.DisposeAsync();
+    }
+
+    [Fact]
+    public void BuildClientOptions_SetsStdioConnection_WhenCliPathProvided()
+    {
+        const string cliPath = @"C:\tools\copilot.exe";
+        var options = new GitHubCopilotOptions { CliPath = cliPath };
+
+        var clientOptions = GitHubCopilotAgentProvider.BuildClientOptions(
+            options,
+            NullLogger<GitHubCopilotAgentProvider>.Instance,
+            token: null);
+
+        clientOptions.Connection.Should().BeOfType<StdioRuntimeConnection>();
+        ((ChildProcessRuntimeConnection)clientOptions.Connection!).Path.Should().Be(cliPath);
+    }
+
+    [Fact]
+    public void BuildClientOptions_LeavesConnectionNull_WhenCliPathMissing()
+    {
+        var options = new GitHubCopilotOptions { CliPath = null };
+
+        var clientOptions = GitHubCopilotAgentProvider.BuildClientOptions(
+            options,
+            NullLogger<GitHubCopilotAgentProvider>.Instance,
+            token: null);
+
+        clientOptions.Connection.Should().BeNull();
+    }
+
+    [Fact]
+    public void BuildClientOptions_SetsGitHubToken_WhenProvided()
+    {
+        var options = new GitHubCopilotOptions();
+
+        var clientOptions = GitHubCopilotAgentProvider.BuildClientOptions(
+            options,
+            NullLogger<GitHubCopilotAgentProvider>.Instance,
+            token: "ghp_test_token");
+
+        clientOptions.GitHubToken.Should().Be("ghp_test_token");
+    }
+
+    [Fact]
+    public void CreateSessionConfig_DisablesManagedSettingsAndInfiniteSessions()
+    {
+        var config = CopilotChatClient.CreateSessionConfig(
+            model: "gpt-5-mini",
+            systemMessage: "system",
+            streaming: false);
+
+        config.Model.Should().Be("gpt-5-mini");
+        config.Streaming.Should().BeNull();
+        config.EnableManagedSettings.Should().BeFalse();
+        config.OnPermissionRequest.Should().NotBeNull();
+        config.InfiniteSessions.Should().NotBeNull();
+        config.InfiniteSessions!.Enabled.Should().BeFalse();
+        config.SystemMessage.Should().NotBeNull();
+        config.SystemMessage!.Content.Should().Be("system");
+    }
+
+    [Fact]
+    public void CreateSessionConfig_EnablesStreaming_WhenRequested()
+    {
+        var config = CopilotChatClient.CreateSessionConfig(
+            model: "gpt-5-mini",
+            systemMessage: null,
+            streaming: true);
+
+        config.Streaming.Should().BeTrue();
+        config.SystemMessage.Should().BeNull();
     }
 }

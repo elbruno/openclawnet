@@ -1,4 +1,4 @@
-using GitHub.Copilot.SDK;
+using GitHub.Copilot;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -70,17 +70,8 @@ public sealed class GitHubCopilotAgentProvider : IAgentProvider, IAsyncDisposabl
                 return _client;
 
             var opts = _options.Value;
-            var clientOptions = new CopilotClientOptions
-            {
-                Logger = _logger,
-            };
-
             var token = _overrideToken ?? opts.GitHubToken;
-            if (!string.IsNullOrEmpty(token))
-                clientOptions.GitHubToken = token;
-
-            if (!string.IsNullOrEmpty(opts.CliPath))
-                clientOptions.CliPath = opts.CliPath;
+            var clientOptions = BuildClientOptions(opts, _logger, token);
 
             _logger.LogInformation("Starting Copilot SDK client (model={Model})", opts.Model);
 
@@ -156,5 +147,24 @@ public sealed class GitHubCopilotAgentProvider : IAgentProvider, IAsyncDisposabl
         }
 
         _startLock.Dispose();
+    }
+
+    internal static CopilotClientOptions BuildClientOptions(
+        GitHubCopilotOptions options,
+        ILogger logger,
+        string? token)
+    {
+        var clientOptions = new CopilotClientOptions
+        {
+            Logger = logger,
+        };
+
+        if (!string.IsNullOrEmpty(token))
+            clientOptions.GitHubToken = token;
+
+        if (!string.IsNullOrEmpty(options.CliPath))
+            clientOptions.Connection = RuntimeConnection.ForStdio(path: options.CliPath);
+
+        return clientOptions;
     }
 }

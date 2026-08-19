@@ -52,7 +52,7 @@ dotnet workload install aspire
 | `OpenClawNet.Models.Ollama` | 181 | Ollama provider (`OllamaAgentProvider`) with streaming via OllamaSharp |
 | `OpenClawNet.Models.AzureOpenAI` | 185 | Azure OpenAI provider via Azure.AI.OpenAI SDK (3 auth modes: API Key, Integrated, Federated) |
 | `OpenClawNet.Models.FoundryLocal` | 165 | Foundry Local bridge provider via Microsoft.AI.Foundry.Local |
-| `OpenClawNet.Models.GitHubCopilot` | 142 | GitHub Copilot SDK provider via `GitHub.Copilot.SDK` (v0.2.2) with environment-based auth |
+| `OpenClawNet.Models.GitHubCopilot` | 142 | GitHub Copilot SDK provider via `GitHub.Copilot` (v1.0.9) with environment-based auth |
 | `OpenClawNet.Storage` | 275 | EF Core DbContext, entities (ChatSession, ChatMessageEntity, AgentProfile, etc.) |
 | `OpenClawNet.ServiceDefaults` | 105 | Aspire service defaults — telemetry, health checks, OpenAPI |
 | `OpenClawNet.AppHost` | 18 | Aspire orchestration — wires Gateway + Web with service discovery |
