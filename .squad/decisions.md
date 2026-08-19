@@ -157,3 +157,46 @@ Per Mark's final APPROVED review, the following issues must be opened post-merge
 **Final Review:** Mark (Lead Architect)  
 **Verdict:** ✅ **APPROVED**  
 **Condition:** Follow-up issues opened for three held packages (MCP 2.1, Copilot SDK 1.0.9, ImageSharp 4.0) and transitive vulnerability disclosure.
+
+---
+
+## GitHub.Copilot.SDK 1.0.9 Migration Completed
+
+**Date:** 2026-08-19  
+**Author:** Petey (Agent Platform Specialist)  
+**PR:** #238 (merged)  
+**Status:** ✅ MERGED TO MAIN
+
+### Migration Contract
+For OpenClawNet Copilot provider code, migrated to `GitHub.Copilot.SDK` 1.0.9 with:
+- Namespace updated to `GitHub.Copilot`
+- `RuntimeConnection.ForStdio(path)` replaces removed `CopilotClientOptions.CliPath`
+- Session events bound via `On<SessionEvent>(...)`
+
+### Security Outcome
+Provider project no longer carries `MessagePack`/`Nerdbank` transitive dependencies. Vulnerable-package scan clean.
+
+### Context Preservation
+- `EnableManagedSettings=false` with `PermissionHandler.ApproveAll` preserves non-interactive auto-approval behavior
+- `InfiniteSessions.Enabled=false` preserves prior request-scoped context behavior
+
+**Approval:** Irving validated CI-eligible `CallToolAsync` round-trip coverage. Dylan confirmed test assumptions. Mark approved.
+
+---
+
+## ModelContextProtocol 2.1.0 Migration Completed
+
+**Date:** 2026-08-19  
+**Author:** Petey (Agent Platform Specialist)  
+**PR:** #239 (merged)  
+**Status:** ✅ MERGED TO MAIN
+
+### Migration Policy
+Upgraded all direct `ModelContextProtocol` references from `1.3.0` to `2.1.0`. Current MCP host/wrapper implementation unchanged—APIs remain compatible in `v2.1.0`:
+- Stable SDK APIs: `McpClient`, `McpServer`, stdio/in-memory transports, tool attributes
+- Full MCP-focused and full acceptance tests passed on `2.1.0`
+- Preserves current abstractions without unnecessary churn
+
+**Rationale:** Official SDK v2.0.0 introduced major protocol/transport changes, but OpenClawNet's stable API usage ensures safe upgrade without refactoring.
+
+**Approval:** Irving implemented with CI-eligible `CallToolAsync` round-trip coverage. Dylan validated test assumptions. Mark approved after initial rejection for missing CallTool coverage.
