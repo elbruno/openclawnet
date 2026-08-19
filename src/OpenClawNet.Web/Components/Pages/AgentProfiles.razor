@@ -609,7 +609,7 @@ else
                         <button class="btn btn-outline-secondary" @onclick="CancelForm">Cancel</button>
                         @if (_isEditing)
                         {
-                            <button class="btn btn-outline-info" @onclick="() => TestAgent(_form.Name)" disabled="@_testing">
+                            <button class="btn btn-outline-info" @onclick="() => TestAgent(_form.Name, useFormOverrides: true)" disabled="@_testing">
                                 @if (_testing && _testingName == _form.Name)
                                 {
                                     <span class="spinner-border spinner-border-sm me-1" role="status"></span>
@@ -1330,6 +1330,17 @@ else
         bool? IsEnabled = true,
         string? Kind = "Standard");
 
+    /// <summary>
+    /// Transient test-only overrides sent to POST /api/agent-profiles/{name}/test when the
+    /// user clicks Test Agent while editing (Issue #236). Matches the Gateway's
+    /// AgentProfileTestOverrides record. Never saved — used for the test call only.
+    /// </summary>
+    private sealed record AgentProfileTestOverridesRequest(
+        string? Provider,
+        string? Model,
+        string? Instructions,
+        string RetrievalLevel);
+
     private sealed record ModelProviderDto(
         string Name, string ProviderType, string? DisplayName, string? Endpoint,
         string? Model, bool HasApiKey, string? DeploymentName, string? AuthMode,
@@ -1341,7 +1352,11 @@ else
     private sealed record McpToolEntryDto(string Name, string Description);
 
     // ── Test ────────────────────────────────────────────────
-    private async Task TestAgent(string name)
+    // Issue #236: when testing from the edit form, forward the current (unsaved) form values
+    // as transient overrides so Test Agent exercises the provider actually selected in the
+    // combo box, not the stale persisted profile. List-row Test buttons keep the no-body
+    // request so their behavior (test against saved state) is unchanged.
+    private async Task TestAgent(string name, bool useFormOverrides = false)
     {
         _testing = true;
         _testingName = name;
@@ -1351,7 +1366,20 @@ else
         try
         {
             var http = HttpClientFactory.CreateClient("gateway");
-            var response = await http.PostAsync($"/api/agent-profiles/{name}/test", null);
+            HttpResponseMessage response;
+            if (useFormOverrides)
+            {
+                var overrides = new AgentProfileTestOverridesRequest(
+                    Provider: NullIfEmpty(_form.Provider),
+                    Model: null,
+                    Instructions: _form.Instructions,
+                    RetrievalLevel: _form.RetrievalLevel);
+                response = await http.PostAsJsonAsync($"/api/agent-profiles/{name}/test", overrides);
+            }
+            else
+            {
+                response = await http.PostAsync($"/api/agent-profiles/{name}/test", null);
+            }
             var body = await response.Content.ReadAsStringAsync();
 
             try

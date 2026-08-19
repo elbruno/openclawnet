@@ -249,6 +249,7 @@ public static class AgentProfileEndpoints
 
         group.MapPost("/{name}/test", async (
             string name,
+            [FromBody] AgentProfileTestOverrides? overrides,
             IAgentProfileStore profileStore,
             IModelProviderDefinitionStore providerStore,
             IEnumerable<IAgentProvider> providers,
@@ -258,7 +259,19 @@ public static class AgentProfileEndpoints
             var profile = await profileStore.GetAsync(name, ct);
             if (profile is null) return Results.NotFound();
 
-            logger.LogInformation("Testing agent profile '{Name}' (provider={Provider})", name, profile.Provider);
+            // Issue #236: resolve transient test-only values. Non-blank overrides win over
+            // the stored profile so the UI can test unsaved form edits (e.g. a newly selected
+            // Model Provider) without requiring a save-first workflow. Mirrors the approved
+            // ModelProviderTestOverrides pattern — `profile` and `entity` are NEVER mutated
+            // with override values, only with test-result metadata below.
+            var testProviderName = (!string.IsNullOrWhiteSpace(overrides?.Provider))
+                ? overrides.Provider : profile.Provider;
+            var testModel = (!string.IsNullOrWhiteSpace(overrides?.Model))
+                ? overrides.Model : profile.Model;
+            var testInstructions = overrides?.Instructions ?? profile.Instructions;
+            var testRetrievalLevel = overrides?.RetrievalLevel ?? profile.RetrievalLevel;
+
+            logger.LogInformation("Testing agent profile '{Name}' (provider={Provider})", name, testProviderName);
 
             var entity = await profileStore.GetEntityAsync(name, ct);
             if (entity is not null)
@@ -266,23 +279,23 @@ public static class AgentProfileEndpoints
                 entity.LastTestedAt = DateTime.UtcNow;
             }
 
-            // Resolve the model provider definition
+            // Resolve the model provider definition using the (possibly overridden) provider name.
             ModelProviderDefinition? definition = null;
-            if (!string.IsNullOrEmpty(profile.Provider))
-                definition = await providerStore.GetAsync(profile.Provider, ct);
+            if (!string.IsNullOrEmpty(testProviderName))
+                definition = await providerStore.GetAsync(testProviderName, ct);
 
             if (definition is null)
             {
                 if (entity is not null)
                 {
                     entity.LastTestSucceeded = false;
-                    entity.LastTestError = $"Provider '{profile.Provider}' not found";
+                    entity.LastTestError = $"Provider '{testProviderName}' not found";
                     entity.UpdatedAt = DateTime.UtcNow;
                     await profileStore.SaveEntityAsync(entity, ct);
                 }
                 return Results.Ok(new { 
                     success = false, 
-                    message = $"Provider '{profile.Provider}' not found",
+                    message = $"Provider '{testProviderName}' not found",
                     lastTestedAt = entity?.LastTestedAt,
                     lastTestSucceeded = entity?.LastTestSucceeded,
                     lastTestError = entity?.LastTestError
@@ -321,14 +334,14 @@ public static class AgentProfileEndpoints
                     Name = $"test-{name}",
                     Provider = definition.ProviderType,
                     Endpoint = definition.Endpoint,
-                    // Issue #122: prefer the profile's own model, fall back to the provider definition's
-                    // model so Ollama and other providers receive a concrete model name.
-                    Model = profile.Model ?? definition.Model,
+                    // Issue #122: prefer the (possibly overridden) model, fall back to the provider
+                    // definition's model so Ollama and other providers receive a concrete model name.
+                    Model = testModel ?? definition.Model,
                     ApiKey = definition.ApiKey,
                     DeploymentName = definition.DeploymentName,
                     AuthMode = definition.AuthMode,
-                    Instructions = profile.Instructions,
-                    RetrievalLevel = profile.RetrievalLevel
+                    Instructions = testInstructions,
+                    RetrievalLevel = testRetrievalLevel
                 };
 
                 var chatClient = agentProvider.CreateChatClient(testProfile);
@@ -512,6 +525,18 @@ public sealed record AgentProfileRequest(
     RetrievalLevel? RetrievalLevel = null,
     string? Kind = "Standard",
     string? Name = null);
+
+/// <summary>
+/// Optional override values supplied by the UI when testing an agent profile from the
+/// edit form before saving (Issue #236). Non-blank values replace the stored profile's
+/// values for the duration of the test only; the stored profile and its persisted entity
+/// are never mutated with these values — only test-result metadata is persisted.
+/// </summary>
+public sealed record AgentProfileTestOverrides(
+    string? Provider,
+    string? Model,
+    string? Instructions,
+    RetrievalLevel? RetrievalLevel);
 
 // ── Agent skill assignment DTOs ──────────────────────────────────────────────
 
