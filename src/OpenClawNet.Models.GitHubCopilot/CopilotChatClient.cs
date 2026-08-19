@@ -1,6 +1,6 @@
 using System.Runtime.CompilerServices;
 using System.Threading.Channels;
-using GitHub.Copilot.SDK;
+using GitHub.Copilot;
 using Microsoft.Extensions.AI;
 
 namespace OpenClawNet.Models.GitHubCopilot;
@@ -38,20 +38,13 @@ internal sealed class CopilotChatClient : IChatClient
     {
         var client = await _provider.GetClientAsync().ConfigureAwait(false);
 
-        await using var session = await client.CreateSessionAsync(new SessionConfig
-        {
-            Model = _model,
-            SystemMessage = _systemMessage is not null
-                ? new SystemMessageConfig { Content = _systemMessage }
-                : null,
-            OnPermissionRequest = PermissionHandler.ApproveAll,
-            InfiniteSessions = new InfiniteSessionConfig { Enabled = false },
-        }).ConfigureAwait(false);
+        await using var session = await client.CreateSessionAsync(
+            CreateSessionConfig(_model, _systemMessage, streaming: false)).ConfigureAwait(false);
 
         var done = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
         string? responseText = null;
 
-        session.On(evt =>
+        session.On<SessionEvent>(evt =>
         {
             switch (evt)
             {
@@ -84,21 +77,13 @@ internal sealed class CopilotChatClient : IChatClient
     {
         var client = await _provider.GetClientAsync().ConfigureAwait(false);
 
-        await using var session = await client.CreateSessionAsync(new SessionConfig
-        {
-            Model = _model,
-            SystemMessage = _systemMessage is not null
-                ? new SystemMessageConfig { Content = _systemMessage }
-                : null,
-            Streaming = true,
-            OnPermissionRequest = PermissionHandler.ApproveAll,
-            InfiniteSessions = new InfiniteSessionConfig { Enabled = false },
-        }).ConfigureAwait(false);
+        await using var session = await client.CreateSessionAsync(
+            CreateSessionConfig(_model, _systemMessage, streaming: true)).ConfigureAwait(false);
 
         var channel = Channel.CreateUnbounded<ChatResponseUpdate>(
             new UnboundedChannelOptions { SingleReader = true, SingleWriter = true });
 
-        session.On(evt =>
+        session.On<SessionEvent>(evt =>
         {
             switch (evt)
             {
@@ -155,5 +140,23 @@ internal sealed class CopilotChatClient : IChatClient
     {
         var last = messages.LastOrDefault(m => m.Role == ChatRole.User);
         return last?.Text ?? string.Empty;
+    }
+
+    internal static SessionConfig CreateSessionConfig(
+        string? model,
+        string? systemMessage,
+        bool streaming)
+    {
+        return new SessionConfig
+        {
+            Model = model,
+            SystemMessage = systemMessage is not null
+                ? new SystemMessageConfig { Content = systemMessage }
+                : null,
+            Streaming = streaming ? true : null,
+            EnableManagedSettings = false,
+            OnPermissionRequest = PermissionHandler.ApproveAll,
+            InfiniteSessions = new InfiniteSessionConfig { Enabled = false },
+        };
     }
 }
