@@ -1,5 +1,59 @@
 # Irving — Backend Dev History
 
+## 2026-08-19 — Issue #236: Agent Profile Test Agent ignored unsaved provider overrides
+
+### Context
+Users editing an Agent Profile, switching the Model Provider combo box (e.g. to Microsoft
+Foundry or OpenAI) without saving, then clicking **Test Agent**, got a confusing "connection
+refused (localhost:11434)" error — the test endpoint always read `profile.Provider` from the
+**persisted** profile, ignoring the unsaved form selection and silently falling back to
+whatever provider (often Ollama) was last saved.
+
+### Fix (mirrors the approved ModelProviderTestOverrides pattern from Issue #230)
+- `POST /api/agent-profiles/{name}/test` now accepts an optional `[FromBody] AgentProfileTestOverrides?`
+  body: `Provider`, `Model`, `Instructions`, `RetrievalLevel`. Non-blank overrides win over the
+  stored profile **for the test call only**; the stored `AgentProfile` and persisted entity are
+  never mutated with override values — only test-result metadata (`LastTestedAt`/
+  `LastTestSucceeded`/`LastTestError`) is saved, exactly as the Model Provider test endpoint does.
+- The provider **definition lookup itself** now uses the (possibly overridden) provider name,
+  not `profile.Provider` — this is the actual fix, since the bug was that overriding the model
+  provider had no effect on which `ModelProviderDefinition` was resolved.
+- `AgentProfiles.razor`'s edit-form Test Agent button now sends `_form.Provider`/
+  `_form.Instructions`/`_form.RetrievalLevel` as overrides; the list-row Test button is
+  unchanged (still sends `null` body, tests saved state).
+
+### Gotcha: adding a second optional body-eligible parameter broke unrelated tests
+Adding `AgentProfileTestOverrides? overrides` as a new minimal-API parameter caused **14 unrelated
+CRUD/import/export tests** in `AgentProfileEndpointTests.cs` to fail with `NETSDK`-unrelated
+`InvalidOperationException: UNKNOWN parameter` at DFA-matcher build time — even though those
+tests never call `/test`. Root cause: minimal API's `RequestDelegateFactory` builds/validates
+**every** endpoint's parameter-binding metadata for the whole route group on the **first** HTTP
+request that WebApplication instance handles — not just the endpoint actually hit. The pre-existing
+`IModelProviderDefinitionStore providerStore` parameter was *never actually registered* in the
+basic `CreateTestAppAsync()` test helper (only CRUD stores were), but it worked by accident because
+it was the sole non-service complex-type parameter and got silently (and uselessly) inferred as
+`[FromBody]`. Adding a second complex parameter (`overrides`) claimed the Body slot instead, leaving
+`providerStore` with no valid binding source → hard failure for **every** endpoint in that app,
+not just `/test`.
+**Fix:** (1) explicitly mark the new override parameter `[FromBody]` to remove inference ambiguity,
+and (2) register `IModelProviderDefinitionStore` in the basic test helper too — it's registered
+app-wide in production `Program.cs`, so the test harness was actually incomplete, not the endpoint.
+**Lesson:** when adding a new optional-body parameter to an existing minimal API endpoint, always
+run the *full* test file (not just the endpoint's own tests) — a latent DI-registration gap in an
+unrelated test helper can surface as router-wide failures once a second body-eligible parameter exists.
+Verified the regression was NOT pre-existing by checking out `main` into a separate `git worktree`
+(safe — never use `git stash` when there's another agent's unstaged file in the tree, since stash
+touches the whole working directory indiscriminately).
+
+### Validation
+- `dotnet build src/OpenClawNet.Gateway` and `dotnet build src/OpenClawNet.Web` (after
+  `dotnet restore ... -r win-x64`, required per prior NETSDK1047 workaround) — both 0 errors.
+- `dotnet test tests/OpenClawNet.UnitTests --filter "FullyQualifiedName~AgentProfileEndpointTests|FullyQualifiedName~ModelProviderEndpointTests|FullyQualifiedName~Gateway"` — 216 passed, 1 pre-existing skip, 0 failed.
+
+### PR
+`fix/agent-profile-test-provider-overrides` → PR #237 (main), Fixes #236.
+
+
 ## 2026-08-17 — NuGet Upgrade Revision 2: ElBruno.Text2Image.Foundry 1.5.1 + source fix
 
 ### Context

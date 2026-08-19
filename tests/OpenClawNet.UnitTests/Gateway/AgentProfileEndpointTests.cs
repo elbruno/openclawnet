@@ -439,6 +439,188 @@ public sealed class AgentProfileEndpointTests
         }
     }
 
+    // ── Test-endpoint transient override regression tests (Issue #236) ────────
+
+    [Fact]
+    public async Task PostTest_WithProviderOverride_ResolvesOverriddenProviderDefinition()
+    {
+        // Issue #236: editing the Model Provider combo box without saving must actually
+        // change which provider is used for Test Agent. Two definitions with different
+        // models let us prove the override provider name — not the stored one — is
+        // resolved and forwarded to the agent provider.
+        var (app, capturer) = await CreateTestAppWithFullStoresAsync();
+        await using (app)
+        {
+            using var client = app.GetTestClient();
+
+            await client.PutAsJsonAsync("/api/model-providers/ollama-a", new
+            {
+                providerType = "ollama",
+                model = "model-a"
+            });
+            await client.PutAsJsonAsync("/api/model-providers/ollama-b", new
+            {
+                providerType = "ollama",
+                model = "model-b"
+            });
+            await client.PutAsJsonAsync("/api/agent-profiles/switch-agent", new
+            {
+                displayName = "Switch Agent",
+                provider = "ollama-a",
+                isDefault = false
+            });
+
+            await client.PostAsJsonAsync("/api/agent-profiles/switch-agent/test", new
+            {
+                provider = "ollama-b"
+            });
+        }
+
+        capturer.LastCapturedProfile.Should().NotBeNull("the agent provider must be called");
+        capturer.LastCapturedProfile!.Model.Should().Be("model-b",
+            "the overridden provider name must resolve 'ollama-b's definition, not the stored 'ollama-a'");
+    }
+
+    [Fact]
+    public async Task PostTest_WithOverrides_OverrideValuesNotPersistedOnFailure()
+    {
+        // On a failed test the override values must NOT be written to the stored profile;
+        // only test-result metadata (LastTestedAt, LastTestSucceeded) is persisted.
+        // CapturingAgentProvider always throws → exercises the failure path.
+        var (app, _) = await CreateTestAppWithFullStoresAsync();
+        await using (app)
+        {
+            using var client = app.GetTestClient();
+
+            await client.PutAsJsonAsync("/api/model-providers/ollama-a", new
+            {
+                providerType = "ollama",
+                model = "model-a"
+            });
+            await client.PutAsJsonAsync("/api/model-providers/ollama-b", new
+            {
+                providerType = "ollama",
+                model = "model-b"
+            });
+            await client.PutAsJsonAsync("/api/agent-profiles/persist-check-fail", new
+            {
+                displayName = "Persist Check Fail",
+                provider = "ollama-a",
+                instructions = "Original instructions.",
+                isDefault = false
+            });
+
+            await client.PostAsJsonAsync("/api/agent-profiles/persist-check-fail/test", new
+            {
+                provider = "ollama-b",
+                instructions = "Ephemeral test-only instructions."
+            });
+
+            var getResponse = await client.GetAsync("/api/agent-profiles/persist-check-fail");
+            var response = await getResponse.Content.ReadFromJsonAsync<AgentProfileResponse>(JsonOpts);
+
+            response!.Provider.Should().Be("ollama-a",
+                "override provider must NOT be persisted to the stored profile after a failed test");
+            response.Instructions.Should().Be("Original instructions.",
+                "override instructions must NOT be persisted to the stored profile after a failed test");
+            response.LastTestSucceeded.Should().BeFalse(
+                "test-result flag (LastTestSucceeded) must still be persisted on failure");
+            response.LastTestedAt.Should().NotBeNull(
+                "test-result timestamp (LastTestedAt) must still be persisted on failure");
+        }
+    }
+
+    [Fact]
+    public async Task PostTest_WithOverrides_OverrideValuesNotPersistedOnSuccess()
+    {
+        // On a successful test the override values must NOT be written to the stored profile;
+        // only test-result metadata is persisted. Uses SucceedingCapturingAgentProvider so the
+        // test endpoint reaches the success branch.
+        var (app, _) = await CreateTestAppWithSucceedingFullStoresAsync();
+        await using (app)
+        {
+            using var client = app.GetTestClient();
+
+            await client.PutAsJsonAsync("/api/model-providers/ollama-a", new
+            {
+                providerType = "ollama",
+                model = "model-a"
+            });
+            await client.PutAsJsonAsync("/api/model-providers/ollama-b", new
+            {
+                providerType = "ollama",
+                model = "model-b"
+            });
+            await client.PutAsJsonAsync("/api/agent-profiles/persist-check-success", new
+            {
+                displayName = "Persist Check Success",
+                provider = "ollama-a",
+                instructions = "Original instructions.",
+                isDefault = false
+            });
+
+            var testResponse = await client.PostAsJsonAsync("/api/agent-profiles/persist-check-success/test", new
+            {
+                provider = "ollama-b",
+                instructions = "Ephemeral test-only instructions."
+            });
+            var testBody = await testResponse.Content.ReadAsStringAsync();
+            var testResult = JsonSerializer.Deserialize<JsonElement>(testBody, JsonOpts);
+            testResult.GetProperty("success").GetBoolean().Should().BeTrue(
+                "SucceedingCapturingAgentProvider must produce success=true to exercise the success path");
+
+            var getResponse = await client.GetAsync("/api/agent-profiles/persist-check-success");
+            var response = await getResponse.Content.ReadFromJsonAsync<AgentProfileResponse>(JsonOpts);
+
+            response!.Provider.Should().Be("ollama-a",
+                "override provider must NOT be persisted to the stored profile after a successful test");
+            response.Instructions.Should().Be("Original instructions.",
+                "override instructions must NOT be persisted to the stored profile after a successful test");
+            response.LastTestSucceeded.Should().BeTrue(
+                "test-result flag (LastTestSucceeded=true) must be persisted on success");
+            response.LastTestedAt.Should().NotBeNull(
+                "test-result timestamp (LastTestedAt) must be persisted on success");
+        }
+    }
+
+    [Fact]
+    public async Task PostTest_NoBody_UsesStoredProviderAndModel_AndListViewUnaffected()
+    {
+        // When no override body is supplied, the stored profile's provider/model reach the
+        // agent provider unchanged, and the GET list endpoint still returns the profile.
+        var (app, capturer) = await CreateTestAppWithFullStoresAsync();
+        await using (app)
+        {
+            using var client = app.GetTestClient();
+
+            await client.PutAsJsonAsync("/api/model-providers/ollama-a", new
+            {
+                providerType = "ollama",
+                model = "model-a"
+            });
+            await client.PutAsJsonAsync("/api/agent-profiles/no-body-agent", new
+            {
+                displayName = "No Body Agent",
+                provider = "ollama-a",
+                isDefault = false
+            });
+
+            // No JSON body — overrides parameter is null in the endpoint handler
+            await client.PostAsync("/api/agent-profiles/no-body-agent/test", null);
+
+            capturer.LastCapturedProfile.Should().NotBeNull(
+                "the agent provider must still be called when no override body is supplied");
+            capturer.LastCapturedProfile!.Model.Should().Be("model-a",
+                "stored model must reach the provider when no overrides are provided");
+
+            var listResponse = await client.GetAsync("/api/agent-profiles");
+            listResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+            var profiles = await listResponse.Content.ReadFromJsonAsync<List<AgentProfileResponse>>(JsonOpts);
+            profiles!.Select(p => p.Name).Should().Contain("no-body-agent",
+                "GET list must include the profile after calling the test endpoint");
+        }
+    }
+
     [Fact]
     public async Task PostHostedAgentExport_ReturnsZipBundleWithSelectedProfiles()
     {
@@ -515,6 +697,9 @@ public sealed class AgentProfileEndpointTests
         builder.Services.AddDbContextFactory<OpenClawDbContext>(o =>
             o.UseInMemoryDatabase("test-" + Guid.NewGuid()));
         builder.Services.AddScoped<IAgentProfileStore, AgentProfileStore>();
+        // Registered app-wide in production (see Program.cs) and required for the /test
+        // endpoint's route metadata to resolve correctly even in tests that never call it.
+        builder.Services.AddScoped<IModelProviderDefinitionStore, ModelProviderDefinitionStore>();
         builder.Services.AddSingleton<IAgentSkillAssignmentService, NullAgentSkillAssignmentService>();
 
         var app = builder.Build();
@@ -552,6 +737,34 @@ public sealed class AgentProfileEndpointTests
     }
 
     /// <summary>
+    /// Creates a test app with both stores plus a <see cref="SucceedingCapturingAgentProvider"/>
+    /// so tests can exercise the success path of the test endpoint and verify that only
+    /// test-result metadata is persisted (not override values).
+    /// </summary>
+    private static async Task<(WebApplication app, SucceedingCapturingAgentProvider capturer)>
+        CreateTestAppWithSucceedingFullStoresAsync()
+    {
+        var builder = WebApplication.CreateBuilder(new WebApplicationOptions { Args = [] });
+        builder.WebHost.UseTestServer();
+
+        builder.Services.AddDbContextFactory<OpenClawDbContext>(o =>
+            o.UseInMemoryDatabase("test-apt-full-succ-" + Guid.NewGuid()));
+        builder.Services.AddScoped<IAgentProfileStore, AgentProfileStore>();
+        builder.Services.AddScoped<IModelProviderDefinitionStore, ModelProviderDefinitionStore>();
+
+        var capturer = new SucceedingCapturingAgentProvider("ollama");
+        builder.Services.AddSingleton<IAgentProvider>(capturer);
+        builder.Services.AddSingleton<IAgentSkillAssignmentService, NullAgentSkillAssignmentService>();
+
+        var app = builder.Build();
+        app.MapAgentProfileEndpoints();
+        app.MapHostedAgentExportEndpoints();
+        app.MapModelProviderEndpoints();
+        await app.StartAsync();
+        return (app, capturer);
+    }
+
+    /// <summary>
     /// Fake IAgentProvider that records the profile passed to CreateChatClient then throws,
     /// so tests can assert on model propagation without needing a real LLM.
     /// The throw is swallowed by the endpoint's catch-all (returns 200 success=false).
@@ -570,6 +783,48 @@ public sealed class AgentProfileEndpointTests
 
         public Task<bool> IsAvailableAsync(CancellationToken ct = default)
             => Task.FromResult(true);
+    }
+
+    /// <summary>
+    /// Fake IAgentProvider that captures the profile and returns an <see cref="AlwaysSucceedingChatClient"/>,
+    /// allowing tests to exercise the success path of the test endpoint without a real LLM.
+    /// </summary>
+    private sealed class SucceedingCapturingAgentProvider(string providerName) : IAgentProvider
+    {
+        public string ProviderName => providerName;
+        public AgentProfile? LastCapturedProfile { get; private set; }
+
+        public IChatClient CreateChatClient(AgentProfile profile)
+        {
+            LastCapturedProfile = profile;
+            return new AlwaysSucceedingChatClient();
+        }
+
+        public Task<bool> IsAvailableAsync(CancellationToken ct = default)
+            => Task.FromResult(true);
+    }
+
+    /// <summary>Stub IChatClient that always returns a trivial successful one-word response.</summary>
+    private sealed class AlwaysSucceedingChatClient : IChatClient
+    {
+        public ChatClientMetadata Metadata { get; } = new("stub", null);
+
+        public Task<Microsoft.Extensions.AI.ChatResponse> GetResponseAsync(
+            IEnumerable<Microsoft.Extensions.AI.ChatMessage> chatMessages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(new Microsoft.Extensions.AI.ChatResponse(
+                [new Microsoft.Extensions.AI.ChatMessage(ChatRole.Assistant, "ok")]));
+
+        public IAsyncEnumerable<ChatResponseUpdate> GetStreamingResponseAsync(
+            IEnumerable<Microsoft.Extensions.AI.ChatMessage> chatMessages,
+            ChatOptions? options = null,
+            CancellationToken cancellationToken = default)
+            => throw new NotSupportedException("Streaming not needed for test stubs.");
+
+        public object? GetService(Type serviceType, object? serviceKey = null) => null;
+
+        public void Dispose() { }
     }
 
     /// <summary>
