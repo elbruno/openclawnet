@@ -18,10 +18,13 @@ namespace OpenClawNet.IntegrationTests;
 /// </summary>
 /// <remarks>
 /// The round-trip <c>aiFunc.InvokeAsync</c> step from the PR-B plan is intentionally
-/// omitted: it relies on a CallTool through the in-memory transport which doesn't
-/// reliably resolve under the xUnit test host. ListTools is the more important guarantee
-/// (it proves tool discovery via the catalog), so the test focuses there and uses the
-/// timeout-guarded teardown introduced in PR-B for InProcessMcpHost.
+/// omitted here: this project is excluded from PR CI (Docker/Aspire), so it can't serve as
+/// CI-eligible coverage for the CallTool path anyway. ListTools is the guarantee this test
+/// focuses on (it proves tool discovery via the catalog), using the timeout-guarded teardown
+/// introduced in PR-B for InProcessMcpHost. As of SDK 2.1.0, the CallTool round-trip through
+/// the in-memory transport under the xUnit host is verified deterministic (20+ consecutive
+/// runs, no hangs) by the CI-eligible
+/// <c>OpenClawNet.UnitTests.Mcp.InProcessMcpCallToolRoundTripTests</c>.
 /// </remarks>
 public sealed class InProcessMcpHostE2ETests
 {

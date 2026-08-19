@@ -257,3 +257,32 @@ changes could be written back as if they were saved.
   must be checked wherever a user-supplied key value might arrive, not just in the UI.
 - Capture a single `DateTime.UtcNow` before try/catch so all failure branches share the
   same timestamp.
+
+## 2026-08-19 — PR #239 revision: CI-eligible CallToolAsync coverage (MCP SDK 2.1.0 upgrade)
+
+### Context
+Mark rejected PR #239 (ModelContextProtocol 1.3.0→2.1.0) because the production-critical
+`CallToolAsync` request/response path had no CI-eligible test: the existing in-memory
+`InProcessMcpHostE2ETests` only proves `ListToolsAsync`/discovery, and its own doc comment
+claimed CallTool "doesn't reliably resolve under the xUnit test host" — plus that whole project
+(`OpenClawNet.IntegrationTests`) is entirely excluded from PR CI (Docker/Aspire), so it
+wouldn't have counted as CI coverage even if it did test CallTool. The stdio Live CallTool
+test is also excluded (`Category=Live`).
+
+### Fix
+- Added `tests/OpenClawNet.UnitTests/Mcp/InProcessMcpCallToolRoundTripTests.cs` — a new,
+  non-Live test in the project PR CI already runs (`Category!=Live` filter). Spins up a real
+  `InProcessMcpHost` + real `WebMcpTools`/`WebTool` (stub `HttpMessageHandler`), calls
+  `ListToolsAsync` to resolve the `fetch` tool then `CallToolAsync` to invoke it, and asserts
+  on the actual returned `TextContentBlock` text — not just that invocation completed.
+- Empirically verified the old "doesn't reliably resolve" claim no longer holds under SDK
+  2.1.0: the test passed on first try and 20/20 consecutive repeat runs with no hangs/flakes —
+  no harness fix, retry, sleep, or suppression was needed.
+- `ListToolsAsync`/`CallToolAsync` return `ValueTask` in SDK 2.1.0 (were `Task`-returning
+  before) — use `.AsTask()` before `Task.WhenAny` hang-guards.
+- Updated the stale doc comment on the original `InProcessMcpHostE2ETests` test to point at
+  the new CI-eligible coverage instead of repeating the now-disproven claim.
+- Lesson: when a review flags "no CI coverage," always check whether the *project* the
+  existing test lives in is itself excluded from the CI job — filtering by trait only helps
+  if the project runs at all. Put new required-coverage tests in a project already in scope
+  rather than trying to un-exclude a heavier project.
