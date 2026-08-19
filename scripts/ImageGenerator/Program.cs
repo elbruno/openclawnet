@@ -104,12 +104,17 @@ string generatorLabel;
 Func<string, ElBruno.Text2Image.ImageGenerationOptions, string?, Task<ElBruno.Text2Image.ImageGenerationResult>> generateAsync;
 IDisposable generatorDisposable;
 
+// HttpClient is shared across all generation calls and disposed after the generator.
+// Creating it here (not inside the if/else) follows the recommended single-instance
+// pattern and avoids socket exhaustion on large batches.
+using var httpClient = new HttpClient();
+
 if (modelVariant == "mai")
 {
     var modelId = GetSetting("ModelId") ?? "MAI-Image-2";
     var modelName = GetSetting("ModelName") ?? "MAI-Image-2";
     generatorLabel = $"{modelName} ({modelId})";
-    var gen = new MaiImage2Generator(endpoint, apiKey, modelName, modelId);
+    var gen = new MaiImage2Generator(endpoint, apiKey, httpClient, modelName, modelId);
     generatorDisposable = gen;
     // MAI-Image-2 does not support img2img — reference images are silently ignored
     generateAsync = (prompt, opts, _) => gen.GenerateAsync(prompt, opts);
@@ -119,7 +124,7 @@ else
     var modelId = GetSetting("ModelId") ?? "FLUX.2-pro";
     var modelName = GetSetting("ModelName") ?? "FLUX.2 Pro";
     generatorLabel = $"{modelName} ({modelId})";
-    var gen = new Flux2Generator(endpoint, apiKey, modelName, modelId);
+    var gen = new Flux2Generator(endpoint, apiKey, httpClient, modelName, modelId);
     generatorDisposable = gen;
     generateAsync = (prompt, opts, refPath) =>
         refPath is not null

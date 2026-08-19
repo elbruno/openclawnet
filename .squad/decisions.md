@@ -74,3 +74,86 @@ The `"[vault-backed]"` string (`VaultReferenceSanitizer.RedactedReferenceDisplay
 RELEASE-GUIDANCE.md references `.github/workflows/release.yml` (does not exist on `main` today; actual file is `squad-release.yml` from PR #207, not yet merged). Docs will be ahead of `main` until PR #207 merges. Acceptable if merge ordering is coordinated.
 
 **Verdict:** APPROVED — no secrets, NuGet publishing correctly excluded, test blockers accurately documented, tag-gated release process correctly described.
+
+---
+
+## NuGet Package Upgrade — Held Packages (Architectural & Licensing Decisions)
+
+**Date:** 2026-08-17  
+**Author:** Irving (Backend Dev)  
+**Branch:** `chore/update-nuget-packages`  
+**Test Status:** 1,136 unit tests passing; 0 failures  
+**Approval:** Mark (Lead Architect) — final APPROVED with follow-up disclosure requirements
+
+### Scope: Stable Mutual Compatibility
+All direct dependencies at a stable newer version with the same major version were updated across all 35 csproj files. This PR bundles routine updates only; major version upgrades deferred for dedicated follow-up PRs.
+
+---
+
+## Hold Decision 1: ModelContextProtocol 1.3.0 → 2.1.0
+
+**Status: HELD FOR MAJOR MIGRATION PR**
+
+**Reason:** MCP 2.x is a major API rewrite affecting in-process hosting, server/client factory signatures, and transport layer. Affected projects: `OpenClawNet.Mcp.Core`, `OpenClawNet.Mcp.Browser`, `OpenClawNet.Mcp.Web`, `OpenClawNet.Mcp.Shell`, `OpenClawNet.Mcp.FileSystem`, `OpenClawNet.Gateway`, `OpenClawNet.UnitTests`.
+
+**Decision:** Defer to dedicated PR. Scope: This upgrade PR updates only same-major-version stable releases.
+
+---
+
+## Hold Decision 2: SixLabors.ImageSharp 3.1.12 → 4.0.0
+
+**Status: HELD FOR COMMERCIAL LICENSE DECISION**
+
+**Reason:** ImageSharp 4.0.0 changed from **MIT to commercial license**. Build fails unless `$(SixLaborsLicenseKey)`, `$(SixLaborsLicenseFile)`, or `sixlabors.lic` is provided. Affects: `OpenClawNet.Tools.ImageEdit`, `OpenClawNet.UnitTests`.
+
+**Decision:** Procurement/licensing decision required. Hold at 3.1.12 (MIT, actively maintained) or obtain Six Labors license for v4 before upgrade.
+
+---
+
+## Hold Decision 3: GitHub.Copilot.SDK 0.3.0 → 1.0.9
+
+**Status: HELD FOR MAJOR MIGRATION PR**
+
+**Reason:** Namespace restructuring removes `GitHub.Copilot.SDK` namespace; types `CopilotClient`, `CopilotSession`, `SessionConfig`, event types (`AssistantMessageEvent`, etc.), and utility methods (`PermissionHandler.ApproveAll`) move to new namespace(s). Namespace mapping required before code migration. Affects: Critical live dependency requiring validation against Copilot subscription, not just compilation.
+
+**Decision:** Defer to dedicated PR with Copilot subscription testing. Scope: This upgrade PR updates only same-major-version stable releases.
+
+---
+
+## Boundary: Azure.AI.OpenAI 2.9.0-beta.1 (Intentional Prerelease)
+
+**Status: PRESERVED**
+
+**Rationale:** Latest stable (2.1.0) is older than current 2.9.0-beta.1. Intentional beta preserve for access to unreleased features. No action required unless stable 2.x ≥ 2.9.0 is released.
+
+---
+
+## Resolved: ElBruno.Text2Image.Foundry 0.8.0 → 1.5.1 with HttpClient Fix
+
+**Status: MERGED INTO THIS PR**
+
+**What Changed:** Generators in 1.5.1 take injected `HttpClient` as parameter. Fixed in `scripts/ImageGenerator/Program.cs`: declared `using var httpClient = new HttpClient()` before generator-selection block; shared instance disposed after generator use. Zero product-behavior change; clean build with 0 warnings; smoke tests pass.
+
+---
+
+## Transitive Vulnerability Alert (Not Direct References)
+
+`MessagePack 2.5.198` and `Nerdbank.MessagePack 1.0.2` appear as transitive vulnerabilities (NU1902/NU1903 warnings) from `GitHub.Copilot.SDK`. Cannot update without upgrading parent package (which is held for major migration).
+
+---
+
+## Follow-Up Disclosure Requirements (Mark)
+
+Per Mark's final APPROVED review, the following issues must be opened post-merge for tracking:
+
+1. **ModelContextProtocol 2.1.0 Major Migration** — Namespace, API, and transport changes require dedicated PR.
+2. **GitHub.Copilot.SDK 1.0.9 Security & Namespace Migration** — Security priority + namespace restructuring require dedicated PR and Copilot subscription testing.
+3. **SixLabors.ImageSharp 4.0 Commercial License Decision** — Procurement decision on v4 license vs hold at v3.1.12 (MIT).
+
+---
+
+## Approval Summary
+
+**Final Review:** Mark (Lead Architect)  
+**Verdict:** ✅ **APPROVED**  
+**Condition:** Follow-up issues opened for three held packages (MCP 2.1, Copilot SDK 1.0.9, ImageSharp 4.0) and transitive vulnerability disclosure.
