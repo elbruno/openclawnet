@@ -1,5 +1,51 @@
 # Petey — Agent Platform Specialist History
 
+## 2026-08-19 — Issue #232: ModelContextProtocol 2.1.0 Upgrade
+
+### Problem
+OpenClawNet still had direct `ModelContextProtocol` package pins at `1.3.0` across MCP
+host/wrapper projects and unit tests, while MCP SDK v2 introduced major transport and
+negotiation changes beginning at `2.0.0` and carried forward into `2.1.0`.
+
+### Direct Package Upgrades
+Updated all direct references repo-wide from `1.3.0` → `2.1.0`:
+- `OpenClawNet.Mcp.Core`
+- `OpenClawNet.Mcp.Browser`
+- `OpenClawNet.Mcp.Shell`
+- `OpenClawNet.Mcp.FileSystem`
+- `OpenClawNet.Mcp.Web`
+- `OpenClawNet.UnitTests`
+
+Audit result: no additional direct references in out-of-solution `sessions/` projects.
+
+### API Migration Analysis (Authoritative Sources)
+- MCP C# SDK `v2.0.0` release notes: discovery-first negotiation, stateless-by-default HTTP,
+  Tasks extraction, and multiple breaking behaviors.
+- MCP C# SDK `v2.1.0` release notes: additive updates (subscriptions/listen, HTTP fallback fixes).
+- Versioning docs confirm stable non-obsolete 1.x APIs continue to work under v2 compatibility.
+
+### Code Migration Outcome
+No source-level API rewrites were required in OpenClawNet MCP host/wrapper code:
+- Existing usage of `McpServer`, `McpClient`, `StdioClientTransport`, `McpServerTool`,
+  and in-memory transport abstractions remains valid under `2.1.0`.
+- Build and test validation confirmed behavior preserved without compatibility hacks.
+
+### Validation
+- MCP projects build clean on `2.1.0`.
+- Issue-scoped consumers (`Mcp.Abstractions`, `Mcp.Core`, `Agent`, `Gateway`, `Channels`,
+  `Models.GitHubCopilot`) build clean.
+- MCP-focused unit tests: `Passed 49, Skipped 1, Failed 0`.
+- MCP-focused integration tests: `Passed 10, Failed 0`.
+- Full non-live unit suite: `Passed 1151, Skipped 46, Failed 0`.
+- Azure tests: `Passed 12, Failed 0`.
+- ImageGenerator build/list/dry-run smoke checks passed.
+
+### Security / Vulnerability Outcome
+`dotnet list package --vulnerable --include-transitive` reported no vulnerable packages
+across all MCP-upgraded projects and issue-scoped consumers.
+
+---
+
 ## 2026-08-19 — Issue #233: GitHub.Copilot.SDK 1.0.9 Security Upgrade
 
 ### Problem
