@@ -1,3 +1,6 @@
+using System.Net;
+using System.Text;
+using System.Text.Json;
 using FluentAssertions;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
@@ -6,6 +9,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using OpenClawNet.Gateway.Services;
 using OpenClawNet.Models.Abstractions;
+using OpenClawNet.Models.Foundry;
 using OpenClawNet.Models.Ollama;
 
 namespace OpenClawNet.UnitTests.Gateway;
@@ -67,6 +71,22 @@ public sealed class RuntimeModelClientTests : IDisposable
         using var client = new RuntimeModelClient(settings, _httpClientFactory, _loggerFactory);
 
         client.ProviderName.Should().Be("azure-openai");
+    }
+
+    [Fact]
+    public void GetOrCreate_ReturnsFoundryClient_WhenProviderIsFoundry()
+    {
+        var settings = CreateSettings(new Dictionary<string, string?>
+        {
+            ["Model:Provider"] = "foundry",
+            ["Model:Endpoint"] = "https://foundry.example/api/projects/test-project",
+            ["Model:ApiKey"] = "test-key",
+            ["Model:Model"] = "Phi-4"
+        });
+
+        using var client = new RuntimeModelClient(settings, _httpClientFactory, _loggerFactory);
+
+        client.ProviderName.Should().Be("foundry");
     }
 
     [Fact]
@@ -150,7 +170,125 @@ public sealed class RuntimeModelClientTests : IDisposable
             .WithMessage("*API key*");
     }
 
+    [Fact]
+    public async Task CompleteAsync_ForFoundry_UsesResolvedEndpointApiKeyAndModel()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        string? capturedBody = null;
+        var factory = CreateHttpClientFactory(async request =>
+        {
+            capturedRequest = request;
+            capturedBody = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    """{"model":"Phi-4","choices":[{"message":{"role":"assistant","content":"Hello"},"finish_reason":"stop"}]}""",
+                    Encoding.UTF8,
+                    "application/json")
+            };
+        });
+        var settings = CreateSettings(new Dictionary<string, string?>
+        {
+            ["Model:Provider"] = "foundry",
+            ["Model:Endpoint"] = "https://foundry.example/api/projects/profile-project",
+            ["Model:ApiKey"] = "profile-api-key",
+            ["Model:Model"] = "Phi-4"
+        });
+
+        using var client = new RuntimeModelClient(settings, factory, _loggerFactory);
+        await client.CompleteAsync(CreateChatRequest());
+
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.AbsoluteUri.Should().Be(
+            "https://foundry.example/api/projects/profile-project/chat/completions");
+        capturedRequest.Headers.GetValues("api-key").Should().ContainSingle("profile-api-key");
+        JsonDocument.Parse(capturedBody!).RootElement.GetProperty("model").GetString().Should().Be("Phi-4");
+        capturedRequest.RequestUri.Port.Should().Be(443, "Foundry must never fall back to Ollama localhost");
+    }
+
+    [Fact]
+    public async Task StreamAsync_ForFoundry_UsesResolvedEndpointApiKeyAndModel()
+    {
+        HttpRequestMessage? capturedRequest = null;
+        string? capturedBody = null;
+        var factory = CreateHttpClientFactory(async request =>
+        {
+            capturedRequest = request;
+            capturedBody = await request.Content!.ReadAsStringAsync();
+            return new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new StringContent(
+                    "data: {\"choices\":[{\"delta\":{\"content\":\"Hello\"},\"finish_reason\":null}]}\n\ndata: [DONE]\n\n",
+                    Encoding.UTF8,
+                    "text/event-stream")
+            };
+        });
+        var settings = CreateSettings(new Dictionary<string, string?>
+        {
+            ["Model:Provider"] = "foundry",
+            ["Model:Endpoint"] = "https://foundry.example/api/projects/profile-project",
+            ["Model:ApiKey"] = "profile-api-key",
+            ["Model:Model"] = "Phi-4"
+        });
+
+        using var client = new RuntimeModelClient(settings, factory, _loggerFactory);
+        var chunks = new List<ChatResponseChunk>();
+        await foreach (var chunk in client.StreamAsync(CreateChatRequest()))
+            chunks.Add(chunk);
+
+        chunks.Should().ContainSingle().Which.Content.Should().Be("Hello");
+        capturedRequest.Should().NotBeNull();
+        capturedRequest!.RequestUri!.AbsoluteUri.Should().Be(
+            "https://foundry.example/api/projects/profile-project/chat/completions");
+        capturedRequest.Headers.GetValues("api-key").Should().ContainSingle("profile-api-key");
+        using var payload = JsonDocument.Parse(capturedBody!);
+        payload.RootElement.GetProperty("model").GetString().Should().Be("Phi-4");
+        payload.RootElement.GetProperty("stream").GetBoolean().Should().BeTrue();
+        capturedRequest.RequestUri.Port.Should().Be(443, "Foundry must never fall back to Ollama localhost");
+    }
+
+    [Fact]
+    public async Task CompleteAsync_ForFoundryWithoutEndpoint_DoesNotSendToOllamaDefault()
+    {
+        var requestCount = 0;
+        var factory = CreateHttpClientFactory(request =>
+        {
+            requestCount++;
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK));
+        });
+        var settings = CreateSettings(new Dictionary<string, string?>
+        {
+            ["Model:Provider"] = "foundry",
+            ["Model:ApiKey"] = "profile-api-key",
+            ["Model:Model"] = "Phi-4"
+        });
+
+        using var client = new RuntimeModelClient(settings, factory, _loggerFactory);
+        var act = () => client.CompleteAsync(CreateChatRequest());
+
+        await act.Should().ThrowAsync<InvalidOperationException>()
+            .WithMessage("*Foundry is not configured*");
+        requestCount.Should().Be(0, "an unconfigured Foundry provider must not contact localhost:11434");
+    }
+
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    private static ChatRequest CreateChatRequest() => new()
+    {
+        Messages =
+        [
+            new ChatMessage { Role = ChatMessageRole.User, Content = "Hi" }
+        ]
+    };
+
+    private static IHttpClientFactory CreateHttpClientFactory(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler)
+    {
+        var factory = new Mock<IHttpClientFactory>();
+        factory.Setup(f => f.CreateClient(It.IsAny<string>()))
+            .Returns(() => new HttpClient(new TestHttpMessageHandler(handler)));
+        return factory.Object;
+    }
 
     private RuntimeModelSettings CreateSettings(Dictionary<string, string?> values)
     {
@@ -161,5 +299,13 @@ public sealed class RuntimeModelClientTests : IDisposable
         var mockEnv = new Mock<IHostEnvironment>();
         mockEnv.Setup(e => e.ContentRootPath).Returns(_tempDir);
         return new RuntimeModelSettings(config, mockEnv.Object, NullLogger<RuntimeModelSettings>.Instance);
+    }
+
+    private sealed class TestHttpMessageHandler(
+        Func<HttpRequestMessage, Task<HttpResponseMessage>> handler) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request,
+            CancellationToken cancellationToken) => handler(request);
     }
 }

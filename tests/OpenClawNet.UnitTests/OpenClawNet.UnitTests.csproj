@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <IsPackable>false</IsPackable>
+    <RuntimeIdentifiers>$(NETCoreSdkRuntimeIdentifier)</RuntimeIdentifiers>
     <DefineConstants>$(DefineConstants);K1B_LANDED</DefineConstants>
     <!-- Copy all package DLLs to output to fix transitive dependency resolution -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
