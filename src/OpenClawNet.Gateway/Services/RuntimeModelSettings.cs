@@ -8,13 +8,13 @@ namespace OpenClawNet.Gateway.Services;
 /// </summary>
 public sealed class ModelProviderConfig
 {
-    /// <summary>Active provider: "ollama" | "azure-openai" | "foundry-local"</summary>
+    /// <summary>Active provider: "ollama" | "azure-openai" | "foundry" | "foundry-local"</summary>
     public string Provider { get; set; } = "ollama";
 
     /// <summary>Model name or deployment name (provider-specific default when null/empty).</summary>
     public string? Model { get; set; }
 
-    /// <summary>Endpoint URL — required for Ollama and Azure OpenAI.</summary>
+    /// <summary>Endpoint URL — required for Ollama, Azure OpenAI, and Foundry.</summary>
     public string? Endpoint { get; set; }
 
     // Azure OpenAI specific

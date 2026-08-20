@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Models.AzureOpenAI;
+using OpenClawNet.Models.Foundry;
 using OpenClawNet.Models.FoundryLocal;
 using OpenClawNet.Models.Ollama;
 
@@ -26,7 +27,7 @@ internal sealed class RuntimeModelClient : IModelClient, IDisposable
 
     private IModelClient? _client;
     private string _clientKey = string.Empty;
-    private HttpClient? _ownedHttp; // owned when Ollama is active
+    private HttpClient? _ownedHttp;
     private readonly Lock _lock = new();
 
     public RuntimeModelClient(
@@ -244,7 +245,7 @@ internal sealed class RuntimeModelClient : IModelClient, IDisposable
             "foundry-local"  => CreateFoundryLocal(cfg),
             "github-copilot" => throw new ModelProviderUnavailableException("github-copilot",
                 "GitHub Copilot must be used via the Agent Provider path. Configure a different default provider."),
-            "foundry"   => CreateOllama(cfg, isPrimary), // Foundry uses OpenAI-compatible API
+            "foundry"   => CreateFoundry(cfg, isPrimary),
             "lm-studio" => CreateOllama(cfg, isPrimary), // LM Studio uses OpenAI-compatible API
             "ollama"    => CreateOllama(cfg, isPrimary),
             _           => CreateOllama(cfg, isPrimary)
@@ -290,6 +291,26 @@ internal sealed class RuntimeModelClient : IModelClient, IDisposable
         return new AzureOpenAIModelClient(
             opts,
             _loggerFactory.CreateLogger<AzureOpenAIModelClient>());
+    }
+
+    private IModelClient CreateFoundry(ModelProviderConfig cfg, bool isPrimary)
+    {
+        var http = _httpClientFactory.CreateClient();
+
+        if (isPrimary)
+            _ownedHttp = http;
+
+        var opts = Options.Create(new FoundryOptions
+        {
+            Endpoint = cfg.Endpoint ?? string.Empty,
+            ApiKey = cfg.ApiKey ?? string.Empty,
+            Model = cfg.Model ?? string.Empty,
+        });
+
+        return new FoundryModelClient(
+            http,
+            opts,
+            _loggerFactory.CreateLogger<FoundryModelClient>());
     }
 
     private IModelClient CreateFoundryLocal(ModelProviderConfig cfg)
