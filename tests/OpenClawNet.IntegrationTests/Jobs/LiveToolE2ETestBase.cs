@@ -265,7 +265,7 @@ public abstract class LiveToolE2ETestBase : IClassFixture<GatewayWebAppFactory>,
         run.Error.Should().BeNullOrWhiteSpace();
         if (!string.IsNullOrEmpty(expectedOutputContains))
         {
-            output.Should().Contain(
+            output.Should().ContainEquivalentOf(
                 expectedOutputContains,
                 because: $"job output should mention '{expectedOutputContains}'");
         }

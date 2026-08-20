@@ -13,13 +13,16 @@ namespace OpenClawNet.IntegrationTests.Skills;
 /// </summary>
 public class SkillInjectionIntegrationTests
 {
-    [Fact]
+    [SkippableFact]
     public async Task FullPipeline_LoadsRealInventory_InjectsRelevantSkills()
     {
         // Test 8: Full pipeline with real SKILLS_INVENTORY.md
         // Arrange
         var workspacePath = FindWorkspaceRoot();
         workspacePath.Should().NotBeNull("workspace root should be found");
+        Skip.IfNot(
+            File.Exists(Path.Combine(workspacePath!, ".squad", "SKILLS_INVENTORY.md")),
+            "SKILLS_INVENTORY.md is not available in this checkout.");
 
         var skillService = new DefaultSkillService(
             NullLogger<DefaultSkillService>.Instance,
