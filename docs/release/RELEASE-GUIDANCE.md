@@ -1,254 +1,120 @@
 # Release Guidance
 
-**Last Updated:** 2026-08-15  
-**Current Stable:** feat/harness-phase2 (PR #213 — LoopAgent non-streaming integration)  
-**API Status:** Stable (IAgentOrchestrator, streaming, tools, skills)
+**Last Updated:** 2026-08-20
 
-## Scope
+**Release Target:** v1.0.0 from current `main`
 
-### ✅ In Scope
-- **Source code:** Maintained on GitHub at https://github.com/elbruno/openclawnet
-- **GitHub Releases:** Tag-gated (git tag → GitHub Release created automatically via workflow)
-- **Package versions:** Pinned in `Directory.Build.props` and per-project `.csproj` files
-  - **Microsoft.Agents.AI:** 1.17.0 (required — Phase 2 uses `LoopAgent`, `DelegateLoopEvaluator`)
-  - **Microsoft.Agents.Core:** 1.5.181 (unchanged; MAF 1.17 does not depend on Agents.Core)
-  - **Aspire.Hosting.Testing:** 13.4.6 (for AspireHostFixture integration)
-  - **.NET:** 10.0+
-- **Testing:** Unit, Integration, Playwright E2E with environment-dependent blockers documented
-- **Documentation:** Public README, setup guides, architecture docs, manuals, demos
+**Release Type:** First release; source-only GitHub Release
 
-### ❌ Out of Scope
-- **NuGet Publishing:** OpenClaw packages are **NOT** published to nuget.org. This is a sample/reference platform for learning Aspire + AI Agents + .NET 10. Users should clone and build locally or fork for their own scenarios.
-- **Internal Package Feeds:** No private feed integration.
-- **Pre-release Channels:** No alpha/beta NuGet feeds.
+## Release Scope
 
----
+OpenClawNet v1.0.0 is a source release for people who want to clone, build, learn from, or fork the repository.
 
-## GitHub Release Process (Tag-Gated)
+### Included
 
-### Trigger
-Create an annotated git tag on `main`:
+- The commit tagged `v1.0.0` on `main`
+- A GitHub Release created through the `.github/workflows/release.yml` tag gate
+- GitHub's automatically generated source-code `.zip` and `.tar.gz` archives
 
-```bash
-git tag -a v1.0.0 -m "Release: v1.0.0 - Initial stable release"
+### Not Included
+
+- NuGet publishing to NuGet.org or a private feed
+- `.nupkg` files, compiled binaries, installers, containers, or other uploaded release assets
+- Deployment to Azure or another environment
+- A prerelease channel
+
+The test-result artifact uploaded by PR CI is a temporary CI diagnostic and is not a v1.0.0 release asset.
+
+## Required Tag Gate
+
+The release must be created by `.github/workflows/release.yml` from a pushed semantic-version tag. Because the workflow must exist in the tagged commit to receive the tag event, verify that this file is committed on the exact `main` commit before tagging. Do not create the release manually as a substitute for the gate.
+
+The workflow accepts tags matching `v*.*.*`, then validates the exact `vMAJOR.MINOR.PATCH` form. On `windows-latest` it restores for `win-x64`, builds and runs the offline unit and mocked Azure unit test projects, and only then runs `gh release create <tag> --generate-notes`. It contains no package-publish, asset-upload, or deployment step.
+
+This is the first release, so release notes must not claim a comparison with an earlier OpenClawNet release. GitHub may generate notes from merged work included in the tagged commit.
+
+## Exact v1.0.0 Tag Process
+
+Run these commands only after the release workflow and all intended release changes are merged:
+
+```powershell
+git switch main
+git pull --ff-only origin main
+git fetch origin --tags --prune
+git branch --show-current
+git status --short
+Test-Path .github\workflows\release.yml
+git tag --list v1.0.0
+git tag -a v1.0.0 -m "OpenClawNet v1.0.0"
+git show --no-patch --decorate v1.0.0
 git push origin v1.0.0
 ```
 
-### Workflow
-`.github/workflows/release.yml` is configured to:
-1. Listen for `push` events on tags matching `v*.*.*`
-2. Extract version from tag name
-3. Generate release notes from commit history since previous tag
-4. Create GitHub Release with:
-   - Release title: "Release: v1.0.0"
-   - Release body: Auto-generated changelog
-   - Asset: None (source-only release)
+Before the push:
 
-### Outcome
-- GitHub Release created at https://github.com/elbruno/openclawnet/releases/tag/v1.0.0
-- No NuGet package published
-- No automatic deployment triggered
+1. `git branch --show-current` must print `main`.
+2. `git status --short` must be empty.
+3. `Test-Path` must return `True`, and the workflow must be committed rather than an untracked local file.
+4. `git tag --list v1.0.0` must print nothing after fetching remote tags.
+5. `git show` must identify the intended current `main` commit.
 
----
+The tag push is the release action. Do not move or reuse `v1.0.0` after publication. Confirm that the workflow completed and that the GitHub Release contains no uploaded assets beyond GitHub's source archives.
 
-## Package Versions (Current)
+## PR CI Validation Scope
 
-### Core Runtime
-| Package | Version | Scope | Notes |
-|---------|---------|-------|-------|
-| `Microsoft.Agents.AI` | 1.17.0 | Agent Framework | Harness available; no full migration yet |
-| `Microsoft.Agents.Core` | 1.7.129 | AI Models | Stable |
-| `Microsoft.Extensions.AI` | 10.8.3 | Model abstraction | Stable |
+`.github/workflows/pr-ci.yml` is the actual pull-request gate. It runs for opened, synchronized, or reopened pull requests targeting `main`, `dev`, `preview`, or `insider`.
 
-### .NET & Framework
-| Package | Version | Scope | Notes |
-|---------|---------|-------|-------|
-| **.NET SDK** | 10.0+ | Runtime | Required |
-| `Aspire.Hosting.Testing` | 13.4.6 | Test orchestration | AspireHostFixture integration |
-| `Microsoft.AspNetCore.Mvc.Testing` | 10.0.10 | Web testing | Stable |
+The single `windows-latest` job:
 
-### Testing
-| Package | Version | Scope | Notes |
-|---------|---------|-------|-------|
-| `xunit` | 2.9.3 | Test framework | Stable |
-| `Xunit.SkippableFact` | 1.5.61 | Conditional tests | Used for environment-dependent blockers |
-| `Microsoft.Playwright` | 1.61.0 | E2E browser | Requires Playwright browsers |
-| `WireMock.Net` | 2.13.0 | HTTP mocking | Tool test isolation |
+1. Restores `OpenClawNet.slnx` for `win-x64`.
+2. Builds `OpenClawNet.UnitTests` and `OpenClawNet.UnitTests.Azure` in Release mode.
+3. Runs `OpenClawNet.UnitTests` with `Category!=Live`.
+4. Runs `OpenClawNet.UnitTests.Azure`, whose Azure clients are mocked for offline execution.
+5. Uploads the resulting TRX files for diagnostics.
 
-### Domain
-| Package | Version | Scope | Notes |
-|---------|---------|-------|-------|
-| `OllamaSharp` | 5.4.30 | Local LLM client | Ollama provider |
-| `Aspire.Hosting` | 13.4.6 | Orchestration | AppHost & container management |
+PR CI does **not** run the Integration, E2E, Playwright, or Deployment projects. It also excludes live tests from the primary unit-test project. The workflow is Windows-only; it is not a Windows/macOS/Linux matrix.
 
-See `Directory.Build.props` and individual `.csproj` files for the complete dependency tree.
+Passing PR CI therefore means the supported offline Windows unit-test gate passed. It does not prove that every environment-dependent suite passed.
 
----
+## Environment-Dependent Validation Blockers
 
-## Harness & AspireHostFixture Terminology
+The excluded suites require resources that are not consistently available on PR runners or developer machines:
 
-### `AspireHostFixture` (Current)
-The primary test fixture for integration testing in OpenClaw:
+| Requirement or blocker | Affected validation |
+|---|---|
+| Docker and a working Aspire AppHost | Integration and container-orchestration tests |
+| A running application stack | E2E and Playwright scenarios |
+| Installed Playwright browser/runtime prerequisites | Browser tests; Windows runs may also encounter the tracked `node.exe` access-denied startup blocker |
+| Azure/OpenAI configuration, credentials, and reachable resources | Live Azure AI and cloud-infrastructure tests |
+| GitHub Copilot authentication and an eligible subscription | Live Copilot provider tests |
+| A running Ollama service and required local model | Live local-model tests |
+| Cloud deployment infrastructure | Deployment tests |
+| Teams, Slack, or other external-service credentials where a scenario uses them | External delivery E2E tests |
+| Available local ports and sufficient startup time | Aspire and browser-driven tests |
 
-```csharp
-// Usage pattern (Aspire.Hosting.Testing)
-public class ChatTests : IAsyncLifetime
-{
-    private AspireHostFixture _fixture;
+Some tests self-skip when prerequisites are absent, but not every environment failure can be treated as a successful validation. Record passed, skipped, and failed results separately, and do not describe an excluded or skipped suite as passing.
 
-    public async Task InitializeAsync()
-    {
-        _fixture = await AspireHostFixture.BuildAsync();
-        // _fixture.AppHost is initialized and running
-    }
+No full environment-dependent test result is asserted by this document. For setup details, see `docs/architecture/TEST-ENVIRONMENT.md`, while treating `.github/workflows/pr-ci.yml` and the current test code as authoritative when older prose differs.
 
-    public async Task DisposeAsync()
-    {
-        await _fixture.DisposeAsync();
-    }
+## Dependency and Licensing Notes
 
-    [Fact]
-    public async Task ChatEndpoint_ReturnsOk()
-    {
-        var client = _fixture.CreateHttpClient("gateway");
-        var response = await client.PostAsync("/api/chat", ...);
-        Assert.NotNull(response);
-    }
-}
-```
+Package versions are declared in the individual `.csproj` files; `Directory.Build.props` contains shared project metadata rather than a centralized package-version catalog. Avoid copying a broad version table into release notes because it becomes stale.
 
-**Location:** `tests/OpenClawNet.IntegrationTests/`  
-**Status:** ✅ Active, stable  
-**Microsoft.Agents.AI Integration:** Framework available in 1.17.0; gradual adoption as Harness patterns solidify.
+The release-specific licensing decision is:
 
-### "Harness" (Microsoft.Agents.AI)
-The **Harness** is the newer agent execution abstraction in `Microsoft.Agents.AI 1.17.0+`. It provides:
-- Unified tool invocation pipeline
-- Built-in approval flow
-- Streaming event model
-- Multi-turn orchestration
+- `SixLabors.ImageSharp` stays at **3.1.12**, which is used under the MIT license.
+- Do not upgrade to ImageSharp 4.x as part of v1.0.0. That major version requires a separate commercial-license/procurement decision and corresponding validation.
 
-**Status:** 🟡 Available but **NOT fully migrated**. Current implementation uses `ChatClientAgent` + `IAIContextProvider` pattern. Harness adoption is planned for future phases.
+Other dependency versions should be read from the project files at the tagged commit.
 
-**Why No Migration Yet:**
-- Existing `DefaultAgentRuntime` + `ModelClientChatClientAdapter` pattern is stable and battle-tested
-- Harness migration requires careful refactoring of streaming, tool approval, and skill injection
-- Will target next major release or sprint
+## Release Checklist
 
----
-
-## Preserved Behaviors
-
-### HTTP Approval Flow
-✅ **Tool approval via HTTP** is preserved:
-- When tool requires approval, agent pauses and returns `{ "type": "tool_approval_required", "toolName": "..." }`
-- Client displays approval UI (optional)
-- Client POSTs approval decision back to endpoint
-- Execution resumes
-
-**Files:** `src/OpenClawNet.Gateway/Endpoints/ToolApprovalEndpoints.cs`
-
-### Streaming (NDJSON)
-✅ **HTTP NDJSON streaming** is preserved:
-- Each token, tool start/end, and completion is a separate JSON line
-- Browser receives tokens in real-time with low latency
-- Blazor Chat.razor processes events as they arrive
-- No framing overhead
-
-**Files:** `src/OpenClawNet.Gateway/Endpoints/ChatStreamEndpoints.cs`
-
-### Persistence (SQLite + Storage)
-✅ **Conversation & session persistence** is preserved:
-- All messages stored in SQLite (default) or Azure SQL (cloud)
-- Session history is queryable and resumable
-- Skills, tools, and preferences are persistent
-
-**Files:** `src/OpenClawNet.Storage/`, `src/OpenClawNet.Storage.Azure/`
-
----
-
-## Known Environment-Dependent Test Blockers
-
-Tests tagged with `[SkippableFact]` or conditional logic (using `Xunit.SkippableFact`) are skipped if environment requirements are not met:
-
-| Blocker | Impact | Trigger | Mitigation |
-|---------|--------|---------|-----------|
-| **Ollama not running** | Local model tests | Missing `ollama serve` | `docker run ollama/ollama serve` or `ollama serve` in terminal |
-| **Docker not available** | Aspire container tests | No Docker Desktop | Install Docker Desktop; for Linux, ensure Docker daemon is running |
-| **Playwright browsers missing** | E2E browser tests | First-run Playwright | `pwsh -Command { & "$env:USERPROFILE\.playwright\install.ps1" }` or `playwright install` |
-| **Azure subscription missing** | Azure provider tests | No credentials | Skipped by default; requires `AZURE_SUBSCRIPTION_ID` + `AZURE_CLIENT_ID` + `AZURE_CLIENT_SECRET` + `AZURE_TENANT_ID` |
-| **GitHub Copilot auth missing** | GitHub Copilot provider tests | No GitHub token | Skipped by default; requires `GITHUB_TOKEN` with Copilot scope |
-| **Port conflicts (5010, 5011, etc.)** | Aspire AppHost binding | Process already listening | Check `netstat -ano -p tcp` (Windows) or `lsof -i :5010` (Unix) |
-| **Playwright timing flake** | Browser automation race | Environment slowness | Increased timeout thresholds in `xunit.runner.json` |
-
-### How Tests Handle Blockers
-
-```csharp
-// Example: Ollama-dependent test
-[SkippableFact]
-public async Task OllamaProvider_WithLocalModel_Responds()
-{
-    Skip.IfNot(Environment.GetEnvironmentVariable("OLLAMA_AVAILABLE") == "true", 
-               "Ollama service not available");
-    
-    // Test code...
-}
-```
-
-**Configuration:** `tests/OpenClawNet.IntegrationTests/xunit.runner.json` controls skip messages and retry logic.
-
----
-
-## Testing & Validation
-
-### Local Build & Test
-```bash
-# Prerequisites: .NET 10 SDK, Docker Desktop, Ollama
-dotnet build OpenClawNet.slnx
-dotnet test tests/OpenClawNet.IntegrationTests --no-build
-
-# With Playwright E2E
-dotnet test tests/OpenClawNet.PlaywrightTests --no-build
-
-# All tests
-dotnet test --no-build
-```
-
-### CI/CD
-- **GitHub Actions:** Runs on every push and PR to `main`
-- **Test matrix:** Windows, macOS, Linux (if configured)
-- **Skips:** Azure and GitHub Copilot tests in CI (credentials not available)
-
----
-
-## Documentation & Migration
-
-### Public Docs (No Breaking Changes)
-- `README.md` — Updated with release link and version badge
-- `SETUP.md` — Points to prerequisites, installation, and first chat
-- `docs/architecture/agent-runtime.md` — Current architecture (default runtime + AspireHostFixture)
-- `docs/manuals/` — Step-by-step guides remain stable
-
-### Harness Adoption (Future)
-- When migration begins, a new `docs/migration/HARNESS-MIGRATION.md` will be created
-- Will document:
-  - Phased approach
-  - API changes (if any)
-  - Testing strategy
-  - Rollback plan
-
----
-
-## Support & Questions
-
-- **Issues:** https://github.com/elbruno/openclawnet/issues
-- **Discussions:** https://github.com/elbruno/openclawnet/discussions
-- **Discord:** [Microsoft Foundry Community](https://aka.ms/ai-discord/dotnet) (.NET channel)
-
----
-
-## Version History
-
-| Release | Date | Notes |
-|---------|------|-------|
-| v1.0.0 | 2026-08 | Stable; tag-based release; NuGet out of scope; Harness available but not migrated |
+- [ ] Release workflow exists at `.github/workflows/release.yml` on current `main`
+- [ ] Intended release commit is current, reviewed `main`, not the stale `feat/harness-phase2` branch
+- [ ] PR CI passed for the release changes
+- [ ] Environment-dependent results are reported honestly as passed, skipped, failed, or not run
+- [ ] ImageSharp remains at 3.1.12 under the MIT decision
+- [ ] Annotated `v1.0.0` tag points to the intended commit
+- [ ] Tag is pushed once to trigger the release workflow
+- [ ] GitHub Release is the first release and is not marked as a prerelease
+- [ ] No NuGet publication or uploaded release assets were produced

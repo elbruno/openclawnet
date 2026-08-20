@@ -87,16 +87,15 @@ See the **What's Where** section in [SETUP.md](./SETUP.md#11-whats-where) for a 
 
 ## 📦 Versioning & Release
 
-**⚠️ Important:** OpenClaw .NET packages are **not published to NuGet.org**. This is a reference platform for learning Aspire + AI agents + .NET 10.
+OpenClaw .NET v1.0.0 is intended to be the project's **first, source-only GitHub release**, cut from the current `main` branch.
 
-- **Source:** Clone locally or fork for your own projects
-- **Releases:** Tag-based on GitHub (git tag → GitHub Release workflow)
-- **Package References:** All dependencies pinned in `Directory.Build.props`
-  - Microsoft.Agents.AI 1.17.0 (Harness available; gradual adoption planned)
-  - Aspire.Hosting.Testing 13.4.6 (AspireHostFixture integration)
-  - .NET 10.0+
+- OpenClawNet projects are **not published to NuGet.org**.
+- The `v1.0.0` tag is the release gate for `.github/workflows/release.yml`; do not create or push the tag until that workflow is present on the exact `main` commit being released.
+- The release contains no uploaded binaries or packages. GitHub's automatically generated source `.zip` and `.tar.gz` archives are the only downloads.
+- Package versions are defined in the individual project files. `SixLabors.ImageSharp` remains at **3.1.12 (MIT)** because 4.x requires a commercial-license decision.
+- PR CI validates the offline Windows `win-x64` unit and mocked Azure unit test projects. Integration, E2E, Playwright, deployment, and live-service tests remain environment-dependent and are not part of the PR gate.
 
-For detailed release process, environment-dependent test blockers, and Harness adoption timeline, see [**Release Guidance**](./docs/release/RELEASE-GUIDANCE.md).
+See [**Release Guidance**](./docs/release/RELEASE-GUIDANCE.md) for the exact tag process, CI scope, and validation blockers.
 
 ---
 
