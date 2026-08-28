@@ -82,6 +82,15 @@ public sealed class DefaultPromptComposer : IPromptComposer
             systemContent += $"\n\n# User Profile\n{bootstrap.UserMd}";
         }
 
+        // 4.5. Inject Agent Profile instructions (profile-specific persona/behaviour override).
+        // Placed after stable workspace configuration and before session-specific context so
+        // profile settings take precedence over workspace defaults while remaining overridable
+        // by session state. Contents are never logged.
+        if (!string.IsNullOrWhiteSpace(context.ProfileInstructions))
+        {
+            systemContent += $"\n\n# Agent Instructions\n{context.ProfileInstructions}";
+        }
+
         // 5. Add session summary if available
         if (!string.IsNullOrEmpty(context.SessionSummary))
         {

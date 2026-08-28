@@ -321,6 +321,165 @@ public class PromptComposerTests
             "rest of prompt should be intact");
     }
 
+    // ── Agent Profile Instructions ────────────────────────────────────────────
+
+    [Fact]
+    public async Task ComposeAsync_IncludesProfileInstructions_InSystemMessage()
+    {
+        var composer = new DefaultPromptComposer(
+            NoOpWorkspaceLoader,
+            NoOpSkillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Ahoy",
+            ProfileInstructions = "You are a pirate. Always speak like a pirate."
+        };
+
+        var messages = await composer.ComposeAsync(context);
+
+        messages[0].Role.Should().Be(ChatMessageRole.System);
+        messages[0].Content.Should().Contain("# Agent Instructions",
+            "the Agent Instructions section header must be present when ProfileInstructions is set");
+        messages[0].Content.Should().Contain("You are a pirate.",
+            "the profile instruction text must appear in the system message");
+    }
+
+    [Fact]
+    public async Task ComposeAsync_NullProfileInstructions_OmitsAgentInstructionsSection()
+    {
+        var composer = new DefaultPromptComposer(
+            NoOpWorkspaceLoader,
+            NoOpSkillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Hello",
+            ProfileInstructions = null
+        };
+
+        var messages = await composer.ComposeAsync(context);
+
+        messages[0].Content.Should().NotContain("# Agent Instructions",
+            "Agent Instructions section must be absent when ProfileInstructions is null");
+    }
+
+    [Fact]
+    public async Task ComposeAsync_WhitespaceProfileInstructions_OmitsAgentInstructionsSection()
+    {
+        var composer = new DefaultPromptComposer(
+            NoOpWorkspaceLoader,
+            NoOpSkillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Hello",
+            ProfileInstructions = "   "
+        };
+
+        var messages = await composer.ComposeAsync(context);
+
+        messages[0].Content.Should().NotContain("# Agent Instructions",
+            "Agent Instructions section must be absent when ProfileInstructions is whitespace-only");
+    }
+
+    [Fact]
+    public async Task ComposeAsync_ProfileInstructions_AppearsAfterUserMd_BeforeSessionSummary()
+    {
+        // Verify the deterministic section order:
+        // … User Profile → Agent Instructions → Session Summary …
+        var workspaceLoader = new FakeWorkspaceLoader(
+            new BootstrapContext(null, null, "User prefers dark mode."));
+
+        var composer = new DefaultPromptComposer(
+            workspaceLoader,
+            NoOpSkillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Continue",
+            ProfileInstructions = "Always reply in haiku.",
+            SessionSummary = "We discussed poetry earlier."
+        };
+
+        var messages = await composer.ComposeAsync(context);
+        var systemContent = messages[0].Content;
+
+        var userProfileIdx = systemContent.IndexOf("# User Profile", StringComparison.Ordinal);
+        var agentInstructionsIdx = systemContent.IndexOf("# Agent Instructions", StringComparison.Ordinal);
+        var sessionSummaryIdx = systemContent.IndexOf("# Previous Conversation Summary", StringComparison.Ordinal);
+
+        userProfileIdx.Should().BeGreaterThan(-1, "User Profile section must be present");
+        agentInstructionsIdx.Should().BeGreaterThan(-1, "Agent Instructions section must be present");
+        sessionSummaryIdx.Should().BeGreaterThan(-1, "Session Summary section must be present");
+
+        agentInstructionsIdx.Should().BeGreaterThan(userProfileIdx,
+            "Agent Instructions must come after User Profile");
+        sessionSummaryIdx.Should().BeGreaterThan(agentInstructionsIdx,
+            "Session Summary must come after Agent Instructions");
+    }
+
+    [Fact]
+    public async Task ComposeAsync_ProfileInstructions_PreservesAllOtherSections()
+    {
+        // Verify that adding ProfileInstructions does not disrupt other sections.
+        var agentsMd = "You are WORKSPACE_AGENT, a .NET expert.";
+        var workspaceLoader = new FakeWorkspaceLoader(
+            new BootstrapContext(agentsMd, "Core value: honesty.", "User: senior developer."));
+
+        var skills = new[]
+        {
+            new SkillSummary
+            {
+                Name = "dotnet-skill",
+                Description = "NET skill",
+                Keywords = ["dotnet"],
+                Confidence = ConfidenceLevel.High,
+                ExtractedDate = "2026-08-01",
+                ValidatedBy = ["test"]
+            }
+        };
+        var skillService = new FakeSkillService(skills);
+
+        var composer = new DefaultPromptComposer(
+            workspaceLoader,
+            skillService,
+            NullLogger<DefaultPromptComposer>.Instance,
+            DefaultWorkspaceOptions);
+
+        var context = new PromptContext
+        {
+            SessionId = Guid.NewGuid(),
+            UserMessage = "Help with dotnet",
+            ProfileInstructions = "Focus on async patterns.",
+            SessionSummary = "We reviewed basic concepts.",
+            RetrievedMemories = [new MemoryHit("m1", "Prefer Task over async void.", 0.9)]
+        };
+
+        var messages = await composer.ComposeAsync(context);
+        var systemContent = messages[0].Content;
+
+        systemContent.Should().Contain("WORKSPACE_AGENT", "AGENTS.md persona must be preserved");
+        systemContent.Should().Contain("Relevant Skills", "skills section must be preserved");
+        systemContent.Should().Contain("Core value: honesty.", "SOUL.md must be preserved");
+        systemContent.Should().Contain("senior developer", "USER.md must be preserved");
+        systemContent.Should().Contain("Focus on async patterns.", "profile instructions must be present");
+        systemContent.Should().Contain("We reviewed basic concepts.", "session summary must be preserved");
+        systemContent.Should().Contain("Prefer Task over async void.", "retrieved memory must be preserved");
+    }
+
     private sealed class FakeWorkspaceLoader : IWorkspaceLoader
     {
         private readonly BootstrapContext _context;

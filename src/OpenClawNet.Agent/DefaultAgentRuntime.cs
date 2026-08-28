@@ -359,7 +359,8 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                 UserMessage = context.UserMessage,
                 History = history.SkipLast(1).ToList(),
                 SessionSummary = summary,
-                RetrievedMemories = retrievedMemories
+                RetrievedMemories = retrievedMemories,
+                ProfileInstructions = context.AgentProfileInstructions
             };
 
             var messages = await _promptComposer.ComposeAsync(promptContext, cancellationToken);
@@ -474,7 +475,8 @@ public sealed class DefaultAgentRuntime : IAgentRuntime
                 SessionId = context.SessionId,
                 UserMessage = context.UserMessage,
                 History = history.SkipLast(1).ToList(),
-                SessionSummary = summary
+                SessionSummary = summary,
+                ProfileInstructions = context.AgentProfileInstructions
             };
 
             var messages = await _promptComposer.ComposeAsync(promptContext, cancellationToken);
