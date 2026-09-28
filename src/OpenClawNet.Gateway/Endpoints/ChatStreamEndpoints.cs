@@ -25,6 +25,7 @@ public static class ChatStreamEndpoints
             ChatStreamRequest request,
             IAgentOrchestrator orchestrator,
             IAgentProfileStore profileStore,
+            AgentProfileDecisionRouter profileDecisionRouter,
             ILogger<GatewayProgramMarker> logger,
             HttpContext httpContext,
             [Microsoft.AspNetCore.Mvc.FromServices] OpenClawNet.Storage.Entities.AgentInvocationLogger? invocationLogger,
@@ -51,6 +52,11 @@ public static class ChatStreamEndpoints
                 }
             }
             profile ??= await profileStore.GetDefaultAsync(cancellationToken);
+            profile = await profileDecisionRouter.ResolveAsync(
+                request.Message,
+                profile,
+                explicitProfileRequested: !string.IsNullOrWhiteSpace(request.AgentProfileName),
+                cancellationToken);
 
             // Resolve provider definition → concrete config (definition name → type + endpoint + model)
             var resolver = httpContext.RequestServices.GetService<ProviderResolver>();

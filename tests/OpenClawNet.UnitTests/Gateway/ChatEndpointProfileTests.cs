@@ -13,6 +13,7 @@ using Moq;
 using OpenClawNet.Agent;
 using OpenClawNet.Gateway.Endpoints;
 using OpenClawNet.Gateway.Services;
+using OpenClawNet.Integrations.Jev;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 using OpenClawNet.Storage.Entities;
@@ -141,6 +142,9 @@ public sealed class ChatEndpointProfileTests
         builder.Services.AddSingleton(orchestrator);
         builder.Services.AddSingleton(profileStore);
         builder.Services.AddSingleton(definitionStore);
+        builder.Services.AddSingleton(new JevRoutingOptions());
+        builder.Services.AddSingleton(Mock.Of<IAgentProfileDecisionService>());
+        builder.Services.AddSingleton<AgentProfileDecisionRouter>();
 
         // Add logging and HTTP context accessor
         builder.Services.AddLogging();

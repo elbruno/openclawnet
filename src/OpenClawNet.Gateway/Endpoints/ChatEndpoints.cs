@@ -15,8 +15,10 @@ public static class ChatEndpoints
             ChatMessageRequest request,
             IAgentOrchestrator orchestrator,
             IAgentProfileStore profileStore,
+            AgentProfileDecisionRouter profileDecisionRouter,
             ILogger<GatewayProgramMarker> logger,
-            HttpContext httpContext) =>
+            HttpContext httpContext,
+            CancellationToken cancellationToken) =>
         {
             if (string.IsNullOrWhiteSpace(request.Message))
             {
@@ -29,19 +31,24 @@ public static class ChatEndpoints
                 AgentProfile? profile = null;
                 if (!string.IsNullOrEmpty(request.AgentProfileName))
                 {
-                    profile = await profileStore.GetAsync(request.AgentProfileName);
+                    profile = await profileStore.GetAsync(request.AgentProfileName, cancellationToken);
                     // Guard: chat must use Standard profiles only.
                     if (profile is not null && profile.Kind != ProfileKind.Standard)
                     {
                         profile = null;
                     }
                 }
-                profile ??= await profileStore.GetDefaultAsync();
+                profile ??= await profileStore.GetDefaultAsync(cancellationToken);
+                profile = await profileDecisionRouter.ResolveAsync(
+                    request.Message,
+                    profile,
+                    explicitProfileRequested: !string.IsNullOrWhiteSpace(request.AgentProfileName),
+                    cancellationToken);
 
                 // Resolve provider: profile.Provider or request.Provider → definition → global fallback
                 var resolver = httpContext.RequestServices.GetService<ProviderResolver>();
                 var resolvedProvider = resolver is not null
-                    ? await resolver.ResolveAsync(request.Provider ?? profile.Provider)
+                    ? await resolver.ResolveAsync(request.Provider ?? profile.Provider, cancellationToken)
                     : null;
 
                 // Sync RuntimeModelSettings so the runtime uses the resolved endpoint/apiKey
@@ -75,7 +82,7 @@ public static class ChatEndpoints
                     RetrievalLevel = profile.RetrievalLevel
                 };
                 
-                var response = await orchestrator.ProcessAsync(agentRequest);
+                var response = await orchestrator.ProcessAsync(agentRequest, cancellationToken);
                 
                 return Results.Ok(new ChatMessageResponse
                 {

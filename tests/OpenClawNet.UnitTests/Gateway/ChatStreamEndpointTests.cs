@@ -10,6 +10,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using OpenClawNet.Agent;
 using OpenClawNet.Gateway.Endpoints;
+using OpenClawNet.Gateway.Services;
+using OpenClawNet.Integrations.Jev;
 using OpenClawNet.Models.Abstractions;
 using OpenClawNet.Storage;
 
@@ -301,6 +303,7 @@ public sealed class ChatStreamEndpointTests
                 Instructions = "You are a helpful assistant."
             });
         builder.Services.AddSingleton(profileStore.Object);
+        AddDisabledDecisionRouter(builder.Services);
 
         var app = builder.Build();
         app.MapChatStreamEndpoints();
@@ -452,10 +455,18 @@ public sealed class ChatStreamEndpointTests
         builder.WebHost.UseTestServer();
         builder.Services.AddSingleton(orchestrator);
         builder.Services.AddSingleton(profileStore);
+        AddDisabledDecisionRouter(builder.Services);
 
         var app = builder.Build();
         app.MapChatStreamEndpoints();
         await app.StartAsync();
         return app;
+    }
+
+    private static void AddDisabledDecisionRouter(IServiceCollection services)
+    {
+        services.AddSingleton(new JevRoutingOptions());
+        services.AddSingleton(Mock.Of<IAgentProfileDecisionService>());
+        services.AddSingleton<AgentProfileDecisionRouter>();
     }
 }

@@ -40,6 +40,7 @@ using OpenClawNet.Mcp.FileSystem;
 using OpenClawNet.Mcp.Shell;
 using OpenClawNet.Mcp.Web;
 using OpenClawNet.Channels.Adapters;
+using OpenClawNet.Integrations.Jev;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Configuration.AddJsonFile("storage-settings.json", optional: true, reloadOnChange: false);
@@ -67,6 +68,11 @@ builder.Services.AddCors(options =>
 // Core OpenClawNet configuration
 builder.Services.Configure<OpenClawNetOptions>(builder.Configuration.GetSection("OpenClawNet"));
 builder.Services.AddSingleton<IStorageDirectoryProvider, StorageDirectoryProvider>();
+
+var jevRoutingOptions = new JevRoutingOptions();
+builder.Configuration.GetSection(JevRoutingOptions.SectionName).Bind(jevRoutingOptions);
+builder.Services.AddOptionalJevAgentProfileDecisions(jevRoutingOptions);
+builder.Services.AddScoped<AgentProfileDecisionRouter>();
 
 // Storage (SQLite via Aspire integration)
 builder.AddSqliteConnection("openclawnet-db");

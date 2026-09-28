@@ -185,6 +185,45 @@ Precedence (highest wins): **Environment Variables → Web UI Settings → appse
 
 ---
 
+## Experimental JEV profile routing
+
+OpenClawNet can optionally use [ElBruno.AI.Jev](https://github.com/elbruno/ElBruno.AI.Jev) 0.5.0 to recommend an agent profile for chat requests. This integration is experimental, disabled by default, and uses JEV only for a typed `Choice` decision. It does not authorize actions, approve tools, enforce security policy, or replace OpenClawNet's deterministic fallback.
+
+```json
+{
+  "Jev": {
+    "Enabled": false,
+    "Shadow": true,
+    "Timeout": "00:00:02"
+  }
+}
+```
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `Jev:Enabled` | `false` | Enables calls to JEV for implicit agent-profile selection. |
+| `Jev:Shadow` | `true` | Records and compares the recommendation without applying it. Set to `false` only after evaluating shadow results. |
+| `Jev:Timeout` | `00:00:02` | Strict total deadline for the optional decision. A timeout preserves the normal profile. |
+| `Jev:ApiKey` | unset | TypeSafe AI credential. Configure it outside versioned files. |
+| `Jev:Endpoint` | `https://api.typesafe.ai` | Optional official service origin override. |
+| `Jev:DefaultModel` | SDK default | Optional JEV decision model. |
+
+For local development, store the credential with user-secrets:
+
+```powershell
+dotnet user-secrets set "Jev:ApiKey" "<your-key>" --project src\OpenClawNet.Gateway
+```
+
+For deployed environments, use `Jev__ApiKey`. Never commit a real key or paste it into logs, issues, or chat.
+
+When enabled for an implicit profile selection, OpenClawNet sends the user's current message to the configured JEV service together with a bounded list containing each enabled Standard profile's name, display name, provider, and model. It does **not** send profile instructions, provider API keys, endpoints, or other stored secrets. OpenClawNet telemetry records only decision status, mode, recommended/effective profile names, confidence, duration, candidate count, and fallback code; it does not record the message or JEV request/response body.
+
+Explicitly requested profiles are never replaced. Missing configuration, invalid choices, SDK errors, or timeout all fall back to the profile OpenClawNet would have selected without JEV. Request cancellation still propagates normally.
+
+> ElBruno.AI.Jev 0.5.0 is a tentative community SDK whose live service compatibility is not claimed as production-ready. Evaluate shadow results and the external service's data-handling terms before enabling applied routing.
+
+---
+
 ## Troubleshooting
 
 ### Settings don't persist after restart

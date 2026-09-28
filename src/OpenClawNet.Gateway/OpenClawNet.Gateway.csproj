@@ -30,6 +30,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\OpenClawNet.ServiceDefaults\OpenClawNet.ServiceDefaults.csproj" />
+    <ProjectReference Include="..\OpenClawNet.Integrations.Jev\OpenClawNet.Integrations.Jev.csproj" />
     <ProjectReference Include="..\OpenClawNet.Agent\OpenClawNet.Agent.csproj" />
     <ProjectReference Include="..\OpenClawNet.Models.Abstractions\OpenClawNet.Models.Abstractions.csproj" />
     <ProjectReference Include="..\OpenClawNet.Models.Ollama\OpenClawNet.Models.Ollama.csproj" />
